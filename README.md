@@ -1,6 +1,6 @@
 # scraps <img src="man/figures/logo.png" align="right">
 
-scraps (*S*ingle *C*ell *R*NA *P*rocessing *S*oftware) extracts
+scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
 mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq
 libraries.
 
