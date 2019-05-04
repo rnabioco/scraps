@@ -2,12 +2,12 @@
  
 DATA: 
 # Data folder (FASTQs and whitelists in raw_data subfolder)
-# See "sample_data" folder for FASTQ and whitelists naming
+# See "sample_data" folder for FASTQ and whitelist naming
   "sample_data"
 
 GENOME_DIR:
-# Not included due to size, replace with path to local STAR index
-  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
+# Not included due to size; replace with path to local STAR index
+#  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
   
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
