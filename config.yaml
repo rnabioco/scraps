@@ -4,10 +4,11 @@ DATA:
   "sample_data"
 
 GENOME_DIR:
-  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star"
+# Not included due to size, replace with path to local STAR index
+  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
   
 POLYA_SITES:
-   "/polyadb.saf"
+   "polyadb.saf"
    
 POLYA_FORMAT:
    "SAF"
