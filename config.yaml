@@ -1,7 +1,8 @@
 # config for scraps snakemake pipeline #
  
 DATA: 
-# Data folder (FASTQs in raw_data subfolder)
+# Data folder (FASTQs and whitelists in raw_data subfolder)
+# See "sample_data" folder for FASTQ and whitelists naming
   "sample_data"
 
 GENOME_DIR:
