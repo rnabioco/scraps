@@ -6,8 +6,8 @@ libraries.
 
 Currently implemented as a snakemake pipeline for 10X Genomics
 3' end v2/3 libraries, scraps will eventually be expanded into 
-a standalone package for analyzing RNA processing changes in
-single-cell RNA-seq data.
+a standalone package for analyzing a range of RNA processing
+changes in single-cell RNA-seq data.
 
 For more information, see our manuscript [IN PREPARATION].
 
