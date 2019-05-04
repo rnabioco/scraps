@@ -7,7 +7,7 @@ GENOME_DIR:
   "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star"
   
 POLYA_SITES:
-   "../ref/polyadb.saf"
+   "/polyadb.saf"
    
 POLYA_FORMAT:
    "SAF"
