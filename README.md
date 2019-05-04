@@ -1,7 +1,5 @@
 # scraps <img src="man/figures/logo.png" align="right">
 
-<https://github.com/rnabioco/scraps>
-
 scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
 mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq
 libraries.
@@ -34,3 +32,5 @@ scraps requires the following as input (defined in config.yaml):
 
 See the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
+
+<https://github.com/rnabioco/scraps>
