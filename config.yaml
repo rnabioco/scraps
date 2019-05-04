@@ -1,6 +1,7 @@
 # config for scraps snakemake pipeline #
  
 DATA: 
+# Data folder (FASTQs in raw_data subfolder)
   "sample_data"
 
 GENOME_DIR:
@@ -8,10 +9,14 @@ GENOME_DIR:
   "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
   
 POLYA_SITES:
-   "polyadb.saf"
+# polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
+# downstream slop relative to annotated cleavage site
+   "polyadb.saf.gz"
    
 POLYA_FORMAT:
+# SAF or GTF
    "SAF"
 
 SAMPLES:
+# Sample basenames
   - sample
