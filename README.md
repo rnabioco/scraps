@@ -1,5 +1,7 @@
 # scraps <img src="man/figures/logo.png" align="right">
 
+<https://github.com/rnabioco/scraps>
+
 scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
 mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq
 libraries.
