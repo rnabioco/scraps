@@ -1,0 +1,102 @@
+import os
+import re
+import glob
+
+""" rules for scraps fastq preprocessing """
+
+def _get_read1_fq_paths(wildcards):
+    """ generate list of read1 fastqs that contain sample prefix 
+    """
+    
+    fq_dir = os.path.join(wildcards.data, "raw_data")          
+   
+    r1_pattern = wildcards.sample + "*R1*.fastq.gz"
+    r1s = glob.glob(os.path.join(fq_dir, r1_pattern))
+    
+    return r1s
+    
+def _get_read2_fq_paths(wildcards):
+    """ generate list of read2 fastqs that contain sample prefix 
+    """
+
+    fq_dir = os.path.join(wildcards.data, "raw_data")          
+   
+    r1_pattern = wildcards.sample + "*R1*.fastq.gz"
+    r1s = glob.glob(os.path.join(fq_dir, r1_pattern))
+    r2s = [re.sub("_R1_001.fastq.gz$", "_R2_001.fastq.gz", x) for x in r1s] 
+    
+    return r2s
+    
+rule umi_extract:
+   input:
+     fastq1 = _get_read1_fq_paths,
+     fastq2 = _get_read2_fq_paths,
+     whitelist = "{data}/raw_data/{sample}_whitelist.txt"
+   output:
+     fastq1 = "{data}/processed_fastq/{sample}_umi_R1.fastq.gz",
+     fastq2 = "{data}/processed_fastq/{sample}_umi_R2.fastq.gz"
+   params:
+     job_name = "umi_extract",
+     memory = "select[mem>45] rusage[mem=45]", # LSF format; change as needed
+   log:
+     "{data}/logs/umi_extract_{sample}.txt"
+   threads:
+     1
+   shell:
+     """
+     umi_tools extract \
+       --stdin {input.fastq1} \
+       --read2-in {input.fastq2} \
+       --stdout {output.fastq1} \
+       --read2-out={output.fastq2} \
+       --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN \
+       --filter-cell-barcode \
+       --whitelist={input.whitelist} \
+       > {log}
+     """
+     
+rule trim_read1:
+   input:
+     fastq = "{data}/processed_fastq/{sample}_umi_R1.fastq.gz"
+   output:
+     fastq = "{data}/processed_fastq/{sample}_processed_R1.fastq.gz"
+   params:
+     job_name = "trim_read1",
+     memory = "select[mem>45] rusage[mem=45]", # LSF format; change as needed
+   log:
+     "{data}/logs/trim_{sample}_R1.txt"
+   threads:
+     1
+   shell:
+     """
+     cutadapt \
+       -j {threads} \
+       -u 30 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC \
+       -m 17 -o {output} \
+       {input} \
+       > {log}
+     """
+     
+rule trim_read2:
+   input:
+     "{data}/processed_fastq/{sample}_umi_R2.fastq.gz"
+   output:
+     "{data}/processed_fastq/{sample}_processed_R2.fastq.gz"
+   params:
+     job_name = "trim_read2",
+     memory = "select[mem>45] rusage[mem=45]", # LSF format; change as needed
+   log:
+     "{data}/logs/trim_{sample}_R2.txt"
+   threads:
+     1
+   shell:
+     """
+     cutadapt \
+       -j {threads} \
+       -a "A{{30}}" -O 4 \
+       --discard-untrimmed \
+       -m 17 -o {output} \
+       {input} \
+       > {log}
+     """
+     

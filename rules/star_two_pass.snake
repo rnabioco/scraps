@@ -1,0 +1,75 @@
+
+""" rules for star two pass mapping """
+
+rule idx_bams_out:
+   input:
+     "{data}/star/{sample}_{read}_2pass_Aligned.sortedByCoord.out.bam"
+   output:
+     protected("{data}/star/{sample}_{read}_2pass_Aligned.sortedByCoord.out.bam.bai")
+   params:
+     job_name = "idx_bam",
+     memory = "select[mem>10] rusage[mem=10]", # LSF format; change as needed
+   log:
+     "{data}/logs/{sample}_{read}_index.txt"
+   shell:
+     "samtools index {input}"
+
+rule star_second_pass:
+   input:
+     FQ = "{data}/processed_fastq/{sample}_processed_{read}.fastq.gz",
+     first_bam = "{data}/star/{sample}_{read}_Aligned.sortedByCoord.out.bam",
+     junctions = "{data}/star/{sample}_{read}_SJ.out.tab"
+   output:
+     protected("{data}/star/{sample}_{read}_2pass_Aligned.sortedByCoord.out.bam"),
+     protected("{data}/star/{sample}_{read}_2pass_Unmapped.out.mate1.fastq.gz")
+   params:
+     job_name = "star_pass_2",
+     out = "{data}/star/{sample}_{read}_2pass_",
+     memory = "select[mem>45] rusage[mem=45]", # LSF format; change as needed
+   log:
+     "{data}/logs/{sample}_{read}_align_2.txt"
+   threads:
+     12
+   shell:
+     """
+     STAR \
+       --genomeDir {GENOME_DIR}  \
+       --runThreadN {threads} \
+       --readFilesIn {input.FQ} \
+       --outSAMtype BAM SortedByCoordinate \
+       --readFilesCommand gunzip -c \
+       --outFileNamePrefix {params.out} \
+       --sjdbFileChrStartEnd {input.junctions} \
+       --limitSjdbInsertNsj 2000000 \
+       --outSAMattributes NH HI AS nM MD \
+       --outReadsUnmapped Fastx \
+       --outFilterMultimapNmax 1
+
+     gzip -f -S .fastq.gz {params.out}Unmapped.out.mate1 
+     """
+
+rule star_first_pass:
+   input:
+     FQ = "{data}/processed_fastq/{sample}_processed_{read}.fastq.gz",
+     genome = GENOME_DIR + "/Genome"
+   output:
+     "{data}/star/{sample}_{read}_SJ.out.tab",
+     bam = temp("{data}/star/{sample}_{read}_Aligned.sortedByCoord.out.bam"),
+   params:
+     job_name = "star_pass_1",
+     out = "{data}/star/{sample}_{read}_",
+     memory = "select[mem>45] rusage[mem=45]" # LSF format; change as needed
+   log:
+     "{data}/logs/{sample}_{read}_align.txt"
+   threads:
+     12
+   shell:
+     """
+     STAR \
+       --genomeDir {GENOME_DIR}  \
+       --runThreadN {threads} \
+       --readFilesIn {input.FQ} \
+       --outSAMtype BAM SortedByCoordinate \
+       --readFilesCommand gunzip -c \
+       --outFileNamePrefix {params.out}
+     """

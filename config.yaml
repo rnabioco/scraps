@@ -1,0 +1,16 @@
+# config for scraps snakemake pipeline #
+ 
+DATA: 
+  "sample_data"
+
+GENOME_DIR:
+  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star"
+  
+POLYA_SITES:
+   "../ref/polyadb.saf"
+   
+POLYA_FORMAT:
+   "SAF"
+
+SAMPLES:
+  - sample
