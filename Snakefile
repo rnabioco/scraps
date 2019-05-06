@@ -12,8 +12,9 @@ POLYA_FORMAT = config["POLYA_FORMAT"]
 
 rule all:
   input:
-    expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = "R1"),
-    expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = "R2")
+    # Generates both read 1 (positional) and read 2 (polyA trimmed) counts by default;
+    # Remove "R1" or "R2" to use only one method.
+    expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = ["R1","R2"])
 
 include: "rules/preprocess.snake"
 include: "rules/star_two_pass.snake"
