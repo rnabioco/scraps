@@ -28,7 +28,7 @@ scraps requires the following as input (defined in config.yaml):
   - 10X Genomics 3' v2/3 single-cell FASTQs 
   - Cell barcode whitelists for each sample (UMI-tools format)
   - A STAR genome index
-  - A featureCounts reference (an SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">pola_db</a> example is included)
+  - A featureCounts reference (an SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a> example is included)
 
 See the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
