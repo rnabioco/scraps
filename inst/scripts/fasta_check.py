@@ -3,6 +3,7 @@
 import sys
 import errno
 import os
+import re
 import gzip
 import threading
 import requests
@@ -89,8 +90,46 @@ def get_fastq_links(metadata, fq_ids):
 #filepath1 = "/Users/rf/Downloads/tinygex_1_S1_L001_R1_001.fastq.gz"
 #filepath2 = "/Users/rf/Downloads/tinygex_1_S1_L001_R2_001.fastq.gz"
 
+# from 10x
+# dictionary of instrument id regex: [platform(s)]
+InstrumentIDs = {"HWI-M[0-9]{4}$" : ["MiSeq"],
+        "HWUSI" : ["Genome Analyzer IIx"],
+        "M[0-9]{5}$" : ["MiSeq"],
+        "HWI-C[0-9]{5}$" : ["HiSeq 1500"],
+        "C[0-9]{5}$" : ["HiSeq 1500"],
+        "HWI-D[0-9]{5}$" : ["HiSeq 2500"],
+        "D[0-9]{5}$" : ["HiSeq 2500"],
+        "J[0-9]{5}$" : ["HiSeq 3000"],
+        "K[0-9]{5}$" : ["HiSeq 3000","HiSeq 4000"],
+        "E[0-9]{5}$" : ["HiSeq X"],
+        "NB[0-9]{6}$": ["NextSeq"],
+        "NS[0-9]{6}$" : ["NextSeq"],
+        "MN[0-9]{5}$" : ["MiniSeq"]}
+
+# dictionary of flow cell id regex: ([platform(s)], flow cell version and yeild)
+FCIDs = {"C[A-Z,0-9]{4}ANXX$" : (["HiSeq 1500", "HiSeq 2000", "HiSeq 2500"], "High Output (8-lane) v4 flow cell"),
+         "C[A-Z,0-9]{4}ACXX$" : (["HiSeq 1000", "HiSeq 1500", "HiSeq 2000", "HiSeq 2500"], "High Output (8-lane) v3 flow cell"),
+         "H[A-Z,0-9]{4}ADXX$" : (["HiSeq 1500", "HiSeq 2500"], "Rapid Run (2-lane) v1 flow cell"),
+         "H[A-Z,0-9]{4}BCXX$" : (["HiSeq 1500", "HiSeq 2500"], "Rapid Run (2-lane) v2 flow cell"),
+         "H[A-Z,0-9]{4}BCXY$" : (["HiSeq 1500", "HiSeq 2500"], "Rapid Run (2-lane) v2 flow cell"),
+         "H[A-Z,0-9]{4}BBXX$" : (["HiSeq 4000"], "(8-lane) v1 flow cell"),
+         "H[A-Z,0-9]{4}BBXY$" : (["HiSeq 4000"], "(8-lane) v1 flow cell"),
+         "H[A-Z,0-9]{4}CCXX$" : (["HiSeq X"], "(8-lane) flow cell"),
+         "H[A-Z,0-9]{4}CCXY$" : (["HiSeq X"], "(8-lane) flow cell"),
+         "H[A-Z,0-9]{4}ALXX$" : (["HiSeq X"], "(8-lane) flow cell"),
+         "H[A-Z,0-9]{4}BGXX$" : (["NextSeq"], "High output flow cell"),
+         "H[A-Z,0-9]{4}BGXY$" : (["NextSeq"], "High output flow cell"),
+         "H[A-Z,0-9]{4}BGX2$" : (["NextSeq"], "High output flow cell"),
+         "H[A-Z,0-9]{4}AFXX$" : (["NextSeq"], "Mid output flow cell"),
+         "A[A-Z,0-9]{4}$" : (["MiSeq"], "MiSeq flow cell"),
+         "B[A-Z,0-9]{4}$" : (["MiSeq"], "MiSeq flow cell"),
+         "D[A-Z,0-9]{4}$" : (["MiSeq"], "MiSeq nano flow cell"),
+         "G[A-Z,0-9]{4}$" : (["MiSeq"], "MiSeq micro flow cell"),
+         "H[A-Z,0-9]{4}DMXX$" : (["NovaSeq"], "S2 flow cell")}
+
+
 # check lengths
-def get_lengths(filepath, nentries = 20, verbose = False):
+def get_lengths(filepath, nentries = 100, verbose = False):
     vec = []
     nlines = nentries * 4
 
@@ -98,15 +137,55 @@ def get_lengths(filepath, nentries = 20, verbose = False):
         i = 0
         for line in f:
             i += 1
+            if i == 1:
+                header = line.decode('utf8').rstrip('\n').split(":")
+                if len(header) < 3:
+                    print("strange header : " + "/".join(header))
+                    iid = "unknown"
+                    fcid = "unknown"
+                else:
+                    iid = header[0][1:]
+                    if " " in iid:
+                        iid = iid.split(" ")[1]
+                    fcid = header[2]
             if i%4 == 2:
                 line_de = line.decode('utf8').rstrip('\n') #decode('utf8').
-                if verbose == True:
-                    print(line_de)
                 vec.append(len(line_de))
             if i >= nlines:
                 break
     f.close()
-    return vec
+    # print(iid)
+    # print(1)
+    # print(fcid)
+    sequencer = infer_sequencer(iid, fcid)
+    return vec, sequencer
+# get_lengths(filepath1)
+
+# infer sequencer from ids from single fastq
+def infer_sequencer(iid, fcid):
+    seq_by_iid = []
+    for key in InstrumentIDs:
+        if re.search(key,iid):
+            seq_by_iid += InstrumentIDs[key]
+
+    seq_by_fcid = []
+    for key in FCIDs:
+        if re.search(key,fcid):
+            seq_by_fcid += FCIDs[key][0]
+
+    if seq_by_iid and seq_by_fcid:
+        sequencer = list(set(seq_by_iid) & set(seq_by_fcid))
+        if sequencer:
+            return " or ".join(sequencer)
+        else:
+            return str(seq_by_iid) + " or " + str(seq_by_fcid)
+    elif seq_by_iid or seq_by_fcid:
+        sequencer = seq_by_iid + seq_by_fcid
+        return " or ".join(sequencer)
+    else:
+        return "unknown"
+# infer_sequencer("A00228", "HFWFVDMXX")
+# infer_sequencer("unknown", "unknown")
 
 # def nog_get_lengths(filepath, nentries = 10, verbose = False):
 #     vec = []
@@ -127,11 +206,11 @@ def check_lengths(lengths_vec, verbose = False):
     if len(lengths_set) > 1:
         if verbose == True:
             print("inconsistent lengths from file")
-        return(-1)
+        return -1
     else:
         if verbose == True:
             print("uniform length of " + str(lengths_set[0]))
-        return(lengths_set[0])
+        return lengths_set[0]
 
 def get_lines(filepath, length, nentries = 100000, verbose = False):
     # set up counting
@@ -161,7 +240,7 @@ def get_lines(filepath, length, nentries = 100000, verbose = False):
     df_qc.columns = list(range(1, len(df_qc.columns) + 1))
     df_atcg = pd.DataFrame.from_dict(d)
     df_atcg = df_atcg.reindex(sorted(df_atcg.columns), axis=1)
-    return [df_qc, df_atcg/df_atcg.iloc[1].sum()]
+    return df_qc, df_atcg/df_atcg.iloc[1].sum()
 
 # def get_qcs(filepath, nentries = 100000, verbose = False):
 #     vec = []
@@ -229,14 +308,10 @@ def plot_line(df, plotname):
 def stream_file(url, path):
     os.mkfifo(path)
     def _target():
-        while True:
-            try:
-                t.result = urllib.request.urlretrieve(url, path)
-            except Exception as exc:
-                t.failure = 1
-            if stop_threads:
-                break
-    stop_threads = False
+        try:
+            t.result = urllib.request.urlretrieve(url, path)
+        except Exception as exc:
+            t.failure = 1
     t = threading.Thread(target=_target, daemon=True)
     t.start()
         # except IOError as e:
@@ -253,10 +328,10 @@ def wrap_stream_analysis(link, output_dir, readn = 100000, cutoff = 28):
         os.remove("pipe")
     print("for " + link + " : " + "check read lengths")
     stream_file(link, "pipe")
-    stop_threads = True
-    res_l = get_lengths("pipe")
+    res_l, sequencer = get_lengths("pipe")
     os.remove("pipe")
     seq_length = check_lengths(res_l, verbose = True)
+    print("sequenced with " + sequencer)
     if seq_length == -1:
         print("inconsistent read length, aborted")
         return()
@@ -266,13 +341,11 @@ def wrap_stream_analysis(link, output_dir, readn = 100000, cutoff = 28):
 
     print("for " + link + " : " + "streaming " + str(readn) + " reads")
     stream_file(link, "pipe")
-    stop_threads = True
     res_qc, res_atcg = get_lines("pipe", seq_length, nentries = readn)
     os.remove("pipe")
 
-    print("for " + link + " : " + "check qc scores")
+    print("for " + link + " : " + "plotting")
     plot_box(res_qc, os.path.join(output_dir, link.split("/")[-1].split(".")[0] + "_qc.pdf"))
-    print("for " + link + " : " + "check atcg composition")
     plot_line(res_atcg, os.path.join(output_dir, link.split("/")[-1].split(".")[0] + "_base.pdf"))
 # wrap_stream_analysis("ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_2.fastq.gz")
 
