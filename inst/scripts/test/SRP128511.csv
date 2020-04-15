@@ -1,0 +1,7 @@
+,link,seq_length,sequencer
+0,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/004/SRR7617314/SRR7617314_1.fastq.gz,150,HiSeq 2500
+1,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/004/SRR7617314/SRR7617314_2.fastq.gz,150,HiSeq 2500
+2,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_1.fastq.gz,150,HiSeq 2500
+3,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_2.fastq.gz,150,HiSeq 2500
+4,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR762/000/SRR7623730/SRR7623730_1.fastq.gz,151,unknown
+5,ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR762/000/SRR7623730/SRR7623730_2.fastq.gz,151,unknown

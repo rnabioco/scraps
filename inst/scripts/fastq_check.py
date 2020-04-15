@@ -187,20 +187,6 @@ def infer_sequencer(iid, fcid):
 # infer_sequencer("A00228", "HFWFVDMXX")
 # infer_sequencer("unknown", "unknown")
 
-# def nog_get_lengths(filepath, nentries = 10, verbose = False):
-#     vec = []
-#     nlines = nentries * 4
-#     with open(filepath, 'r') as f:
-#         i = 0
-#         while i <= 10:
-#             i += 1
-#             line_de = f.readline().rstrip('\n')
-#             if i%4 == 2:
-#                 print(line_de)
-#                 vec.append(len(line_de))
-#     f.close()
-#     return vec
-
 def check_lengths(lengths_vec, verbose = False):
     lengths_set = list(set(lengths_vec))
     if len(lengths_set) > 1:
@@ -239,54 +225,9 @@ def get_lines(filepath, length, nentries = 100000, verbose = False):
     df_qc = pd.DataFrame(vec)
     df_qc.columns = list(range(1, len(df_qc.columns) + 1))
     df_atcg = pd.DataFrame.from_dict(d)
-    df_atcg = df_atcg.reindex(sorted(df_atcg.columns), axis=1)
+    df_atcg = df_atcg[["A", "T", "C", "G", "N"]]
+    # df_atcg = df_atcg.reindex(sorted(df_atcg.columns), axis=1)
     return df_qc, df_atcg/df_atcg.iloc[1].sum()
-
-# def get_qcs(filepath, nentries = 100000, verbose = False):
-#     vec = []
-#     nlines = nentries * 4
-#     with gzip.open(filepath, 'r') as f:
-#         i = 0
-#         for line in f:
-#             i += 1
-#             if i%4 == 0:
-#                 line_de = line.decode('utf8').rstrip('\n')
-#                 if verbose == True:
-#                     print(line_de)
-#                 vec.append([ord(c) - 33 for c in line_de])
-#             if i >= nlines:
-#                 break
-#     f.close()
-#     df = pd.DataFrame(vec)
-#     df.columns = list(range(1, len(df.columns) + 1))
-#     return df
-# res = get_qcs(filepath2)
-# check_lengths(get_lengths(filepath2))
-# sys.getsizeof(get_qcs(filepath2))/1048576
-
-# def ATCG_comp(filepath, length, nentries = 100000, verbose = False):
-#     max_len = length
-#     d = defaultdict(lambda: [0]*max_len)  # d[char] = [pos0, pos12, ...]
-#     nlines = nentries * 4
-#     with gzip.open(filepath, 'r') as f:
-#         i = 0
-#         for line in f:
-#             i += 1
-#             if i%4 == 2:
-#                 line_de = line.decode('utf8').rstrip('\n')
-#                 #print(line_de)
-#                 for j, char in enumerate(line_de):
-#                         d[char][j] += 1
-#             if verbose == True:
-#                 if i%40 == 0:
-#                     print(i/4)
-#             if i >= nlines:
-#                 break
-#     f.close()
-#     df = pd.DataFrame.from_dict(d)
-#     df = df.reindex(sorted(df.columns), axis=1)
-#     return (df/df.iloc[1].sum())
-#res2 = ATCG_comp(filepath1, verbose = True)
 
 def plot_box(df, plotname):
     fig, ax = plt.subplots()
@@ -334,10 +275,10 @@ def wrap_stream_analysis(link, output_dir, readn = 100000, cutoff = 28):
     print("sequenced with " + sequencer)
     if seq_length == -1:
         print("inconsistent read length, aborted")
-        return()
+        return(seq_length, sequencer)
     elif seq_length <= cutoff:
         print("read length too short, aborted")
-        return()
+        return(seq_length, sequencer)
 
     print("for " + link + " : " + "streaming " + str(readn) + " reads")
     stream_file(link, "pipe")
@@ -347,16 +288,20 @@ def wrap_stream_analysis(link, output_dir, readn = 100000, cutoff = 28):
     print("for " + link + " : " + "plotting")
     plot_box(res_qc, os.path.join(output_dir, link.split("/")[-1].split(".")[0] + "_qc.pdf"))
     plot_line(res_atcg, os.path.join(output_dir, link.split("/")[-1].split(".")[0] + "_base.pdf"))
+    return(seq_length, sequencer)
 # wrap_stream_analysis("ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_2.fastq.gz")
 
 def wrap_links_stream(links, output_dir, nreads = 100000, cutoff = 28):
+    df = pd.DataFrame(columns = ["link", "seq_length", "sequencer"])
     for linkset in links:
         if len(linkset) == 1:
             print("skipping single end sample")
             continue
         elif len(linkset) == 2:
             for link in linkset:
-                wrap_stream_analysis(link, output_dir, nreads, cutoff)
+                seq_length, sequencer = wrap_stream_analysis(link, output_dir, nreads, cutoff)
+                df = df.append(pd.Series([link, seq_length, sequencer], index=df.columns ), ignore_index=True)
+    return(df)
 
 def main():
     parser = argparse.ArgumentParser(description = """
@@ -398,6 +343,12 @@ def main():
                         default = 28,
                         required = False)
 
+    parser.add_argument('-r',
+                        '--report',
+                        help ="""whether to output a csv report summary""",
+                        default = True,
+                        required = False)
+
     args=parser.parse_args()
 
     study_id = args.study
@@ -405,6 +356,7 @@ def main():
     output_dir = args.outputdir
     n_reads = int(args.nreads)
     cut_off = int(args.cutoff)
+    write_report = args.report
     if output_dir:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -415,7 +367,10 @@ def main():
 
     mdata = get_study_metadata(study_id, log_fp)
     links = get_fastq_links(mdata, fq_ids)
-    wrap_links_stream(links, output_dir, n_reads, cut_off)
+    df = wrap_links_stream(links, output_dir, n_reads, cut_off)
+
+    if write_report:
+        df.to_csv(os.path.join(output_dir, study_id + ".csv"))
 
     log_fp.close()
     print("all finished")
