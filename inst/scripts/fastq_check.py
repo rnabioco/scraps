@@ -14,6 +14,8 @@ import argparse
 import urllib.request
 import urllib.error
 
+plt.rcParams.update({'figure.max_open_warning': 0})
+
 """ For given project identifier (i.e SRX.... or PRJN....),
 stream data from ENA database to check for compatibility
 with scraps workflow, ie read length, qc score, base comp
@@ -60,7 +62,10 @@ def get_fastq_links(metadata, fq_ids):
         filter_fqs = False
 
     for line in metadata:
-        accession, title, ftp_url = line.rstrip().split("\t")
+        try:
+            accession, title, ftp_url = line.rstrip().split("\t")
+        except ValueError:
+            continue
 
         if filter_fqs:
             if accession not in fq_ids:
@@ -225,7 +230,10 @@ def get_lines(filepath, length, nentries = 100000, verbose = False):
     df_qc = pd.DataFrame(vec)
     df_qc.columns = list(range(1, len(df_qc.columns) + 1))
     df_atcg = pd.DataFrame.from_dict(d)
-    df_atcg = df_atcg[["A", "T", "C", "G", "N"]]
+    try:
+        df_atcg = df_atcg[["A", "T", "C", "G", "N"]]
+    except KeyError:
+        df_atcg = df_atcg[["A", "T", "C", "G"]]
     # df_atcg = df_atcg.reindex(sorted(df_atcg.columns), axis=1)
     return df_qc, df_atcg/df_atcg.iloc[1].sum()
 
@@ -368,11 +376,15 @@ def main():
     mdata = get_study_metadata(study_id, log_fp)
     links = get_fastq_links(mdata, fq_ids)
     df = wrap_links_stream(links, output_dir, n_reads, cut_off)
+    log_fp.close()
 
-    if write_report:
+    if write_report and len(links) > 0:
+        mdata = pd.read_csv(logfile, sep='\t')
+        mdata = mdata.assign(fastq_ftp=mdata.fastq_ftp.str.split(';')).explode('fastq_ftp')
+        mdata = mdata.assign(fastq_ftp=("ftp://" + mdata.fastq_ftp))
+        df = df.join(mdata.set_index('fastq_ftp'), on='link')
         df.to_csv(os.path.join(output_dir, study_id + ".csv"))
 
-    log_fp.close()
     print("all finished")
 
 if __name__ == '__main__': main()
