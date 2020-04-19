@@ -1,0 +1,783 @@
+﻿SRA570744,SRS2253536,Lung mesenchyme,10x chromium,Mus musculus,4611,view
+SRA644036,SRS2808714,Cervical and lumbar spinal cord,10x chromium,Mus musculus,1025,view
+SRA670243,SRS3078084,Ventral midbrain,10x chromium,Mus musculus,5603,view
+SRA689041,SRS3166675,Colon,10x chromium,Mus musculus,2878,view
+SRA611700,SRS2532367,Caudal ganglionic eminence,10x chromium,Mus musculus,7545,view
+SRA611700,SRS2532368,Medial ganglionic eminence,10x chromium,Mus musculus,6852,view
+SRA611700,SRS2532369,Cortex,10x chromium,Mus musculus,8818,view
+SRA611700,SRS2532370,Subcortex,10x chromium,Mus musculus,8574,view
+SRA611700,SRS2532371,Cortex,10x chromium,Mus musculus,6590,view
+SRA611700,SRS2532373,Subcortex,10x chromium,Mus musculus,4368,view
+SRA571721,SRS2259441,Bone marrow stem cells,10x chromium,Mus musculus,3269,view
+SRA571721,SRS2259442,Bone marrow stem cells,10x chromium,Mus musculus,4568,view
+SRA599311,SRS2431648,Mesenteric,10x chromium,Mus musculus,1601,view
+SRA599311,SRS2431649,Mesenteric,10x chromium,Mus musculus,1423,view
+SRA508949,SRS1876783,Small intestine,10x chromium,Mus musculus,712,view
+SRA508949,SRS1876784,Small intestine,10x chromium,Mus musculus,1035,view
+SRA508949,SRS1876785,Small intestine,10x chromium,Mus musculus,473,view
+SRA508949,SRS1876786,Small intestine,10x chromium,Mus musculus,766,view
+SRA508949,SRS1876787,Small intestine,10x chromium,Mus musculus,637,view
+SRA508949,SRS1876788,Small intestine,10x chromium,Mus musculus,830,view
+SRA508949,SRS1876789,Small intestine,10x chromium,Mus musculus,639,view
+SRA508949,SRS1876790,Small intestine,10x chromium,Mus musculus,1321,view
+SRA508949,SRS1876791,Small intestine,10x chromium,Mus musculus,1309,view
+SRA508949,SRS1876792,Small intestine,10x chromium,Mus musculus,1429,view
+SRA508949,SRS1876793,Small intestine,10x chromium,Mus musculus,1357,view
+SRA508949,SRS1876794,Small intestine,10x chromium,Mus musculus,1217,view
+SRA508949,SRS1876795,Small intestine,10x chromium,Mus musculus,1128,view
+SRA508949,SRS1876796,Small intestine,10x chromium,Mus musculus,913,view
+SRA550869,SRS2093772,Aortic leukocytes,10x chromium,Mus musculus,1023,view
+SRA550869,SRS2747908,Aortic leukocytes,10x chromium,Mus musculus,398,view
+SRA550869,SRS2747909,Aortic leukocytes,10x chromium,Mus musculus,1090,view
+SRA578634,SRS2302658,Subventricular zone,10x chromium,Mus musculus,213,view
+SRA578634,SRS2302659,Subventricular zone,10x chromium,Mus musculus,246,view
+SRA578634,SRS2302660,Subventricular zone,10x chromium,Mus musculus,1076,view
+SRA709693,SRS3331501,Bone marrow,10x chromium,Mus musculus,1865,view
+SRA709693,SRS3331503,Bone marrow,10x chromium,Mus musculus,1720,view
+SRA709693,SRS3331504,Bone marrow,10x chromium,Mus musculus,332,view
+SRA667466,SRS3059941,Spinal cord,10x chromium,Mus musculus,4383,view
+SRA667466,SRS3059942,Dorsal root ganglion,10x chromium,Mus musculus,3823,view
+SRA667466,SRS3059943,Ventral striatum,10x chromium,Mus musculus,584,view
+SRA667466,SRS3059944,Hippocampus (ca1),10x chromium,Mus musculus,2458,view
+SRA667466,SRS3059945,Dentate gyrus,10x chromium,Mus musculus,3059,view
+SRA667466,SRS3059946,Hippocampus (ca1),10x chromium,Mus musculus,2347,view
+SRA667466,SRS3059947,Dentate gyrus,10x chromium,Mus musculus,3454,view
+SRA667466,SRS3059948,Neo-cortex,10x chromium,Mus musculus,2167,view
+SRA667466,SRS3059949,Medulla oblongata,10x chromium,Mus musculus,892,view
+SRA667466,SRS3059950,Neo-cortex,10x chromium,Mus musculus,4304,view
+SRA667466,SRS3059951,Ventral striatum,10x chromium,Mus musculus,1120,view
+SRA667466,SRS3059952,Thalamus,10x chromium,Mus musculus,1633,view
+SRA667466,SRS3059953,Hippocampus,10x chromium,Mus musculus,4945,view
+SRA667466,SRS3059954,Hippocampus,10x chromium,Mus musculus,5067,view
+SRA667466,SRS3059955,Dorsal striatum,10x chromium,Mus musculus,3444,view
+SRA667466,SRS3059956,Thalamus,10x chromium,Mus musculus,3447,view
+SRA667466,SRS3059957,Dorsal striatum,10x chromium,Mus musculus,3521,view
+SRA667466,SRS3059958,Thalamus,10x chromium,Mus musculus,3216,view
+SRA667466,SRS3059959,Cerebellum,10x chromium,Mus musculus,1807,view
+SRA667466,SRS3059960,Cerebellum,10x chromium,Mus musculus,645,view
+SRA667466,SRS3059961,Ventral striatum,10x chromium,Mus musculus,7788,view
+SRA667466,SRS3059963,Hippocampus (ca1),10x chromium,Mus musculus,1215,view
+SRA667466,SRS3059964,Neo-cortex,10x chromium,Mus musculus,2459,view
+SRA667466,SRS3059965,Hypothalamus,10x chromium,Mus musculus,1405,view
+SRA667466,SRS3059966,Neo-cortex,10x chromium,Mus musculus,1889,view
+SRA667466,SRS3059967,Ventral midbrain,10x chromium,Mus musculus,2759,view
+SRA667466,SRS3059968,Amygdala,10x chromium,Mus musculus,980,view
+SRA667466,SRS3059969,Ventral midbrain,10x chromium,Mus musculus,3028,view
+SRA667466,SRS3059970,Pons,10x chromium,Mus musculus,1974,view
+SRA667466,SRS3059971,Hippocampus (ca1),10x chromium,Mus musculus,1177,view
+SRA667466,SRS3059972,Neo-cortex,10x chromium,Mus musculus,1144,view
+SRA667466,SRS3059973,Pons,10x chromium,Mus musculus,6497,view
+SRA667466,SRS3059974,Medulla oblongata,10x chromium,Mus musculus,5656,view
+SRA667466,SRS3059975,Dorsal striatum,10x chromium,Mus musculus,2132,view
+SRA667466,SRS3059976,Pons,10x chromium,Mus musculus,9015,view
+SRA667466,SRS3059977,Neo-cortex,10x chromium,Mus musculus,3211,view
+SRA667466,SRS3059978,Thalamus,10x chromium,Mus musculus,2025,view
+SRA667466,SRS3059979,Thalamus,10x chromium,Mus musculus,4675,view
+SRA667466,SRS3059980,Hypothalamus,10x chromium,Mus musculus,3991,view
+SRA667466,SRS3059981,Hypothalamus,10x chromium,Mus musculus,2375,view
+SRA667466,SRS3059982,Cerebellum,10x chromium,Mus musculus,1246,view
+SRA667466,SRS3059983,Cerebellum,10x chromium,Mus musculus,597,view
+SRA667466,SRS3059984,Thalamus,10x chromium,Mus musculus,4192,view
+SRA667466,SRS3059985,Thalamus,10x chromium,Mus musculus,3950,view
+SRA667466,SRS3059986,Hypothalamus,10x chromium,Mus musculus,2857,view
+SRA667466,SRS3059987,Hypothalamus,10x chromium,Mus musculus,2377,view
+SRA667466,SRS3059988,Spinal cord,10x chromium,Mus musculus,6423,view
+SRA667466,SRS3059989,Spinal cord,10x chromium,Mus musculus,6242,view
+SRA667466,SRS3059990,Spinal cord,10x chromium,Mus musculus,5927,view
+SRA667466,SRS3059991,Spinal cord,10x chromium,Mus musculus,6839,view
+SRA667466,SRS3059992,Medulla oblongata,10x chromium,Mus musculus,8156,view
+SRA667466,SRS3059993,Medulla oblongata,10x chromium,Mus musculus,7641,view
+SRA667466,SRS3059994,Dorsal root ganglion,10x chromium,Mus musculus,3429,view
+SRA667466,SRS3059995,Medulla oblongata,10x chromium,Mus musculus,8174,view
+SRA667466,SRS3059996,Pons,10x chromium,Mus musculus,6139,view
+SRA667466,SRS3059997,Medulla oblongata,10x chromium,Mus musculus,7841,view
+SRA667466,SRS3059998,Hypothalamus,10x chromium,Mus musculus,4026,view
+SRA667466,SRS3059999,Hypothalamus,10x chromium,Mus musculus,4232,view
+SRA667466,SRS3060000,Amygdala,10x chromium,Mus musculus,1684,view
+SRA667466,SRS3060001,Amygdala,10x chromium,Mus musculus,3602,view
+SRA667466,SRS3060002,Olfactory bulb?,10x chromium,Mus musculus,5062,view
+SRA667466,SRS3060003,Olfactory bulb?,10x chromium,Mus musculus,4889,view
+SRA667466,SRS3060004,Medulla oblongata,10x chromium,Mus musculus,1341,view
+SRA667466,SRS3060005,Pons,10x chromium,Mus musculus,813,view
+SRA667466,SRS3060006,Pons,10x chromium,Mus musculus,733,view
+SRA667466,SRS3060007,Amygdala,10x chromium,Mus musculus,3741,view
+SRA667466,SRS3060008,Dorsal midbrain,10x chromium,Mus musculus,5241,view
+SRA667466,SRS3060009,Dorsal midbrain,10x chromium,Mus musculus,3849,view
+SRA667466,SRS3060010,Mesencephalon?,10x chromium,Mus musculus,5842,view
+SRA667466,SRS3060011,Dorsal midbrain,10x chromium,Mus musculus,4766,view
+SRA667466,SRS3060012,Ventral midbrain,10x chromium,Mus musculus,5313,view
+SRA667466,SRS3060013,Ventral midbrain,10x chromium,Mus musculus,1582,view
+SRA667466,SRS3060014,Dorsal midbrain,10x chromium,Mus musculus,4572,view
+SRA667466,SRS3060015,Ventral midbrain,10x chromium,Mus musculus,6023,view
+SRA667466,SRS3060016,Spinal cord,10x chromium,Mus musculus,2681,view
+SRA667466,SRS3060017,Spinal cord,10x chromium,Mus musculus,6372,view
+SRA667466,SRS3060018,Pons,10x chromium,Mus musculus,6378,view
+SRA667466,SRS3060019,Medulla oblongata,10x chromium,Mus musculus,5614,view
+SRA667466,SRS3060020,Hippocampus,10x chromium,Mus musculus,2188,view
+SRA667466,SRS3060021,Hippocampus,10x chromium,Mus musculus,2026,view
+SRA667466,SRS3060022,Cortex 1,10x chromium,Mus musculus,4411,view
+SRA667466,SRS3060023,Medulla oblongata,10x chromium,Mus musculus,5806,view
+SRA667466,SRS3060024,Medulla oblongata,10x chromium,Mus musculus,5685,view
+SRA667466,SRS3060025,Olfactory bulb,10x chromium,Mus musculus,1670,view
+SRA667466,SRS3060026,Amygdala,10x chromium,Mus musculus,1256,view
+SRA667466,SRS3060027,Dorsal striatum,10x chromium,Mus musculus,2147,view
+SRA667466,SRS3060028,Pons,10x chromium,Mus musculus,8593,view
+SRA667466,SRS3060029,Cortex 1,10x chromium,Mus musculus,3084,view
+SRA667466,SRS3060030,Pons,10x chromium,Mus musculus,8938,view
+SRA667466,SRS3060031,Amygdala,10x chromium,Mus musculus,922,view
+SRA667466,SRS3060032,Medulla oblongata,10x chromium,Mus musculus,795,view
+SRA667466,SRS3060033,Dorsal midbrain,10x chromium,Mus musculus,2748,view
+SRA667466,SRS3060034,Hypothalamus,10x chromium,Mus musculus,1233,view
+SRA667466,SRS3060035,Hippocampus (ca1),10x chromium,Mus musculus,2631,view
+SRA667466,SRS3060036,Cortex 3,10x chromium,Mus musculus,3979,view
+SRA667466,SRS3060037,Dorsal midbrain,10x chromium,Mus musculus,3203,view
+SRA667466,SRS3060038,Amygdala,10x chromium,Mus musculus,571,view
+SRA667466,SRS3060039,Cortex 2,10x chromium,Mus musculus,4012,view
+SRA667466,SRS3060040,Cortex 3,10x chromium,Mus musculus,3324,view
+SRA667466,SRS3060041,Pons,10x chromium,Mus musculus,8663,view
+SRA667466,SRS3060042,Hypothalamus,10x chromium,Mus musculus,2114,view
+SRA667466,SRS3060043,Ventral midbrain,10x chromium,Mus musculus,4617,view
+SRA667466,SRS3060044,Amygdala,10x chromium,Mus musculus,908,view
+SRA667466,SRS3060045,Dorsal midbrain,10x chromium,Mus musculus,6426,view
+SRA667466,SRS3060046,Hypothalamus,10x chromium,Mus musculus,2687,view
+SRA667466,SRS3060047,Dorsal midbrain,10x chromium,Mus musculus,6371,view
+SRA667466,SRS3060048,Thalamus,10x chromium,Mus musculus,4828,view
+SRA667466,SRS3060049,Somatosensory cortex,10x chromium,Mus musculus,5624,view
+SRA667466,SRS3060050,Ventral midbrain,10x chromium,Mus musculus,3460,view
+SRA667466,SRS3060051,Somatosensory cortex,10x chromium,Mus musculus,5078,view
+SRA667466,SRS3060052,Amygdala,10x chromium,Mus musculus,1535,view
+SRA667466,SRS3060053,Amygdala,10x chromium,Mus musculus,1700,view
+SRA667466,SRS3060054,Enteric nervous system,10x chromium,Mus musculus,5085,view
+SRA667466,SRS3060055,Hypothalamus,10x chromium,Mus musculus,428,view
+SRA667466,SRS3060056,Enteric nervous system,10x chromium,Mus musculus,6901,view
+SRA667466,SRS3060057,Hypothalamus,10x chromium,Mus musculus,1474,view
+SRA667466,SRS3060058,Sympathetic nervous system,10x chromium,Mus musculus,5861,view
+SRA667466,SRS3060059,Thalamus,10x chromium,Mus musculus,5074,view
+SRA667466,SRS3060060,Enteric nervous system,10x chromium,Mus musculus,4771,view
+SRA667466,SRS3060061,Enteric nervous system,10x chromium,Mus musculus,4702,view
+SRA667466,SRS3060062,Pons,10x chromium,Mus musculus,1658,view
+SRA667466,SRS3060063,Olfactory bulb,10x chromium,Mus musculus,3389,view
+SRA667466,SRS3060064,Medulla oblongata,10x chromium,Mus musculus,2516,view
+SRA667466,SRS3060065,Medulla oblongata,10x chromium,Mus musculus,2252,view
+SRA526435,SRS1915124,Neurons,10x chromium,Mus musculus,"10,504",view
+SRA667466,SRS3060066,Ventral striatum,10x chromium,Mus musculus,7663,view
+SRA667466,SRS3060067,Olfactory bulb,10x chromium,Mus musculus,3518,view
+SRA667466,SRS3060068,Pons,10x chromium,Mus musculus,1827,view
+SRA667466,SRS3060069,Amygdala,10x chromium,Mus musculus,621,view
+SRA667466,SRS3060070,Cortex 3,10x chromium,Mus musculus,4240,view
+SRA667466,SRS3060071,Cortex 3,10x chromium,Mus musculus,4585,view
+SRA526435,SRS1915125,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9920,view
+SRA526435,SRS1915126,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,006",view
+SRA526435,SRS1915127,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,511",view
+SRA526435,SRS1915128,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,261",view
+SRA526435,SRS1915129,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,189",view
+SRA526435,SRS1915130,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9739,view
+SRA526435,SRS1915131,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9257,view
+SRA526435,SRS1915132,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9430,view
+SRA526435,SRS1915133,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,056",view
+SRA526435,SRS1915134,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9766,view
+SRA526435,SRS1915135,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9337,view
+SRA526435,SRS1915136,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9529,view
+SRA526435,SRS1915137,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9394,view
+SRA526435,SRS1915138,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9972,view
+SRA526435,SRS1915139,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,443",view
+SRA526435,SRS1915140,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,518",view
+SRA526435,SRS1915141,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,344",view
+SRA526435,SRS1915142,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,970",view
+SRA526435,SRS1915143,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,399",view
+SRA526435,SRS1915144,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,602",view
+SRA526435,SRS1915145,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,324",view
+SRA526435,SRS1915146,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,682",view
+SRA526435,SRS1915147,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9735,view
+SRA526435,SRS1915148,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9622,view
+SRA526435,SRS1915149,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9881,view
+SRA526435,SRS1915150,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,035",view
+SRA526435,SRS1915151,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9516,view
+SRA526435,SRS1915152,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9197,view
+SRA526435,SRS1915153,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9621,view
+SRA526435,SRS1915154,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,538",view
+SRA526435,SRS1915155,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,644",view
+SRA526435,SRS1915156,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,796",view
+SRA526435,SRS1915157,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,149",view
+SRA526435,SRS1915158,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,933",view
+SRA526435,SRS1915159,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,883",view
+SRA526435,SRS1915160,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,984",view
+SRA526435,SRS1915161,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,810",view
+SRA526435,SRS1915162,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,022",view
+SRA526435,SRS1915163,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,181",view
+SRA526435,SRS1915164,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,152",view
+SRA526435,SRS1915165,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,091",view
+SRA526435,SRS1915166,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,029",view
+SRA526435,SRS1915167,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,141",view
+SRA526435,SRS1915168,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,413",view
+SRA526435,SRS1915169,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9633,view
+SRA526435,SRS1915170,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9671,view
+SRA526435,SRS1915171,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,205",view
+SRA526435,SRS1915172,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,592",view
+SRA526435,SRS1915173,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9533,view
+SRA526435,SRS1915174,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9851,view
+SRA526435,SRS1915175,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9772,view
+SRA526435,SRS1915176,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9858,view
+SRA526435,SRS1915177,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,101",view
+SRA526435,SRS1915178,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,257",view
+SRA526435,SRS1915179,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,205",view
+SRA526435,SRS1915180,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,468",view
+SRA526435,SRS1915181,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,677",view
+SRA526435,SRS1915182,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,958",view
+SRA526435,SRS1915183,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,008",view
+SRA526435,SRS1915184,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,203",view
+SRA526435,SRS1915185,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9987,view
+SRA526435,SRS1915186,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,274",view
+SRA526435,SRS1915187,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9737,view
+SRA526435,SRS1915188,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,088",view
+SRA526435,SRS1915189,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,191",view
+SRA526435,SRS1915190,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9611,view
+SRA526435,SRS1915191,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9617,view
+SRA526435,SRS1915192,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9765,view
+SRA526435,SRS1915193,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,893",view
+SRA526435,SRS1915194,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,942",view
+SRA526435,SRS1915195,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,068",view
+SRA526435,SRS1915196,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,634",view
+SRA526435,SRS1915197,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,995",view
+SRA526435,SRS1915198,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,544",view
+SRA526435,SRS1915199,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,060",view
+SRA526435,SRS1915200,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"12,371",view
+SRA526435,SRS1915201,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,637",view
+SRA526435,SRS1915202,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,736",view
+SRA526435,SRS1915203,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,643",view
+SRA526435,SRS1915204,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,023",view
+SRA526435,SRS1915205,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,559",view
+SRA526435,SRS1915206,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,974",view
+SRA526435,SRS1915207,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,696",view
+SRA526435,SRS1915208,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,447",view
+SRA526435,SRS1915209,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,709",view
+SRA526435,SRS1915210,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,362",view
+SRA526435,SRS1915211,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,807",view
+SRA526435,SRS1915212,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9513,view
+SRA526435,SRS1915213,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,955",view
+SRA526435,SRS1915214,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,505",view
+SRA526435,SRS1915215,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,998",view
+SRA526435,SRS1915216,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,907",view
+SRA526435,SRS1915217,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,638",view
+SRA526435,SRS1915218,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,801",view
+SRA526435,SRS1915219,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,584",view
+SRA526435,SRS1915220,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,900",view
+SRA526435,SRS1915221,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,419",view
+SRA526435,SRS1915222,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,046",view
+SRA526435,SRS1915223,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,279",view
+SRA526435,SRS1915224,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9851,view
+SRA526435,SRS1915225,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9720,view
+SRA526435,SRS1915226,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,032",view
+SRA526435,SRS1915227,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9599,view
+SRA526435,SRS1915228,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9713,view
+SRA526435,SRS1915229,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9767,view
+SRA526435,SRS1915230,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,076",view
+SRA526435,SRS1915231,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,091",view
+SRA526435,SRS1915232,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9449,view
+SRA526435,SRS1915233,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,964",view
+SRA526435,SRS1915234,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,865",view
+SRA526435,SRS1915235,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,515",view
+SRA526435,SRS1915236,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,919",view
+SRA526435,SRS1915237,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,502",view
+SRA526435,SRS1915238,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9971,view
+SRA526435,SRS1915239,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,087",view
+SRA526435,SRS1915240,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,547",view
+SRA526435,SRS1915241,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,519",view
+SRA526435,SRS1915242,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9867,view
+SRA526435,SRS1915243,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,9926,view
+SRA526435,SRS1915244,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,007",view
+SRA526435,SRS1915245,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,331",view
+SRA526435,SRS1915246,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,497",view
+SRA526435,SRS1915247,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,257",view
+SRA526435,SRS1915248,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,025",view
+SRA526435,SRS1915249,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,924",view
+SRA526435,SRS1915250,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,954",view
+SRA526435,SRS1915251,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,916",view
+SRA526435,SRS1915252,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,677",view
+SRA526435,SRS1915253,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,813",view
+SRA526435,SRS1915254,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"10,616",view
+SRA526435,SRS1915255,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,562",view
+SRA526435,SRS1915256,"Cortex, hippocampus and subventricular zone",10x chromium,Mus musculus,"11,473",view
+SRA625553,SRS2641016,Mammary epithelial cells,10x chromium,Mus musculus,2876,view
+SRA625553,SRS2641017,Mammary epithelial cells,10x chromium,Mus musculus,2444,view
+SRA625553,SRS2641018,Mammary epithelial cells,10x chromium,Mus musculus,5170,view
+SRA625553,SRS2641019,Mammary epithelial cells,10x chromium,Mus musculus,5481,view
+SRA625553,SRS2641020,Mammary epithelial cells,10x chromium,Mus musculus,6276,view
+SRA625553,SRS2641021,Mammary epithelial cells,10x chromium,Mus musculus,3866,view
+SRA625553,SRS2641022,Mammary epithelial cells,10x chromium,Mus musculus,1876,view
+SRA625553,SRS2641023,Mammary epithelial cells,10x chromium,Mus musculus,5279,view
+SRA637291,SRS2749416,Left Ventricle,10x chromium,Mus musculus,2730,view
+SRA637291,SRS2749446,Left Ventricle,10x chromium,Mus musculus,1939,view
+SRA639854,SRS2766801,Intestinal crypt epithelium,10x chromium,Mus musculus,9316,view
+SRA639854,SRS2766803,Intestinal crypt epithelium,10x chromium,Mus musculus,"21,115",view
+SRA641134,SRS2781555,Microglia,10x chromium,Mus musculus,988,view
+SRA641134,SRS2781556,Microglia,10x chromium,Mus musculus,948,view
+SRA665153,SRS3030316,Airway submucosal glandular epithelial cells,10x chromium,Mus musculus,416,view
+SRA665153,SRS3030317,Epithelial cells in airway luminal surface,10x chromium,Mus musculus,202,view
+SRA555753,SRS2135625,Neonatal mouse stomach organoid,10x chromium,Mus musculus,2325,view
+SRA555753,SRS2135626,Stomach organoid,10x chromium,Mus musculus,2603,view
+SRA555753,SRS2135627,Neonatal mouse stomach explants,10x chromium,Mus musculus,2550,view
+SRA638854,SRS2757538,Lks+ hematopoietic stem cells,10x chromium,Mus musculus,2172,view
+SRA638854,SRS2757539,Lks+ hematopoietic stem cells,10x chromium,Mus musculus,6353,view
+SRA636127,SRS2736124,Lsk cells from bone marrow,10x chromium,Mus musculus,7619,view
+SRA636127,SRS2736126,Lsk cells from bone marrow,10x chromium,Mus musculus,8608,view
+SRA636127,SRS2736127,Lsk cells from bone marrow,10x chromium,Mus musculus,7609,view
+SRA636127,SRS2736128,Lsk cells from bone marrow,10x chromium,Mus musculus,8177,view
+SRA636127,SRS2736129,Lsk cells from bone marrow,10x chromium,Mus musculus,8202,view
+SRA603929,SRS2477904,Mammary gland epithelium cell,10x chromium,Mus musculus,5537,view
+SRA603929,SRS2477905,Mammary gland epithelium cell,10x chromium,Mus musculus,4895,view
+SRA636127,SRS2736130,Bone marrow,10x chromium,Mus musculus,8745,view
+SRA603929,SRS2477906,Mammary gland epithelium cell,10x chromium,Mus musculus,2609,view
+SRA603929,SRS2477907,Mammary gland epithelium cell,10x chromium,Mus musculus,2820,view
+SRA631205,SRS2690036,Pulmonary alveolar type i cells,10x chromium,Mus musculus,3476,view
+SRA636127,SRS2736131,Bone marrow,10x chromium,Mus musculus,7595,view
+SRA631205,SRS2690037,Pulmonary alveolar type i cells,10x chromium,Mus musculus,3193,view
+SRA636127,SRS2736132,Bone marrow,10x chromium,Mus musculus,8565,view
+SRA631205,SRS2690038,Pulmonary alveolar type i cells,10x chromium,Mus musculus,1409,view
+SRA631205,SRS2690039,Pulmonary alveolar type ii cells,10x chromium,Mus musculus,2425,view
+SRA616625,SRS2564611,Testis,10x chromium,Mus musculus,7406,view
+SRA616625,SRS2564612,Testis,10x chromium,Mus musculus,7605,view
+SRA661992,SRS2996367,Spleen,10x chromium,Mus musculus,1936,view
+SRA635314,SRS2727265,Whole kidney,10x chromium,Mus musculus,2502,view
+SRA635314,SRS2727266,Whole kidney,10x chromium,Mus musculus,4679,view
+SRA635314,SRS2727267,Whole kidney,10x chromium,Mus musculus,1888,view
+SRA635314,SRS2727268,Whole kidney,10x chromium,Mus musculus,3118,view
+SRA635314,SRS2727269,Whole kidney,10x chromium,Mus musculus,"10,665",view
+SRA635314,SRS2727270,Whole kidney,10x chromium,Mus musculus,5080,view
+SRA635314,SRS2727271,Whole kidney,10x chromium,Mus musculus,7891,view
+SRA658915,SRS2944105,Heart,10x chromium,Mus musculus,1330,view
+SRA658915,SRS2944106,Heart,10x chromium,Mus musculus,1415,view
+SRA658915,SRS2944107,Heart,10x chromium,Mus musculus,968,view
+SRA658915,SRS2944108,Heart,10x chromium,Mus musculus,1320,view
+SRA658915,SRS2944113,Heart,10x chromium,Mus musculus,1288,view
+SRA658915,SRS2944114,Heart,10x chromium,Mus musculus,1569,view
+SRA658915,SRS2944115,Heart,10x chromium,Mus musculus,1458,view
+SRA658915,SRS2944116,Heart,10x chromium,Mus musculus,1575,view
+SRA540941,SRS2016485,Mammary gland,10x chromium,Mus musculus,3115,view
+SRA575494,SRS2290358,Lacrimal gland,10x chromium,Mus musculus,654,view
+SRA575494,SRS2290359,Lacrimal gland,10x chromium,Mus musculus,429,view
+SRA605699,SRS2496029,Embryoid body,10x chromium,Mus musculus,459,view
+SRA611634,SRS2532205,Lung,10x chromium,Mus musculus,3153,view
+SRA611634,SRS2532206,Lung,10x chromium,Mus musculus,1708,view
+SRA611634,SRS2532207,Lung,10x chromium,Mus musculus,723,view
+SRA611634,SRS2532208,Lung,10x chromium,Mus musculus,1143,view
+SRA611634,SRS2532209,Lung,10x chromium,Mus musculus,1981,view
+SRA611634,SRS2532210,Lung,10x chromium,Mus musculus,1519,view
+SRA615504,SRS2553348,Kidney,10x chromium,Mus musculus,3142,view
+SRA701993,SRS3283674,Spleen,10x chromium,Mus musculus,2221,view
+SRA701993,SRS3283675,Spleen,10x chromium,Mus musculus,2545,view
+SRA701993,SRS3283676,Spleen,10x chromium,Mus musculus,2456,view
+SRA701993,SRS3283677,Bone marrow,10x chromium,Mus musculus,3215,view
+SRA701993,SRS3283678,Bone marrow,10x chromium,Mus musculus,2474,view
+SRA701993,SRS3283679,Spleen,10x chromium,Mus musculus,2235,view
+SRA734405,SRS3507694,Aorta,10x chromium,Mus musculus,1492,view
+SRA734405,SRS3507695,Aorta,10x chromium,Mus musculus,3672,view
+SRA716152,SRS3384790,Retinal ganglion cells,10x chromium,Mus musculus,3130,view
+SRA716152,SRS3384791,Retinal ganglion cells,10x chromium,Mus musculus,4168,view
+SRA722368,SRS3421915,Spleen,10x chromium,Mus musculus,1298,view
+SRA722368,SRS3421916,Spleen,10x chromium,Mus musculus,1368,view
+SRA722368,SRS3421918,Spleen,10x chromium,Mus musculus,1249,view
+SRA722368,SRS3421919,Spleen,10x chromium,Mus musculus,931,view
+SRA722368,SRS3421921,Bone marrow,10x chromium,Mus musculus,972,view
+SRA739096,SRS3545817,Brain,10x chromium,Mus musculus,3521,view
+SRA739096,SRS3545818,Brain,10x chromium,Mus musculus,3088,view
+SRA739096,SRS3545819,Colon,10x chromium,Mus musculus,5798,view
+SRA739096,SRS3545820,Spleen,10x chromium,Mus musculus,2633,view
+SRA739096,SRS3545821,Colon,10x chromium,Mus musculus,5129,view
+SRA739096,SRS3545822,Liver,10x chromium,Mus musculus,3755,view
+SRA739096,SRS3545823,Liver,10x chromium,Mus musculus,4763,view
+SRA739096,SRS3545824,Liver,10x chromium,Mus musculus,1432,view
+SRA739096,SRS3545825,Liver,10x chromium,Mus musculus,5028,view
+SRA739096,SRS3545826,Lung,10x chromium,Mus musculus,7448,view
+SRA739096,SRS3545827,Lung,10x chromium,Mus musculus,6610,view
+SRA739096,SRS3545828,Spleen,10x chromium,Mus musculus,2667,view
+SRA711739,SRS3344652,Embryonic fibroblasts,10x chromium,Mus musculus,4470,view
+SRA711739,SRS3344653,Embryonic fibroblasts,10x chromium,Mus musculus,4643,view
+SRA711739,SRS3344654,Embryonic fibroblasts,10x chromium,Mus musculus,6360,view
+SRA711739,SRS3344655,Embryonic fibroblasts,10x chromium,Mus musculus,3623,view
+SRA711739,SRS3344656,Embryonic fibroblasts,10x chromium,Mus musculus,3072,view
+SRA711739,SRS3344657,Embryonic fibroblasts,10x chromium,Mus musculus,5329,view
+SRA711739,SRS3344658,Embryonic fibroblasts,10x chromium,Mus musculus,4169,view
+SRA711739,SRS3344659,Embryonic fibroblasts,10x chromium,Mus musculus,3102,view
+SRA711739,SRS3344660,Embryonic fibroblasts,10x chromium,Mus musculus,4811,view
+SRA711739,SRS3344661,Embryonic fibroblasts,10x chromium,Mus musculus,4165,view
+SRA711739,SRS3344662,Embryonic fibroblasts,10x chromium,Mus musculus,6177,view
+SRA711739,SRS3344663,Embryonic fibroblasts,10x chromium,Mus musculus,8642,view
+SRA701192,SRS3275543,ES-derived embryoid body,10x chromium,Mus musculus,5320,view
+SRA701192,SRS3275544,ES-derived embryoid body,10x chromium,Mus musculus,5715,view
+SRA585365,SRS2345685,Pancreas,10x chromium,Mus musculus,3907,view
+SRA585365,SRS2345686,Pancreas,10x chromium,Mus musculus,5249,view
+SRA585365,SRS2345687,Pancreas,10x chromium,Mus musculus,4642,view
+SRA585365,SRS2345688,Pancreas,10x chromium,Mus musculus,4736,view
+SRA585365,SRS3297649,Pancreas,10x chromium,Mus musculus,"16,001",view
+SRA585365,SRS3297650,Pancreas,10x chromium,Mus musculus,"12,541",view
+SRA585365,SRS3297651,Pancreas,10x chromium,Mus musculus,"11,074",view
+SRA585365,SRS3297652,Pancreas,10x chromium,Mus musculus,"10,876",view
+SRA585365,SRS3297653,Pancreas,10x chromium,Mus musculus,8522,view
+SRA585365,SRS3297654,Pancreas,10x chromium,Mus musculus,8522,view
+SRA681661,SRS3124069,Neural stem cells from subventricular zone,10x chromium,Mus musculus,9513,view
+SRA681661,SRS3124070,Neural stem cells from subventricular zone,10x chromium,Mus musculus,8731,view
+SRA681661,SRS3124071,Neural stem cells from subventricular zone,10x chromium,Mus musculus,8289,view
+SRA681661,SRS3124072,Neural stem cells from subventricular zone,10x chromium,Mus musculus,9796,view
+SRA681661,SRS3124074,Neural stem cells from subventricular zone,10x chromium,Mus musculus,8990,view
+SRA662118,SRS2998557,Embryonic mouse mammary gland,10x chromium,Mus musculus,1483,view
+SRA573548,nSRS=6971,Cortex CA1,10x chromium,Mus musculus,6286,view
+SRA541804,nSRS=5454,Dentate gyrus,10x chromium,Mus musculus,4684,view
+SRA665127,SRS3030181,White adipose tissue,10x chromium,Mus musculus,1388,view
+SRA681285,SRS3121028,Dermis,10x chromium,Mus musculus,3463,view
+SRA681285,SRS3121030,Dermis,10x chromium,Mus musculus,2025,view
+SRA701836,SRS3279186,Cardiac progenitor cells,10x chromium,Mus musculus,1780,view
+SRA701836,SRS3279187,Cardiac progenitor cells,10x chromium,Mus musculus,1710,view
+SRA728071,SRS3458842,Leukocytes from aortas,10x chromium,Mus musculus,4030,view
+SRA728071,SRS3458845,Foam cells from aortas,10x chromium,Mus musculus,887,view
+SRA748166,SRS3611961,Cardiac tissue,10x chromium,Mus musculus,2987,view
+SRA748166,SRS3611962,Cardiac tissue,10x chromium,Mus musculus,1753,view
+SRA758635,SRS3670039,Lung,10x chromium,Mus musculus,2312,view
+SRA758635,SRS3670040,Lung,10x chromium,Mus musculus,921,view
+SRA788412,SRS3872204,Epidermal innate lymphoid cells,10x chromium,Mus musculus,4053,view
+SRA788412,SRS3872205,Dermal innate lymphoid cells,10x chromium,Mus musculus,3922,view
+SRA788412,SRS3872206,Subcutaneous innate lymphoid cells,10x chromium,Mus musculus,1192,view
+SRA688834,SRS3165512,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,6634,view
+SRA688834,SRS3165513,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,549,view
+SRA688834,SRS3165514,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,1679,view
+SRA688834,SRS3165515,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,1993,view
+SRA688834,SRS3165516,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,1000,view
+SRA688834,SRS3165517,Skeletal muscle macrophages from hindlimb,10x chromium,Mus musculus,666,view
+SRA594984,SRS2397145,Embryonic skin,10x chromium,Mus musculus,1059,view
+SRA594984,SRS2397146,Embryonic skin,10x chromium,Mus musculus,1421,view
+SRA594984,SRS2397147,Embryonic skin,10x chromium,Mus musculus,1265,view
+SRA594984,SRS2397148,Embryonic skin,10x chromium,Mus musculus,893,view
+SRA594984,SRS2397149,Embryonic skin,10x chromium,Mus musculus,718,view
+SRA594984,SRS2397150,Embryonic skin,10x chromium,Mus musculus,1366,view
+SRA594984,SRS2397151,Embryonic skin,10x chromium,Mus musculus,1315,view
+SRA594984,SRS2397152,Embryonic skin,10x chromium,Mus musculus,1665,view
+SRA780044,SRS3806572,Olfactory epithelium,10x chromium,Mus musculus,3390,view
+SRA780044,SRS3806573,Olfactory epithelium,10x chromium,Mus musculus,2500,view
+SRA780044,SRS3806574,Olfactory epithelium,10x chromium,Mus musculus,1783,view
+SRA780044,SRS3806575,Olfactory epithelium,10x chromium,Mus musculus,1431,view
+SRA768499,SRS3744984,NK cells from spleen,10x chromium,Mus musculus,1389,view
+SRA768499,SRS3744985,NK cells from spleen,10x chromium,Mus musculus,1307,view
+SRA768499,SRS3744986,NK cells from spleen,10x chromium,Mus musculus,1142,view
+SRA768499,SRS3744987,NK cells from blood,10x chromium,Mus musculus,948,view
+SRA768499,SRS3744988,NK cells from blood,10x chromium,Mus musculus,1283,view
+SRA768499,SRS3744989,NK cells from blood,10x chromium,Mus musculus,1614,view
+SRA740174,SRS3548768,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,3634,view
+SRA740174,SRS3548769,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,3646,view
+SRA740174,SRS3548770,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,3752,view
+SRA740174,SRS3548771,Bone marrow,10x chromium,Mus musculus,3057,view
+SRA740174,SRS3548772,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,4045,view
+SRA740174,SRS3548773,Bone marrow,10x chromium,Mus musculus,4079,view
+SRA740174,SRS3548774,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,4478,view
+SRA740174,SRS3548775,Bone marrow,10x chromium,Mus musculus,3526,view
+SRA740174,SRS3548776,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,3617,view
+SRA740174,SRS3548777,Bone marrow,10x chromium,Mus musculus,2777,view
+SRA740174,SRS3548778,Bone marrow from melanoma tumor-bearing mice,10x chromium,Mus musculus,4233,view
+SRA740174,SRS3548779,Bone marrow,10x chromium,Mus musculus,3914,view
+SRA661260,SRS2991907,T cells,10x chromium,Mus musculus,612,view
+SRA664089,SRS3019834,Immortalized gonadotrope cells,10x chromium,Mus musculus,2454,view
+SRA664089,SRS3019835,Immortalized gonadotrope cells,10x chromium,Mus musculus,2180,view
+SRA748172,SRS3611968,Splenocytes enriched for B cells,10x chromium,Mus musculus,712,view
+SRA748172,SRS3611969,Splenocytes enriched for B cells,10x chromium,Mus musculus,521,view
+SRA783079,SRS3818441,Pituitary gland,10x chromium,Mus musculus,8191,view
+SRA783079,SRS3818442,Pituitary gland,10x chromium,Mus musculus,8087,view
+SRA793426,SRS3924662,Spleen,10x chromium,Mus musculus,4418,view
+SRA793426,SRS3924663,Spleen,10x chromium,Mus musculus,5527,view
+SRA796267,SRS3954312,SVZ-derived neural stem cells,10x chromium,Mus musculus,3819,view
+SRA796267,SRS3954313,SVZ-derived neural stem cells,10x chromium,Mus musculus,9645,view
+SRA758541,SRS3669080,Aortic cells,10x chromium,Mus musculus,1191,view
+SRA765288,SRS3731504,CD45+ cells,10x chromium,Mus musculus,3825,view
+SRA765288,SRS3731505,CD45+ cells,10x chromium,Mus musculus,3226,view
+SRA765288,SRS3731506,CD45+ cells,10x chromium,Mus musculus,3622,view
+SRA765288,SRS3731507,CD45+ cells,10x chromium,Mus musculus,3230,view
+SRA675945,SRS3100151,Hippocampus,10x chromium,Mus musculus,1095,view
+SRA675945,SRS3100152,Hippocampus,10x chromium,Mus musculus,"11,304",view
+SRA675945,SRS3100153,Hippocampus,10x chromium,Mus musculus,5088,view
+SRA675945,SRS3100154,Hippocampus,10x chromium,Mus musculus,2205,view
+SRA675945,SRS3100155,Hippocampus,10x chromium,Mus musculus,"10,019",view
+SRA675945,SRS3100156,Hippocampus,10x chromium,Mus musculus,4121,view
+SRA628138,SRS2659219,Intestinal organoid epithelial cells,10x chromium,Mus musculus,996,view
+SRA628138,SRS2659220,Intestinal organoid epithelial cells,10x chromium,Mus musculus,3152,view
+SRA628138,SRS2659221,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1267,view
+SRA628138,SRS2659222,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1138,view
+SRA628138,SRS2659223,Intestinal organoid epithelial cells,10x chromium,Mus musculus,996,view
+SRA628138,SRS2659224,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1640,view
+SRA628138,SRS2659225,Intestinal organoid epithelial cells,10x chromium,Mus musculus,2032,view
+SRA628138,SRS2659226,Intestinal organoid epithelial cells,10x chromium,Mus musculus,2616,view
+SRA628138,SRS2659227,Intestinal organoid epithelial cells,10x chromium,Mus musculus,495,view
+SRA628138,SRS2659228,Intestinal organoid epithelial cells,10x chromium,Mus musculus,502,view
+SRA628138,SRS2659229,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1840,view
+SRA628138,SRS2659230,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1200,view
+SRA628138,SRS2659231,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1368,view
+SRA628138,SRS2659232,Intestinal organoid epithelial cells,10x chromium,Mus musculus,389,view
+SRA628138,SRS2659233,Intestinal organoid epithelial cells,10x chromium,Mus musculus,1508,view
+SRA628138,SRS2659249,Intestinal organoid epithelial cells,10x chromium,Mus musculus,2293,view
+SRA790762,SRS3890617,CD24+ CD45- neuronal cells,10x chromium,Mus musculus,2924,view
+SRA790762,SRS3890618,CD24+ CD45- neuronal cells,10x chromium,Mus musculus,3273,view
+SRA790762,SRS3890619,CD24+ CD45- neuronal cells,10x chromium,Mus musculus,3290,view
+SRA790762,SRS3890620,CD24+ CD45- neuronal cells,10x chromium,Mus musculus,2743,view
+SRA693675,SRS3206192,Submandibular Gland,10x chromium,Mus musculus,2723,view
+SRA745740,SRS3600988,Mouse embryonic fibroblasts,10x chromium,Mus musculus,5984,view
+SRA784190,SRS3822137,Cochlea,10x chromium,Mus musculus,381,view
+SRA784190,SRS3822138,Cochlea,10x chromium,Mus musculus,387,view
+SRA745744,SRS3600992,Whole heart,10x chromium,Mus musculus,7758,view
+SRA745744,SRS3600993,Whole heart,10x chromium,Mus musculus,7810,view
+SRA660675,SRS2986803,Intraembryonic tissues,10x chromium,Mus musculus,4357,view
+SRA660675,SRS2986804,Yolk sack,10x chromium,Mus musculus,3572,view
+SRA794672,SRS3938165,T cells,10x chromium,Mus musculus,1816,view
+SRA794672,SRS3938166,T cells,10x chromium,Mus musculus,1438,view
+SRA801845,SRS4004490,Cardiac progenitor cells,10x chromium,Mus musculus,1053,view
+SRA801845,SRS4004491,Cardiac progenitor cells,10x chromium,Mus musculus,657,view
+SRA812961,SRS4058600,T cells,10x chromium,Mus musculus,3973,view
+SRA812961,SRS4058601,T cells,10x chromium,Mus musculus,5202,view
+SRA645836,SRS2823453,Testis,10x chromium,Mus musculus,4507,view
+SRA645836,SRS2823454,Testis,10x chromium,Mus musculus,5489,view
+SRA645836,SRS2823483,Testis,10x chromium,Mus musculus,3743,view
+SRA666404,SRS3040377,Cortical cells,10x chromium,Mus musculus,5480,view
+SRA666404,SRS3040378,Cortical cells,10x chromium,Mus musculus,6284,view
+SRA666404,SRS3040379,Cortical cells,10x chromium,Mus musculus,4917,view
+SRA666404,SRS3040380,Cortical cells,10x chromium,Mus musculus,5833,view
+SRA694785,SRS3214438,Hypothalamus,10x chromium,Mus musculus,5265,view
+SRA694785,SRS3214439,Hypothalamus,10x chromium,Mus musculus,392,view
+SRA694785,SRS3214440,Hypothalamus,10x chromium,Mus musculus,"11,935",view
+SRA694785,SRS3214441,Hypothalamus,10x chromium,Mus musculus,2147,view
+SRA694785,SRS3214442,Preoptic region of the hypothalamus,10x chromium,Mus musculus,8595,view
+SRA694785,SRS3214443,Preoptic region of the hypothalamus,10x chromium,Mus musculus,9090,view
+SRA645779,SRS2823369,Testis,10x chromium,Mus musculus,2385,view
+SRA645779,SRS2823370,Testis,10x chromium,Mus musculus,2904,view
+SRA645779,SRS2823371,Testis,10x chromium,Mus musculus,2661,view
+SRA645779,SRS2823372,Testis,10x chromium,Mus musculus,9092,view
+SRA645779,SRS2823373,Testis,10x chromium,Mus musculus,5840,view
+SRA645779,SRS2823374,Testis,10x chromium,Mus musculus,"10,874",view
+SRA645779,SRS2823375,Testis,10x chromium,Mus musculus,5959,view
+SRA628029,SRS2658204,Periaortic lymph nodes,10x chromium,Mus musculus,3437,view
+SRA628029,SRS2658205,Mesenteric lymph nodes,10x chromium,Mus musculus,3102,view
+SRA628029,SRS3348009,Mesenteric lymph nodes,10x chromium,Mus musculus,2579,view
+SRA628029,SRS3348010,Periaortic lymph nodes,10x chromium,Mus musculus,3760,view
+SRA697687,SRS3234701,Skin,10x chromium,Mus musculus,"19,635",view
+SRA765376,SRS3733218,Heart macrophages and dendritic cells,10x chromium,Mus musculus,1903,view
+SRA801396,SRS3999425,Diencephalon,10x chromium,Mus musculus,7823,view
+SRA819380,SRS4109835,Ear skin,10x chromium,Mus musculus,1033,view
+SRA819380,SRS4109836,Ear skin,10x chromium,Mus musculus,364,view
+SRA819380,SRS4109837,Peripheral lymph node,10x chromium,Mus musculus,1535,view
+SRA819380,SRS4109838,Thymus,10x chromium,Mus musculus,2465,view
+SRA808665,SRS4036272,Bone marrow,10x chromium,Mus musculus,1392,view
+SRA808665,SRS4036273,Bone marrow,10x chromium,Mus musculus,4108,view
+SRA808665,SRS4036274,Bone marrow,10x chromium,Mus musculus,6258,view
+SRA784304,SRS3823095,Pancreatic progenitor cells,10x chromium,Mus musculus,5863,view
+SRA784304,SRS3823096,Pancreatic progenitor cells,10x chromium,Mus musculus,1474,view
+SRA784304,SRS3823097,Pancreatic progenitor cells,10x chromium,Mus musculus,3520,view
+SRA784304,SRS3823098,Pancreatic progenitor cells,10x chromium,Mus musculus,2813,view
+SRA784304,SRS3823099,Pancreatic progenitor cells,10x chromium,Mus musculus,598,view
+SRA653146,SRS3044263,Trachea,10x chromium,Mus musculus,4652,view
+SRA653146,SRS3044245,Liver,10x chromium,Mus musculus,567,view
+SRA653146,SRS3044261,Lung,10x chromium,Mus musculus,2539,view
+SRA653146,SRS3044260,Lung,10x chromium,Mus musculus,810,view
+SRA653146,SRS3044236,Tongue,10x chromium,Mus musculus,3425,view
+SRA653146,SRS3044237,Tongue,10x chromium,Mus musculus,2771,view
+SRA808665,SRS4036275,Bone marrow,10x chromium,Mus musculus,808,view
+SRA653146,SRS3044238,Liver,10x chromium,Mus musculus,1560,view
+SRA808665,SRS4036276,Bone marrow,10x chromium,Mus musculus,537,view
+SRA653146,SRS3044239,Bladder,10x chromium,Mus musculus,171,view
+SRA653146,SRS3044240,Bladder,10x chromium,Mus musculus,2056,view
+SRA653146,SRS3044241,Kidney,10x chromium,Mus musculus,970,view
+SRA653146,SRS3044242,Kidney,10x chromium,Mus musculus,1409,view
+SRA653146,SRS3044243,Spleen,10x chromium,Mus musculus,3820,view
+SRA653146,SRS3044244,Liver,10x chromium,Mus musculus,832,view
+SRA653146,SRS3044246,Marrow,10x chromium,Mus musculus,3778,view
+SRA653146,SRS3044247,Marrow,10x chromium,Mus musculus,3693,view
+SRA653146,SRS3044248,Heart,10x chromium,Mus musculus,871,view
+SRA653146,SRS3044249,Kidney,10x chromium,Mus musculus,1984,view
+SRA653146,SRS3044250,Spleen,10x chromium,Mus musculus,6544,view
+SRA653146,SRS3044251,Bladder,10x chromium,Mus musculus,706,view
+SRA653146,SRS3044252,Lung,10x chromium,Mus musculus,695,view
+SRA653146,SRS3044253,Lung,10x chromium,Mus musculus,1652,view
+SRA653146,SRS3044254,Tongue,10x chromium,Mus musculus,2278,view
+SRA653146,SRS3044255,Thymus,10x chromium,Mus musculus,3201,view
+SRA653146,SRS3044256,Mammary tissue,10x chromium,Mus musculus,2853,view
+SRA653146,SRS3044257,Mammary tissue,10x chromium,Mus musculus,3160,view
+SRA653146,SRS3044258,Muscle,10x chromium,Mus musculus,2384,view
+SRA653146,SRS3044259,Muscle,10x chromium,Mus musculus,2454,view
+SRA653146,SRS3044262,Trachea,10x chromium,Mus musculus,6663,view
+SRA797009,SRS3957699,Spleen,10x chromium,Mus musculus,6768,view
+SRA797009,SRS3957700,Spleen,10x chromium,Mus musculus,4746,view
+SRA797009,SRS3957701,Spleen,10x chromium,Mus musculus,6046,view
+SRA797009,SRS3957702,Spleen,10x chromium,Mus musculus,5747,view
+SRA797009,SRS3957703,Spleen,10x chromium,Mus musculus,7454,view
+SRA797009,SRS3957704,Spleen,10x chromium,Mus musculus,5276,view
+SRA800102,SRS3990017,Olfactory bulb,10x chromium,Mus musculus,5240,view
+SRA800102,SRS3990018,Olfactory bulb,10x chromium,Mus musculus,5168,view
+SRA800102,SRS3990019,Olfactory bulb,10x chromium,Mus musculus,4115,view
+SRA800102,SRS3990020,Olfactory bulb,10x chromium,Mus musculus,6199,view
+SRA800102,SRS3990021,Olfactory bulb,10x chromium,Mus musculus,4606,view
+SRA800102,SRS3990030,Olfactory bulb,10x chromium,Mus musculus,6041,view
+SRA802096,SRS4005008,Skin,10x chromium,Mus musculus,6629,view
+SRA802096,SRS4005009,Skin,10x chromium,Mus musculus,6903,view
+SRA683818,SRS3139246,Mandible,10x chromium,Mus musculus,"12,313",view
+SRA745567,SRS3600293,Pancreatic islets,10x chromium,Mus musculus,6028,view
+SRA745567,SRS3600294,Pancreatic islets,10x chromium,Mus musculus,8047,view
+SRA745567,SRS3600295,Pancreatic islets,10x chromium,Mus musculus,6249,view
+SRA745567,SRS3600296,Pancreatic islets,10x chromium,Mus musculus,"10,556",view
+SRA745567,SRS3600297,Pancreatic islets,10x chromium,Mus musculus,7497,view
+SRA745567,SRS3600298,Pancreatic islets,10x chromium,Mus musculus,7780,view
+SRA745567,SRS3600299,Pancreatic islets,10x chromium,Mus musculus,9555,view
+SRA745567,SRS3600300,Pancreatic islets,10x chromium,Mus musculus,7983,view
+SRA745567,SRS3600301,Pancreatic islets,10x chromium,Mus musculus,7656,view
+SRA692557,SRS3191855,Lung endoderm,10x chromium,Mus musculus,6345,view
+SRA692557,SRS4245406,Lung endoderm,10x chromium,Mus musculus,8148,view
+SRA757817,SRS3666495,Embryonic kidney,10x chromium,Mus musculus,2723,view
+SRA757817,SRS3666498,Embryonic kidney,10x chromium,Mus musculus,3390,view
+SRA757817,SRS3666499,Embryonic kidney,10x chromium,Mus musculus,3824,view
+SRA776751,SRS3790782,Liver,10x chromium,Mus musculus,1261,view
+SRA776751,SRS3790783,Liver,10x chromium,Mus musculus,1330,view
+SRA767215,SRS3741671,Leukemic cells,10x chromium,Mus musculus,1524,view
+SRA767215,SRS3741672,Leukemic cells,10x chromium,Mus musculus,1364,view
+SRA767215,SRS3741673,Leukemic cells,10x chromium,Mus musculus,1807,view
+SRA767215,SRS3741675,Leukemic cells,10x chromium,Mus musculus,1308,view
+SRA834897,SRS4252172,Macrophage from E14.5,10x chromium,Mus musculus,9154,view
+SRA834897,SRS4252173,Macrophage from E14.5,10x chromium,Mus musculus,7588,view
+SRA834897,SRS4252174,Macrophage from E14.5,10x chromium,Mus musculus,7589,view
+SRA834897,SRS4252175,Macrophage from E14.5,10x chromium,Mus musculus,"13,458",view
+SRA834897,SRS4252176,Bone marrow,10x chromium,Mus musculus,5572,view
+SRA834897,SRS4252177,Bone marrow,10x chromium,Mus musculus,5141,view
+SRA755541,SRS3639050,Kaposi's sarcoma,10x chromium,Mus musculus,4146,view
+SRA755541,SRS3639051,Kaposi's sarcoma,10x chromium,Mus musculus,3833,view
+SRA755541,SRS3639052,Thymocytes,10x chromium,Mus musculus,4735,view
+SRA755541,SRS3639053,Thymocytes,10x chromium,Mus musculus,5433,view
+SRA664171,SRS3020563,Prostate basal cells,10x chromium,Mus musculus,"14,131",view
+SRA762414,SRS3703557,Heart,10x chromium,Mus musculus,9238,view
+SRA783521,SRS3821006,Cerebellum,10x chromium,Mus musculus,"10,403",view
+SRA719240,SRS3404198,Subventricular zone,10x chromium,Mus musculus,1917,view
+SRA719240,SRS3404199,Subventricular zone,10x chromium,Mus musculus,2137,view
+SRA815945,SRS4088994,Nerve,10x chromium,Mus musculus,6080,view
+SRA822763,SRS4137616,Aorta,10x chromium,Mus musculus,3135,view
+SRA822763,SRS4137620,Aorta,10x chromium,Mus musculus,2145,view
+SRA852206,SRS4405220,Sub-ventricular zone,10x chromium,Mus musculus,2191,view
+SRA852206,SRS4405221,Sub-ventricular zone,10x chromium,Mus musculus,3979,view
+SRA856483,SRS4457870,Visual cortex,10x chromium,Mus musculus,5793,view
+SRA856483,SRS4457871,Visual cortex,10x chromium,Mus musculus,5763,view
+SRA745734,SRS3600974,Intestinal epithelium,10x chromium,Mus musculus,4762,view
+SRA745734,SRS3600975,Intestinal epithelium,10x chromium,Mus musculus,5552,view
+SRA745734,SRS3600976,Intestinal epithelium,10x chromium,Mus musculus,4052,view
+SRA745734,SRS3600977,Intestinal epithelium,10x chromium,Mus musculus,4311,view
+SRA830037,SRS4205222,Peritoneal cavity cells,10x chromium,Mus musculus,7235,view
+SRA830037,SRS4205223,Peritoneal cavity cells,10x chromium,Mus musculus,7212,view
+SRA851241,SRS4388158,Muscle,10x chromium,Mus musculus,2083,view
+SRA851241,SRS4388159,Muscle,10x chromium,Mus musculus,2578,view
+SRA851241,SRS4388160,Muscle,10x chromium,Mus musculus,1328,view
+SRA851241,SRS4388161,Muscle satellite cells,10x chromium,Mus musculus,1080,view
+SRA851241,SRS4388162,Muscle satellite cells,10x chromium,Mus musculus,1692,view
+SRA851241,SRS4388163,Muscle satellite cells,10x chromium,Mus musculus,2137,view
+SRA851241,SRS4388164,Muscle satellite cells,10x chromium,Mus musculus,5007,view
+SRA797768,SRS3969076,Bone marrow mesenchymal and endothelial cells,10x chromium,Mus musculus,1057,view
+SRA797768,SRS4351136,Bone marrow mesenchymal and endothelial cells,10x chromium,Mus musculus,2898,view
+SRA850127,SRS4376744,Hypothalamus,10x chromium,Mus musculus,3042,view
+SRA850127,SRS4376745,Hypothalamus,10x chromium,Mus musculus,4435,view
+SRA850958,SRS4386088,Stria terminalis (brain),10x chromium,Mus musculus,6495,view
+SRA850958,SRS4386089,Stria terminalis (brain),10x chromium,Mus musculus,6411,view
+SRA850958,SRS4386090,Stria terminalis (brain),10x chromium,Mus musculus,5920,view
+SRA850958,SRS4386114,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,5826,view
+SRA850958,SRS4386115,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,2863,view
+SRA850958,SRS4386116,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,4708,view
+SRA850958,SRS4386117,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,5269,view
+SRA850958,SRS4386118,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,4125,view
+SRA850958,SRS4386119,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,4861,view
+SRA850958,SRS4386120,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,4304,view
+SRA850958,SRS4386121,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,9213,view
+SRA850958,SRS4386122,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,7642,view
+SRA850958,SRS4386123,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,5453,view
+SRA850958,SRS4386124,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,6634,view
+SRA850958,SRS4386125,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,7204,view
+SRA850958,SRS4386126,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,8708,view
+SRA850958,SRS4386127,Bed nucleus of the stria terminalis,10x chromium,Mus musculus,5740,view
+SRA839328,SRS4292911,Sorted myeloid cells,10x chromium,Mus musculus,4505,view
+SRA757237,SRS3664881,Bone marrow,10x chromium,Mus musculus,8224,view
+SRA757237,SRS3664882,Bone marrow,10x chromium,Mus musculus,"17,617",view
+SRA783173,SRS3818732,Epidermal cells,10x chromium,Mus musculus,5127,view
+SRA783173,SRS3818733,Epidermal cells,10x chromium,Mus musculus,3630,view
+SRA868105,SRS4566017,Hind limb muscles,10x chromium,Mus musculus,1060,view
+SRA868105,SRS4566019,Hind limb muscles,10x chromium,Mus musculus,1412,view
+SRA774683,SRS3785492,Commensal-specific CD8+ T cells,10x chromium,Mus musculus,"10,443",view
+SRA774683,SRS3785493,Commensal-specific CD8+ T cells,10x chromium,Mus musculus,1671,view
+SRA774683,SRS3785494,Commensal-specific CD8+ T cells,10x chromium,Mus musculus,4024,view
+SRA742982,SRS3565397,Testis,10x chromium,Mus musculus,7976,view
+SRA742982,SRS3565399,Testis,10x chromium,Mus musculus,8704,view
+SRA742982,SRS3565401,Testis,10x chromium,Mus musculus,9499,view
+SRA742982,SRS3565409,Testis,10x chromium,Mus musculus,"10,497",view
+SRA815866,SRS4088855,Bone marrow,10x chromium,Mus musculus,5668,view
+SRA815866,SRS4088856,Bone marrow,10x chromium,Mus musculus,7009,view
+SRA815866,SRS4088857,Bone marrow,10x chromium,Mus musculus,1999,view
+SRA815866,SRS4088858,Bone marrow,10x chromium,Mus musculus,6724,view
+SRA837885,SRS4281819,Lung,10x chromium,Mus musculus,521,view
+SRA837885,SRS4281820,Lung,10x chromium,Mus musculus,3072,view
+SRA837885,SRS4281821,Lung,10x chromium,Mus musculus,1287,view
+SRA837885,SRS4281822,Gonadal adipose tissue,10x chromium,Mus musculus,1954,view
+SRA643298,SRS2804420,CD45+ dermal immune cells,10x chromium,Mus musculus,929,view
+SRA643298,SRS2804421,CD45+ dermal immune cells,10x chromium,Mus musculus,650,view
+SRA643298,SRS2804423,CD45+ dermal immune cells,10x chromium,Mus musculus,1075,view
+SRA877776,SRS4655560,Distal small intestine,10x chromium,Mus musculus,4710,view
+SRA877776,SRS4655561,Distal small intestine,10x chromium,Mus musculus,5754,view
+SRA877776,SRS4655562,Distal small intestine,10x chromium,Mus musculus,4292,view
+SRA877776,SRS4655563,Distal small intestine,10x chromium,Mus musculus,7696,view
+SRA877776,SRS4655564,Distal small intestine,10x chromium,Mus musculus,9930,view
+SRA645056,SRS2819412,Bone marrow,10x chromium,Mus musculus,1000,view
+SRA645056,SRS2819413,Bone marrow,10x chromium,Mus musculus,4379,view
+SRA645056,SRS2819414,Bone marrow,10x chromium,Mus musculus,5223,view
+SRA645056,SRS2819415,Bone marrow,10x chromium,Mus musculus,1214,view
+SRA645056,SRS2819416,Bone marrow,10x chromium,Mus musculus,3909,view
+SRA645056,SRS2819417,Bone marrow,10x chromium,Mus musculus,1519,view
+SRA645056,SRS2819418,Bone marrow,10x chromium,Mus musculus,1675,view
+SRA868228,SRS4567381,Lung,10x chromium,Mus musculus,1781,view
+SRA868228,SRS4567382,Lung,10x chromium,Mus musculus,1249,view
+SRA862468,SRS4512237,Lung,10x chromium,Mus musculus,1776,view
+SRA862468,SRS4512238,Lung,10x chromium,Mus musculus,2557,view
+SRA862468,SRS4512239,Lung,10x chromium,Mus musculus,1718,view
+SRA862468,SRS4512240,Lung,10x chromium,Mus musculus,1693,view
+SRA862468,SRS4512241,Lung,10x chromium,Mus musculus,1462,view
+SRA862468,SRS4512242,Lung,10x chromium,Mus musculus,2410,view
+SRA862468,SRS4512243,Lung,10x chromium,Mus musculus,1901,view
+SRA751294,SRS3625039,Embryonic hindbrain,10x chromium,Mus musculus,9774,view
+SRA751294,SRS3625040,Embryonic hindbrain,10x chromium,Mus musculus,8607,view
+SRA751294,SRS3625041,Embryonic hindbrain,10x chromium,Mus musculus,6415,view
+SRA751294,SRS3625042,Embryonic hindbrain,10x chromium,Mus musculus,8556,view
+SRA751294,SRS3625043,Embryonic hindbrain,10x chromium,Mus musculus,6978,view
+SRA751294,SRS3625044,Hindbrain,10x chromium,Mus musculus,5565,view
+SRA751294,SRS3625045,Hindbrain,10x chromium,Mus musculus,"12,988",view
+SRA751294,SRS3625046,Hindbrain,10x chromium,Mus musculus,9173,view
+SRA751294,SRS3625047,Hindbrain,10x chromium,Mus musculus,"11,532",view
+SRA688150,SRS3161261,Lung,10x chromium,Mus musculus,1356,view
+SRA688150,SRS3161262,Lung,10x chromium,Mus musculus,1453,view
+SRA688150,SRS3161263,Lung,10x chromium,Mus musculus,4410,view
+SRA688150,SRS3161264,Lung,10x chromium,Mus musculus,718,view
+SRA688150,SRS3161265,Lung,10x chromium,Mus musculus,4660,view
+SRA688150,SRS3161281,Lung,10x chromium,Mus musculus,1424,view
+SRA866994,SRS4545958,Dura mater,10x chromium,Mus musculus,9038,view
+SRA866994,SRS4545959,Choroid plexus,10x chromium,Mus musculus,4329,view
+SRA866994,SRS4545960,Subdural meninges,10x chromium,Mus musculus,6829,view
+SRA866994,SRS4545961,Brain,10x chromium,Mus musculus,6689,view
+SRA866994,SRS4545962,Brain,10x chromium,Mus musculus,3965,view
+SRA866994,SRS4545963,Brain,10x chromium,Mus musculus,2985,view
+SRA866994,SRS4545964,Brain,10x chromium,Mus musculus,4339,view
+SRA866994,SRS4545965,Dura mater,10x chromium,Mus musculus,4789,view
+SRA866994,SRS4545966,Dura mater,10x chromium,Mus musculus,6853,view
+SRA866994,SRS4545967,Choroid plexus,10x chromium,Mus musculus,2407,view
+SRA866994,SRS4545968,Choroid plexus,10x chromium,Mus musculus,1860,view
+SRA866994,SRS4545969,Dura mater,10x chromium,Mus musculus,5750,view
+SRA866994,SRS4545970,Dura mater,10x chromium,Mus musculus,6728,view
+SRA866994,SRS4545971,Choroid plexus,10x chromium,Mus musculus,4465,view
+SRA866994,SRS4545972,Choroid plexus,10x chromium,Mus musculus,2413,view
+SRA815737,SRS4087853,Embryo,10x chromium,Mus musculus,506,view
+SRA815737,SRS4087854,Embryo,10x chromium,Mus musculus,866,view
+SRA815737,SRS4087856,Embryo,10x chromium,Mus musculus,672,view
+SRA815737,SRS4087857,Embryo,10x chromium,Mus musculus,2639,view
+SRA815737,SRS4087858,Embryo,10x chromium,Mus musculus,7600,view
+SRA815737,SRS4087859,Embryo,10x chromium,Mus musculus,5049,view
+SRA815737,SRS4087860,Embryo,10x chromium,Mus musculus,6655,view
+SRA815737,SRS4087861,Embryo,10x chromium,Mus musculus,6389,view
+SRA815737,SRS4087862,Embryo,10x chromium,Mus musculus,2141,view
+SRA815737,SRS4087863,Embryo,10x chromium,Mus musculus,2462,view
+SRA815737,SRS4087864,Embryo,10x chromium,Mus musculus,4655,view
+SRA815737,SRS4087865,Embryo,10x chromium,Mus musculus,5899,view
+SRA815737,SRS4087866,,10x chromium,Mus musculus,"10,468",view
+SRA815737,SRS4087867,,10x chromium,Mus musculus,4561,view
+SRA815737,SRS4087868,,10x chromium,Mus musculus,4984,view
+SRA815737,SRS4087869,,10x chromium,Mus musculus,7437,view

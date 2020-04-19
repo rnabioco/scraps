@@ -1,0 +1,263 @@
+﻿SRA553822,SRS2119548,Cultured embryonic stem cells,10x chromium,Homo sapiens,6501,view
+SRA598936,SRS2428405,Kidney cortex,10x chromium,Homo sapiens,3759,view
+SRA608611,SRS2517316,Lung progenitors,10x chromium,Homo sapiens,1077,view
+SRA608611,SRS2517317,Lung progenitors,10x chromium,Homo sapiens,906,view
+SRA711898,SRS3349280,Tonsil,10x chromium,Homo sapiens,3503,view
+SRA605557,SRS2493625,Cd14+ monocytes,10x chromium,Homo sapiens,411,view
+SRA605557,SRS2493626,Cd14+ monocytes,10x chromium,Homo sapiens,409,view
+SRA678017,SRS3112005,Embryonic kidney cortex,10x chromium,Homo sapiens,4231,view
+SRA678017,SRS3112006,Embryonic kidney cortex,10x chromium,Homo sapiens,3800,view
+SRA695134,SRS3218229,Alveolar rhabdomyosarcoma,10x chromium,Homo sapiens,8992,view
+SRA550660,SRS2089635,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,1860,view
+SRA550660,SRS2089636,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,1580,view
+SRA550660,SRS2089637,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,"10,292",view
+SRA550660,SRS2089638,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,1818,view
+SRA550660,SRS2089639,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,"10,940",view
+SRA646572,SRS2833946,Human embryo forebrain,10x chromium,Homo sapiens,6943,view
+SRA646572,SRS2833947,Human embryo forebrain,10x chromium,Homo sapiens,4127,view
+SRA628554,SRS2664364,Peripheral blood mononuclear cell,10x chromium,Homo sapiens,3352,view
+SRA628554,SRS2664365,Peripheral blood mononuclear cell,10x chromium,Homo sapiens,3081,view
+SRA608353,SRS2517519,Hepatocellular carcinoma,10x chromium,Homo sapiens,1230,view
+SRA608353,SRS2517521,Hepatocellular carcinoma,10x chromium,Homo sapiens,2350,view
+SRA721637,SRS3416994,B cells,10x chromium,Homo sapiens,1663,view
+SRA721637,SRS3416995,Lymph node,10x chromium,Homo sapiens,2619,view
+SRA640903,SRS2780388,Melanoma,10x chromium,Homo sapiens,5091,view
+SRA640903,SRS2780389,Melanoma,10x chromium,Homo sapiens,4927,view
+SRA700673,SRS3270097,Brain,10x chromium,Homo sapiens,3704,view
+SRA634975,SRS2724911,Ovarian tumor,10x chromium,Homo sapiens,2547,view
+SRA634975,SRS2724912,Ovarian tumor,10x chromium,Homo sapiens,2139,view
+SRA634975,SRS2724913,Ovarian tumor,10x chromium,Homo sapiens,2262,view
+SRA634975,SRS2724914,Ovarian tumor,10x chromium,Homo sapiens,2094,view
+SRA658915,SRS2944101,Tumor,10x chromium,Homo sapiens,906,view
+SRA658915,SRS2944102,Tumor,10x chromium,Homo sapiens,1229,view
+SRA658915,SRS2944103,Tumor,10x chromium,Homo sapiens,865,view
+SRA658915,SRS2944104,Tumor,10x chromium,Homo sapiens,1031,view
+SRA658915,SRS2944109,Tumor,10x chromium,Homo sapiens,993,view
+SRA658915,SRS2944110,Tumor,10x chromium,Homo sapiens,939,view
+SRA658915,SRS2944111,Tumor,10x chromium,Homo sapiens,1197,view
+SRA658915,SRS2944112,Tumor,10x chromium,Homo sapiens,1242,view
+SRA594999,SRS2397417,Umbilical vein endothelial cells,10x chromium,Homo sapiens,9057,view
+SRA594999,SRS2397418,Umbilical vein endothelial cells,10x chromium,Homo sapiens,5929,view
+SRA617020,SRS2566664,B cells,10x chromium,Homo sapiens,271,view
+SRA617020,SRS2566665,B cells,10x chromium,Homo sapiens,289,view
+SRA621638,SRS2610283,Bone marrow,10x chromium,Homo sapiens,1196,view
+SRA621638,SRS2610285,Bone marrow,10x chromium,Homo sapiens,835,view
+SRA691388,SRS3173555,Breast epithelium,10x chromium,Homo sapiens,4405,view
+SRA691388,SRS3173556,Breast epithelium,10x chromium,Homo sapiens,8329,view
+SRA691388,SRS3173557,Breast epithelium,10x chromium,Homo sapiens,7397,view
+SRA691388,SRS3173558,Breast epithelium,10x chromium,Homo sapiens,9196,view
+SRA710104,SRS3334253,Adipose,10x chromium,Homo sapiens,9399,view
+SRA710104,SRS3334254,Adipose,10x chromium,Homo sapiens,9107,view
+SRA710104,SRS3334255,Adipose,10x chromium,Homo sapiens,9510,view
+SRA732346,SRS3496836,Endothelial cells,10x chromium,Homo sapiens,3406,view
+SRA732346,SRS3496838,Endothelial cells,10x chromium,Homo sapiens,3683,view
+SRA713577,SRS3363004,Peripheral blood mononuclear cells,10x chromium,Homo sapiens,3334,view
+SRA704181,SRS3305829,Breast cancer cell line,10x chromium,Homo sapiens,3899,view
+SRA704181,SRS3305830,Breast cancer cell line,10x chromium,Homo sapiens,4098,view
+SRA704181,SRS3305831,Breast cancer cell line,10x chromium,Homo sapiens,6256,view
+SRA704181,SRS3305832,Breast cancer cell line,10x chromium,Homo sapiens,4935,view
+SRA701877,SRS3279684,Pancreatic islets,10x chromium,Homo sapiens,2052,view
+SRA701877,SRS3279685,Pancreatic islets,10x chromium,Homo sapiens,1123,view
+SRA701877,SRS3279686,Pancreatic islets,10x chromium,Homo sapiens,1805,view
+SRA701877,SRS3279687,Pancreatic islets,10x chromium,Homo sapiens,2416,view
+SRA701877,SRS3279688,Pancreatic islets,10x chromium,Homo sapiens,442,view
+SRA701877,SRS3279689,Pancreatic islets,10x chromium,Homo sapiens,1245,view
+SRA701877,SRS3279690,Pancreatic islets,10x chromium,Homo sapiens,2492,view
+SRA701877,SRS3279691,Pancreatic islets,10x chromium,Homo sapiens,1794,view
+SRA701877,SRS3279692,Pancreatic islets,10x chromium,Homo sapiens,2884,view
+SRA701877,SRS3279693,Pancreatic islets,10x chromium,Homo sapiens,2953,view
+SRA701877,SRS3279694,Pancreatic islets,10x chromium,Homo sapiens,2499,view
+SRA701877,SRS3279695,Pancreatic islets,10x chromium,Homo sapiens,3508,view
+SRA636225,SRS2737286,Circulating tumor cells in hepatocellular carcinoma,10x chromium,Homo sapiens,6814,view
+SRA636225,SRS2737287,Circulating tumor cells in hepatocellular carcinoma,10x chromium,Homo sapiens,3558,view
+SRA640325,SRS2769050,Lung distal alveolar stromal cells,10x chromium,Homo sapiens,"11,530",view
+SRA640325,SRS2769051,Lung proximal airway stromal cells,10x chromium,Homo sapiens,"11,186",view
+SRA716153,SRS3384792,CD34+ cord blood cells,10x chromium,Homo sapiens,2371,view
+SRA716153,SRS3384793,CD34+ cord blood cells,10x chromium,Homo sapiens,1976,view
+SRA716153,SRS3384795,CD34+ cord blood cells,10x chromium,Homo sapiens,3306,view
+SRA719952,SRS3407249,NK cells,10x chromium,Homo sapiens,"22,589",view
+SRA605365,SRS2492922,Nasal airway epithelium,10x chromium,Homo sapiens,1932,view
+SRA688526,SRS3164178,Cortical organoids,10x chromium,Homo sapiens,2306,view
+SRA688526,SRS3164179,Cortical organoids,10x chromium,Homo sapiens,2329,view
+SRA729910,SRS3474726,Lung airway epithelial cells,10x chromium,Homo sapiens,4319,view
+SRA729910,SRS3474727,Lung airway epithelial cells,10x chromium,Homo sapiens,4597,view
+SRA769176,SRS3747746,T cells,10x chromium,Homo sapiens,1170,view
+SRA769176,SRS3747747,T cells,10x chromium,Homo sapiens,1647,view
+SRA769176,SRS3747748,T cells,10x chromium,Homo sapiens,764,view
+SRA703206,SRS3296611,Colon,10x chromium,Homo sapiens,4826,view
+SRA703206,SRS3296612,Colon,10x chromium,Homo sapiens,6476,view
+SRA703206,SRS3296613,Colon (Ulcerative Colitis),10x chromium,Homo sapiens,3497,view
+SRA703206,SRS3296614,Colon (Ulcerative Colitis),10x chromium,Homo sapiens,4651,view
+SRA760933,SRS3693061,Hepatocyte-derived liver progenitor-like cells,10x chromium,Homo sapiens,8030,view
+SRA749327,SRS3693908,Merkel Cell Carcinoma,10x chromium,Homo sapiens,2532,view
+SRA749327,SRS3693909,Merkel Cell Carcinoma,10x chromium,Homo sapiens,5627,view
+SRA749327,SRS3693910,PBMC,10x chromium,Homo sapiens,1929,view
+SRA749327,SRS3693911,PBMC,10x chromium,Homo sapiens,1536,view
+SRA749327,SRS3693912,PBMC,10x chromium,Homo sapiens,1352,view
+SRA749327,SRS3693913,PBMC,10x chromium,Homo sapiens,3744,view
+SRA768499,SRS3744979,NK cells from spleen,10x chromium,Homo sapiens,1229,view
+SRA768499,SRS3744980,NK cells from spleen,10x chromium,Homo sapiens,1200,view
+SRA768499,SRS3744981,NK cells from blood,10x chromium,Homo sapiens,1401,view
+SRA768499,SRS3744982,NK cells from blood,10x chromium,Homo sapiens,1211,view
+SRA768499,SRS3744983,NK cells from blood,10x chromium,Homo sapiens,1612,view
+SRA768499,SRS3744990,NK cells from spleen,10x chromium,Homo sapiens,1683,view
+SRA740174,SRS3548780,Bone marrow,10x chromium,Homo sapiens,665,view
+SRA740174,SRS3548781,Bone marrow,10x chromium,Homo sapiens,1059,view
+SRA740174,SRS3548782,Bone marrow,10x chromium,Homo sapiens,681,view
+SRA740174,SRS3548783,Bone marrow,10x chromium,Homo sapiens,1035,view
+SRA779509,SRS3805245,Bone marrow,10x chromium,Homo sapiens,6248,view
+SRA779509,SRS3805246,Bone marrow,10x chromium,Homo sapiens,6024,view
+SRA779509,SRS3805247,Bone marrow,10x chromium,Homo sapiens,7623,view
+SRA779509,SRS3805248,Bone marrow,10x chromium,Homo sapiens,6395,view
+SRA779509,SRS3805249,Bone marrow,10x chromium,Homo sapiens,1133,view
+SRA779509,SRS3805250,Bone marrow,10x chromium,Homo sapiens,5208,view
+SRA779509,SRS3805251,Bone marrow,10x chromium,Homo sapiens,5345,view
+SRA779509,SRS3805252,Bone marrow,10x chromium,Homo sapiens,5540,view
+SRA779509,SRS3805253,Bone marrow,10x chromium,Homo sapiens,5203,view
+SRA779509,SRS3805254,Bone marrow,10x chromium,Homo sapiens,5500,view
+SRA779509,SRS3805255,Bone marrow,10x chromium,Homo sapiens,7559,view
+SRA779509,SRS3805256,Bone marrow,10x chromium,Homo sapiens,4958,view
+SRA779509,SRS3805257,Bone marrow,10x chromium,Homo sapiens,5496,view
+SRA779509,SRS3805258,Bone marrow,10x chromium,Homo sapiens,5683,view
+SRA779509,SRS3805259,Bone marrow,10x chromium,Homo sapiens,6032,view
+SRA779509,SRS3805260,Bone marrow,10x chromium,Homo sapiens,3987,view
+SRA779509,SRS3805261,Bone marrow,10x chromium,Homo sapiens,1829,view
+SRA779509,SRS3805262,Bone marrow,10x chromium,Homo sapiens,6431,view
+SRA779509,SRS3805263,Bone marrow,10x chromium,Homo sapiens,6052,view
+SRA779509,SRS3805264,Bone marrow,10x chromium,Homo sapiens,992,view
+SRA779509,SRS3805265,Bone marrow,10x chromium,Homo sapiens,5735,view
+SRA779509,SRS3805266,Bone marrow,10x chromium,Homo sapiens,6210,view
+SRA779509,SRS3805267,Bone marrow,10x chromium,Homo sapiens,3966,view
+SRA779509,SRS3805268,Bone marrow,10x chromium,Homo sapiens,5603,view
+SRA779509,SRS3805269,Bone marrow,10x chromium,Homo sapiens,5934,view
+SRA660949,SRS2990317,Umbilical cord blood,10x chromium,Homo sapiens,1284,view
+SRA660949,SRS2990318,Umbilical cord blood,10x chromium,Homo sapiens,4955,view
+SRA795539,SRS3947512,Spleen,10x chromium,Homo sapiens,2569,view
+SRA795539,SRS3947513,Spleen,10x chromium,Homo sapiens,3487,view
+SRA784242,SRS3822680,Testicular cells,10x chromium,Homo sapiens,2487,view
+SRA784242,SRS3822682,Testicular cells,10x chromium,Homo sapiens,2455,view
+SRA784242,SRS3822683,Testicular cells,10x chromium,Homo sapiens,1631,view
+SRA784242,SRS3822686,Testicular cells,10x chromium,Homo sapiens,1580,view
+SRA716608,SRS3391629,Liver,10x chromium,Homo sapiens,4190,view
+SRA716608,SRS3391630,Liver,10x chromium,Homo sapiens,4719,view
+SRA716608,SRS3391631,Liver,10x chromium,Homo sapiens,1425,view
+SRA716608,SRS3391632,Liver,10x chromium,Homo sapiens,6158,view
+SRA716608,SRS3391633,Liver,10x chromium,Homo sapiens,6806,view
+SRA667709,SRS3065426,Testicle,10x chromium,Homo sapiens,2777,view
+SRA667709,SRS3065427,Testicle,10x chromium,Homo sapiens,3045,view
+SRA667709,SRS3065428,Testicle,10x chromium,Homo sapiens,3007,view
+SRA667709,SRS3065429,Testicle,10x chromium,Homo sapiens,3066,view
+SRA667709,SRS3065430,Testicle,10x chromium,Homo sapiens,4020,view
+SRA667709,SRS3065431,Testicle,10x chromium,Homo sapiens,3586,view
+SRA782908,SRS3815597,Placenta,10x chromium,Homo sapiens,3618,view
+SRA782908,SRS3815600,Placenta,10x chromium,Homo sapiens,7205,view
+SRA782908,SRS3815606,Decidua,10x chromium,Homo sapiens,4131,view
+SRA814476,SRS4073850,T cells,10x chromium,Homo sapiens,1975,view
+SRA794656,SRS3937924,T cells,10x chromium,Homo sapiens,1878,view
+SRA794656,SRS3937926,T cells,10x chromium,Homo sapiens,1289,view
+SRA763890,SRS3720957,Blood CD8+ T lymphocytes,10x chromium,Homo sapiens,2334,view
+SRA763890,SRS3720958,Blood CD8+ T lymphocytes,10x chromium,Homo sapiens,1226,view
+SRA763890,SRS3720959,Blood CD8+ T lymphocytes,10x chromium,Homo sapiens,2208,view
+SRA645804,SRS2823404,Testis,10x chromium,Homo sapiens,4197,view
+SRA645804,SRS2823405,Testis,10x chromium,Homo sapiens,3598,view
+SRA645804,SRS2823406,Testis,10x chromium,Homo sapiens,3989,view
+SRA645804,SRS2823407,Testis,10x chromium,Homo sapiens,4046,view
+SRA645804,SRS2823408,Testis,10x chromium,Homo sapiens,4306,view
+SRA645804,SRS2823409,Testis,10x chromium,Homo sapiens,4791,view
+SRA645804,SRS2823410,Testis,10x chromium,Homo sapiens,4045,view
+SRA645804,SRS2823411,Testis,10x chromium,Homo sapiens,2167,view
+SRA645804,SRS2823412,Testis,10x chromium,Homo sapiens,5299,view
+SRA645804,SRS3572594,Testis,10x chromium,Homo sapiens,4574,view
+SRA823298,SRS4144446,Alpha cells,10x chromium,Homo sapiens,264,view
+SRA823298,SRS4144447,Beta cells,10x chromium,Homo sapiens,676,view
+SRA823298,SRS4144448,Alpha cells,10x chromium,Homo sapiens,1962,view
+SRA784304,SRS3823100,Pancreatic progenitor cells,10x chromium,Homo sapiens,4958,view
+SRA709816,SRS3331831,ES-derived kidney organoid,10x chromium,Homo sapiens,2667,view
+SRA709816,SRS3331832,ES-derived kidney organoid,10x chromium,Homo sapiens,2836,view
+SRA709816,SRS3331833,ES-derived kidney organoid,10x chromium,Homo sapiens,2900,view
+SRA709816,SRS3331834,ES-derived kidney organoid,10x chromium,Homo sapiens,2751,view
+SRA742961,SRS3565195,Prostate,10x chromium,Homo sapiens,6101,view
+SRA742961,SRS3565196,Prostate,10x chromium,Homo sapiens,7789,view
+SRA742961,SRS3565197,Prostate,10x chromium,Homo sapiens,"11,468",view
+SRA742961,SRS3565198,Prostate,10x chromium,Homo sapiens,7718,view
+SRA742961,SRS3565199,Prostate,10x chromium,Homo sapiens,8069,view
+SRA742961,SRS3565201,Prostate,10x chromium,Homo sapiens,7479,view
+SRA742961,SRS3565202,Prostate,10x chromium,Homo sapiens,5804,view
+SRA742961,SRS3565203,Prostate,10x chromium,Homo sapiens,6453,view
+SRA742961,SRS3565204,Prostate,10x chromium,Homo sapiens,5198,view
+SRA742961,SRS3565205,Prostate,10x chromium,Homo sapiens,4813,view
+SRA742961,SRS3565206,Prostate,10x chromium,Homo sapiens,6950,view
+SRA742961,SRS3565207,Prostate,10x chromium,Homo sapiens,6323,view
+SRA742961,SRS3565208,Prostate,10x chromium,Homo sapiens,8538,view
+SRA742961,SRS3565209,Prostate,10x chromium,Homo sapiens,7132,view
+SRA742961,SRS3565210,Prostate,10x chromium,Homo sapiens,5923,view
+SRA742961,SRS3565211,Prostate,10x chromium,Homo sapiens,6264,view
+SRA826293,SRS4181123,Testis,10x chromium,Homo sapiens,4876,view
+SRA826293,SRS4181124,Testis,10x chromium,Homo sapiens,3307,view
+SRA826293,SRS4181125,Testis,10x chromium,Homo sapiens,3931,view
+SRA826293,SRS4181126,Testis,10x chromium,Homo sapiens,5464,view
+SRA826293,SRS4181127,Testis,10x chromium,Homo sapiens,5705,view
+SRA826293,SRS4181128,Testis,10x chromium,Homo sapiens,6198,view
+SRA826293,SRS4181129,Testis,10x chromium,Homo sapiens,7860,view
+SRA826293,SRS4181130,Testis,10x chromium,Homo sapiens,9028,view
+SRA834109,SRS4247443,Lymphoblastoid cell line,10x chromium,Homo sapiens,6851,view
+SRA661790,SRS2995081,Monocyte-derived macrophages,10x chromium,Homo sapiens,2768,view
+SRA661790,SRS2995082,Monocyte-derived macrophages,10x chromium,Homo sapiens,2692,view
+SRA661790,SRS2995083,Monocyte-derived macrophages,10x chromium,Homo sapiens,2682,view
+SRA661790,SRS2995084,Monocyte-derived macrophages,10x chromium,Homo sapiens,3117,view
+SRA665712,SRS3034950,T cells,10x chromium,Homo sapiens,"10,979",view
+SRA665712,SRS3034951,T cells,10x chromium,Homo sapiens,"14,332",view
+SRA665712,SRS3034952,T cells,10x chromium,Homo sapiens,7788,view
+SRA665712,SRS3034953,T cells,10x chromium,Homo sapiens,"12,974",view
+SRA676027,SRS3102136,Embryonic stem cell line,10x chromium,Homo sapiens,3455,view
+SRA676027,SRS3102137,Embryonic stem cell line,10x chromium,Homo sapiens,4622,view
+SRA676027,SRS3102138,Embryonic stem cell line,10x chromium,Homo sapiens,4803,view
+SRA676027,SRS3102139,Embryonic stem cell line,10x chromium,Homo sapiens,6733,view
+SRA676027,SRS3102140,Embryonic stem cell line,10x chromium,Homo sapiens,5557,view
+SRA676027,SRS3102144,Embryonic stem cell line,10x chromium,Homo sapiens,2862,view
+SRA843432,SRS4322339,Kaposi's sarcoma,10x chromium,Homo sapiens,2914,view
+SRA843432,SRS4322341,Kaposi's sarcoma,10x chromium,Homo sapiens,3493,view
+SRA843432,SRS4322342,Kaposi's sarcoma,10x chromium,Homo sapiens,3372,view
+SRA843432,SRS4322343,Kaposi's sarcoma,10x chromium,Homo sapiens,3940,view
+SRA843432,SRS4322345,Kaposi's sarcoma,10x chromium,Homo sapiens,3718,view
+SRA843432,SRS4322346,Kaposi's sarcoma,10x chromium,Homo sapiens,4479,view
+SRA832580,SRS4238857,Lymphoblastoid cell line,10x chromium,Homo sapiens,8274,view
+SRA823777,SRS4151080,Mammary gland,10x chromium,Homo sapiens,"10,291",view
+SRA823777,SRS4151081,Mammary gland,10x chromium,Homo sapiens,"18,490",view
+SRA728025,SRS3454421,Inflamed area of colon,10x chromium,Homo sapiens,1883,view
+SRA728025,SRS3454422,Colon,10x chromium,Homo sapiens,2322,view
+SRA728025,SRS3454423,Colon,10x chromium,Homo sapiens,2283,view
+SRA728025,SRS3454424,Colon,10x chromium,Homo sapiens,1898,view
+SRA728025,SRS3454425,Colon,10x chromium,Homo sapiens,3429,view
+SRA728025,SRS3454426,Colon,10x chromium,Homo sapiens,3423,view
+SRA728025,SRS3454427,Colon,10x chromium,Homo sapiens,3840,view
+SRA728025,SRS3454428,Colon,10x chromium,Homo sapiens,5459,view
+SRA728025,SRS3454430,Colon,10x chromium,Homo sapiens,4910,view
+SRA705190,SRS3306242,Embryonic kidney,10x chromium,Homo sapiens,"10,194",view
+SRA705190,SRS4139632,Embryonic kidney,10x chromium,Homo sapiens,117,view
+SRA705190,SRS4139633,Embryonic kidney,10x chromium,Homo sapiens,2938,view
+SRA705190,SRS4139634,Embryonic kidney,10x chromium,Homo sapiens,3819,view
+SRA705190,SRS4139635,Embryonic kidney,10x chromium,Homo sapiens,2580,view
+SRA856537,SRS4458841,Unknown,10x chromium,Homo sapiens,927,view
+SRA856537,SRS4458842,Unknown,10x chromium,Homo sapiens,690,view
+SRA856537,SRS4458843,Unknown,10x chromium,Homo sapiens,813,view
+SRA856537,SRS4458844,Unknown,10x chromium,Homo sapiens,695,view
+SRA850958,SRS4386091,Substantia nigra,10x chromium,Homo sapiens,579,view
+SRA850958,SRS4386092,Substantia nigra,10x chromium,Homo sapiens,430,view
+SRA850958,SRS4386101,Substantia nigra,10x chromium,Homo sapiens,906,view
+SRA850958,SRS4386107,Substantia nigra,10x chromium,Homo sapiens,685,view
+SRA850958,SRS4386109,Substantia nigra,10x chromium,Homo sapiens,1387,view
+SRA850958,SRS4386110,Substantia nigra,10x chromium,Homo sapiens,1065,view
+SRA850958,SRS4386111,Substantia nigra,10x chromium,Homo sapiens,2590,view
+SRA850958,SRS4386112,Substantia nigra,10x chromium,Homo sapiens,2432,view
+SRA850958,SRS4386113,Substantia nigra,10x chromium,Homo sapiens,1973,view
+SRA769148,SRS3747193,Cord blood,10x chromium,Homo sapiens,2674,view
+SRA769148,SRS3747194,Cord blood,10x chromium,Homo sapiens,2581,view
+SRA769148,SRS3747195,Cord blood,10x chromium,Homo sapiens,2160,view
+SRA769148,SRS3747196,Cord blood,10x chromium,Homo sapiens,2292,view
+SRA769148,SRS3747197,Cord blood,10x chromium,Homo sapiens,2500,view
+SRA769148,SRS3747198,Cord blood,10x chromium,Homo sapiens,3906,view
+SRA767234,SRS3741870,Tonsil CD14+ cells,10x chromium,Homo sapiens,2213,view
+SRA767245,SRS3741878,Tonsil CD4 T cells,10x chromium,Homo sapiens,1281,view
+SRA767245,SRS3741879,Tonsil CD4 T cells,10x chromium,Homo sapiens,916,view
+SRA767245,SRS3741880,Tonsil CD4 T cells,10x chromium,Homo sapiens,2299,view

@@ -61,7 +61,7 @@ def main():
     parser.add_argument('-f',
                         '--file',
                         help = """
-                        Csv file with sample info, used previously in srape_all.sh
+                        Csv file with sample info, used previously in scrape_all.sh
                         """,
                         required = True)
 

@@ -357,6 +357,12 @@ def main():
                         default = True,
                         required = False)
 
+    parser.add_argument('-w',
+                        '--overwrite',
+                        help ="""if false, will skip if log file already exists""",
+                        default = False,
+                        required = False)
+
     args=parser.parse_args()
 
     study_id = args.study
@@ -365,27 +371,34 @@ def main():
     n_reads = int(args.nreads)
     cut_off = int(args.cutoff)
     write_report = args.report
-    if output_dir:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    over_write = args.overwrite
+
+    if over_write or not os.path.isfile(os.path.join(output_dir, study_id + "_meta_log.txt")):
+
+        if output_dir:
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+        else:
+            output_dir = "."
+        logfile = os.path.join(output_dir, study_id + "_meta_log.txt")
+        log_fp = open(logfile, 'w')
+
+        mdata = get_study_metadata(study_id, log_fp)
+        links = get_fastq_links(mdata, fq_ids)
+        df = wrap_links_stream(links, output_dir, n_reads, cut_off)
+        log_fp.close()
+
+        if write_report and len(links) > 0:
+            mdata = pd.read_csv(logfile, sep='\t')
+            mdata = mdata.assign(fastq_ftp=mdata.fastq_ftp.str.split(';')).explode('fastq_ftp')
+            mdata = mdata.assign(fastq_ftp=("ftp://" + mdata.fastq_ftp))
+            df = df.join(mdata.set_index('fastq_ftp'), on='link')
+            df.to_csv(os.path.join(output_dir, study_id + ".csv"))
+
+        print("all finished")
+        
     else:
-        output_dir = "."
-    logfile = os.path.join(output_dir, study_id + "_meta_log.txt")
-    log_fp = open(logfile, 'w')
-
-    mdata = get_study_metadata(study_id, log_fp)
-    links = get_fastq_links(mdata, fq_ids)
-    df = wrap_links_stream(links, output_dir, n_reads, cut_off)
-    log_fp.close()
-
-    if write_report and len(links) > 0:
-        mdata = pd.read_csv(logfile, sep='\t')
-        mdata = mdata.assign(fastq_ftp=mdata.fastq_ftp.str.split(';')).explode('fastq_ftp')
-        mdata = mdata.assign(fastq_ftp=("ftp://" + mdata.fastq_ftp))
-        df = df.join(mdata.set_index('fastq_ftp'), on='link')
-        df.to_csv(os.path.join(output_dir, study_id + ".csv"))
-
-    print("all finished")
+        print("not repeating previous check")
 
 if __name__ == '__main__': main()
 
