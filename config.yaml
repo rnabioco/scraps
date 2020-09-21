@@ -7,12 +7,12 @@ DATA:
 
 GENOME_DIR:
 # Not included due to size; replace with path to local STAR index
-#  "shared_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
+  "link_to_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
   
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
 # downstream slop relative to annotated cleavage site
-   "polyadb.saf.gz"
+   "ref/polyadb.saf.gz"
    
 #POLYA_FORMAT:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
