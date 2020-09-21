@@ -17,18 +17,17 @@ scraps requires the following executables in your PATH:
 
   - <a href="https://www.python.org/">Python 3</a> (developed with version 3.6.3)
   - <a href="https://bitbucket.org/snakemake/snakemake/src/master/">Snakemake</a> (developed with version 3.11.2)
-  - <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools<a> (developed with version 1.0.0)
+  - <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools</a> (developed with version 1.0.0)
   - <a href="http://samtools.sourceforge.net/">Samtools</a> (developed with version 1.5)
-  - <a href="http://subread.sourceforge.net/">Subread<a> (developed with version 1.6.1)
+  - <a href="http://subread.sourceforge.net/">Subread</a> (developed with version 1.6.1)
 
 ## Example usage
 
 scraps requires the following as input (defined in config.yaml):
 
   - 10X Genomics 3' v2/3 single-cell FASTQs 
-  - Cell barcode whitelists for each sample (UMI-tools format)
-  - A STAR genome index
-  - A featureCounts reference (an SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a> example is included)
+  - A STAR genome index (compatible with cellranger indices <a href="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz">GRCh38</a> and <a href="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-mm10-2020-A.tar.gz">mm10</a>)
+  - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a> hg38 and mm10 files are included)
 
 See the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
