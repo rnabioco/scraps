@@ -26,6 +26,27 @@ def _get_read2_fq_paths(wildcards):
     r2s = [re.sub("_R1_001.fastq.gz$", "_R2_001.fastq.gz", x) for x in r1s] 
     
     return r2s
+
+rule whitelist:
+   input:
+     fastq1 = _get_read1_fq_paths,
+     fastq2 = _get_read2_fq_paths
+   output:
+     whitelist = "{data}/raw_data/{sample}_whitelist.txt"
+   params:
+     job_name = "whitelist",
+     memory = "select[mem>45] rusage[mem=45]", # LSF format; change as needed
+   log:
+     "{data}/logs/whitelist_{sample}.txt"
+   threads:
+     1
+   shell:
+     """
+     umi_tools whitelist \
+       --stdin {input.fastq1} \
+       --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN \
+       > {output.whitelist}
+     """
     
 rule umi_extract:
    input:
