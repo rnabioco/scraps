@@ -16,6 +16,7 @@ rule all:
     # Remove "R1" or "R2" to use only one method.
     expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = ["R1","R2"])
 
+include: "rules/check_versions.snake"
 include: "rules/preprocess.snake"
 include: "rules/star_two_pass.snake"
 include: "rules/count.snake"

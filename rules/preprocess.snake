@@ -30,7 +30,8 @@ def _get_read2_fq_paths(wildcards):
 rule whitelist:
    input:
      fastq1 = _get_read1_fq_paths,
-     fastq2 = _get_read2_fq_paths
+     fastq2 = _get_read2_fq_paths,
+     check = "{data}/check_versions.txt"
    output:
      whitelist = "{data}/raw_data/{sample}_whitelist.txt"
    params:

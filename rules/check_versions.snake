@@ -1,0 +1,33 @@
+""" rules for running and checking versions of dependencies """
+
+rule check:
+   input:
+     config = "config.yaml"
+   output:
+     checked = "{data}/check_versions.txt"
+   params:
+     job_name = "check",
+     memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
+   log:
+     "logs/check_version.txt"
+   threads:
+     1
+   shell:
+     """
+     if python --version &&
+       snakemake -v &&
+       umi_tools --version &&
+       samtools --version &&
+       featureCounts -v; then
+      python --version > {output.checked}
+      echo snakemake: >> {output.checked}
+      snakemake -v >> {output.checked}
+      umi_tools --version >> {output.checked}
+      samtools --version >> {output.checked}
+      featureCounts -v &>> {output.checked} else
+     exit 1
+     fi
+     """
+
+
+
