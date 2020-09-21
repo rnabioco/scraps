@@ -18,11 +18,16 @@ rule assign_sites_read1:
     12
   shell:
     """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
     featureCounts \
     -s 2 -Q 10 -O \
     --read2pos 5 \
     -o {params.out} \
-    -F {POLYA_FORMAT} \
+    -F $polyaformat \
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
@@ -53,11 +58,16 @@ rule assign_sites_read2:
     12
   shell:
     """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
     featureCounts \
     -s 1 -Q 10 -O \
     --read2pos 3 \
     -o {params.out} \
-    -F {POLYA_FORMAT} \
+    -F $polyaformat \
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \

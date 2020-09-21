@@ -14,9 +14,9 @@ POLYA_SITES:
 # downstream slop relative to annotated cleavage site
    "polyadb.saf.gz"
    
-POLYA_FORMAT:
-# SAF or GTF
-   "SAF"
+#POLYA_FORMAT:
+# SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
+#   "SAF"
 
 SAMPLES:
 # Sample basenames

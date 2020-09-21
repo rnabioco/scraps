@@ -8,7 +8,7 @@ DATA = config["DATA"]
 SAMPLE = config["SAMPLES"]
 GENOME_DIR = config["GENOME_DIR"]
 POLYA_SITES = config["POLYA_SITES"]
-POLYA_FORMAT = config["POLYA_FORMAT"]
+#POLYA_FORMAT = config["POLYA_FORMAT"]
 
 rule all:
   input:
