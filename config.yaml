@@ -18,6 +18,10 @@ POLYA_SITES:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
 
+BC_PATTERN:
+# Sample is 10X 3' v2; 10X 3' v3 is: CCCCCCCCCCCCCCCCNNNNNNNNNNNN
+  "CCCCCCCCCCCCCCCCNNNNNNNNNN"
+
 SAMPLES:
 # Sample basenames
   - sample

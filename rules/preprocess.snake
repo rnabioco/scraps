@@ -45,7 +45,7 @@ rule whitelist:
      """
      umi_tools whitelist \
        --stdin {input.fastq1} \
-       --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN \
+       --bc-pattern={BC_PATTERN} \
        > {output.whitelist}
      """
     
@@ -71,7 +71,7 @@ rule umi_extract:
        --read2-in {input.fastq2} \
        --stdout {output.fastq1} \
        --read2-out={output.fastq2} \
-       --bc-pattern=CCCCCCCCCCCCCCCCNNNNNNNNNN \
+       --bc-pattern={BC_PATTERN} \
        --filter-cell-barcode \
        --whitelist={input.whitelist} \
        > {log}
