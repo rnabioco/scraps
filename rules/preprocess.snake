@@ -46,6 +46,7 @@ rule whitelist:
      umi_tools whitelist \
        --stdin <(zcat {input.fastq1}) \
        --bc-pattern={BC_PATTERN} \
+       --error-correct-cell \
        > {output.whitelist}
      """
     
