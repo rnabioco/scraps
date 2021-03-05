@@ -20,6 +20,7 @@ scraps requires the following executables in your PATH:
   - <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools</a> (developed with version 1.0.0)
   - <a href="http://samtools.sourceforge.net/">Samtools</a> (developed with version 1.5)
   - <a href="http://subread.sourceforge.net/">Subread</a> (developed with version 1.6.1)
+  - <a href="https://multiqc.info/">MultiQC</a> (developed with version 1.9)
 
 ## Example usage
 
