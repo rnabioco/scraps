@@ -46,7 +46,6 @@ rule whitelist:
      umi_tools whitelist \
        --stdin <(zcat {input.fastq1}) \
        --bc-pattern={BC_PATTERN} \
-       --error-correct-cell \
        > {output.whitelist}
      """
     
@@ -75,6 +74,7 @@ rule umi_extract:
        --bc-pattern={BC_PATTERN} \
        --filter-cell-barcode \
        --whitelist={input.whitelist} \
+       --error-correct-cell \
        > {log}
      """
      
