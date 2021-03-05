@@ -46,7 +46,7 @@ rule whitelist:
      umi_tools whitelist \
        --stdin <(zcat {input.fastq1}) \
        --bc-pattern={BC_PATTERN} \
-       > {output.whitelist}
+       -S {output.whitelist}
      """
     
 rule umi_extract:
