@@ -9,7 +9,7 @@ rule check:
      job_name = "check",
      memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
-     "{data}/logs/check_version.txt"
+     "{data}/logs/check_versions.txt"
    threads:
      1
    shell:
