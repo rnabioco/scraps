@@ -2,7 +2,7 @@
 
 rule check:
    input:
-     config = "config.yaml"
+     config = "Snakefile"
    output:
      checked = "{data}/check_versions.txt"
    params:
