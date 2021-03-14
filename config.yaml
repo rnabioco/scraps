@@ -18,6 +18,11 @@ POLYA_SITES:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
 
+READS:
+#R1 and R2 for counting with both reads, R1 should be omitted if reads are too short
+  - R1
+  - R2
+
 BC_PATTERN:
 # Sample is 10X 3' v2; 10X 3' v3 is: CCCCCCCCCCCCCCCCNNNNNNNNNNNN
   "CCCCCCCCCCCCCCCCNNNNNNNNNN"

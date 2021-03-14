@@ -9,13 +9,12 @@ SAMPLE = config["SAMPLES"]
 GENOME_DIR = config["GENOME_DIR"]
 POLYA_SITES = config["POLYA_SITES"]
 BC_PATTERN = config["BC_PATTERN"]
-#POLYA_FORMAT = config["POLYA_FORMAT"]
+READS = config["READS"]
 
 rule all:
   input:
     # Generates both read 1 (positional) and read 2 (polyA trimmed) counts by default;
-    # Remove "R1" or "R2" to use only one method.
-    expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = ["R1","R2"]),
+    expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = READS),
     "{data}/multiqc_report.html"
 
 include: "rules/check_versions.snake"

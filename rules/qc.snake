@@ -1,8 +1,8 @@
 """ rules for running multiqc and autoreport """
 
-rule check:
+rule qccheck:
    input:
-     expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = ["R1","R2"])
+     expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = READS)
    output:
      "{data}/multiqc_report.html"
    params:
