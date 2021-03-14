@@ -18,13 +18,15 @@ rule check:
        snakemake -v &&
        umi_tools --version &&
        samtools --version &&
-       featureCounts -v; then
+       featureCounts -v &&
+       multiqc --version; then
       python --version > {output.checked}
       echo snakemake: >> {output.checked}
       snakemake -v >> {output.checked}
       umi_tools --version >> {output.checked}
       samtools --version >> {output.checked}
-      featureCounts -v &>> {output.checked} else
+      featureCounts -v &>> {output.checked} 
+      multiqc --version >> {output.checked} else
      exit 1
      fi
      """

@@ -7,6 +7,7 @@ rule qccheck:
      "{data}/multiqc_report.html"
    params:
      job_name = "qc",
+     path = "{data}",
      memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
      "{data}/logs/multiqc.txt"
@@ -14,6 +15,7 @@ rule qccheck:
      1
    shell:
      """
+     cd {params.path}
      multiqc .
      """
 
