@@ -17,6 +17,7 @@ rule check:
      if python --version &&
        snakemake -v &&
        umi_tools --version &&
+       cutadapt --version &&
        samtools --version &&
        featureCounts -v &&
        multiqc --version; then
@@ -24,6 +25,8 @@ rule check:
       echo snakemake: >> {output.checked}
       snakemake -v >> {output.checked}
       umi_tools --version >> {output.checked}
+      echo cutadapt: >> {output.checked}
+      cutadapt --version >> {output.checked}
       samtools --version >> {output.checked}
       featureCounts -v &>> {output.checked} 
       multiqc --version >> {output.checked} else
