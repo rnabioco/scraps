@@ -12,7 +12,7 @@ GENOME_DIR:
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
 # downstream slop relative to annotated cleavage site
-   "ref/polyadb.saf.gz"
+   "ref/polyadb32.hg38.saf.gz"
    
 #POLYA_FORMAT:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive

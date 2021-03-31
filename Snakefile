@@ -15,7 +15,7 @@ rule all:
   input:
     # Generates both read 1 (positional) and read 2 (polyA trimmed) counts by default;
     expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = READS),
-    "{data}/multiqc_report.html"
+    expand("{data}/multiqc_report.html", data = DATA)
 
 include: "rules/check_versions.snake"
 include: "rules/preprocess.snake"

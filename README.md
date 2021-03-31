@@ -18,6 +18,7 @@ scraps requires the following executables in your PATH:
   - <a href="https://www.python.org/">Python 3</a> (developed with version 3.6.3)
   - <a href="https://bitbucket.org/snakemake/snakemake/src/master/">Snakemake</a> (developed with version 3.11.2)
   - <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools</a> (developed with version 1.0.0)
+  - <a href="https://cutadapt.readthedocs.io">cutadapt</a> (developed with version 1.16)
   - <a href="http://samtools.sourceforge.net/">Samtools</a> (developed with version 1.5)
   - <a href="http://subread.sourceforge.net/">Subread</a> (developed with version 1.6.1)
   - <a href="https://multiqc.info/">MultiQC</a> (developed with version 1.9)
