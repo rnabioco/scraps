@@ -20,6 +20,7 @@ rule check:
        cutadapt --version &&
        samtools --version &&
        featureCounts -v &&
+       STAR --version &&
        multiqc --version; then
       python --version > {output.checked}
       echo snakemake: >> {output.checked}
@@ -28,7 +29,8 @@ rule check:
       echo cutadapt: >> {output.checked}
       cutadapt --version >> {output.checked}
       samtools --version >> {output.checked}
-      featureCounts -v &>> {output.checked} 
+      featureCounts -v >> {output.checked} 2>&1
+      STAR --version >> {output.checked}
       multiqc --version >> {output.checked} else
      exit 1
      fi

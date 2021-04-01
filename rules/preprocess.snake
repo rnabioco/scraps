@@ -44,7 +44,7 @@ rule whitelist:
    shell:
      """
      umi_tools whitelist \
-       --stdin <(zcat {input.fastq1}) \
+       --stdin <(gzcat < {input.fastq1}) \
        --bc-pattern={BC_PATTERN} \
        -S {output.whitelist}
      """
@@ -67,8 +67,8 @@ rule umi_extract:
    shell:
      """
      umi_tools extract \
-       --stdin <(zcat {input.fastq1}) \
-       --read2-in <(zcat {input.fastq2}) \
+       --stdin <(gzcat < {input.fastq1}) \
+       --read2-in <(gzcat < {input.fastq2}) \
        --stdout {output.fastq1} \
        --read2-out={output.fastq2} \
        --bc-pattern={BC_PATTERN} \

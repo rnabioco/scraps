@@ -15,7 +15,6 @@ rule qccheck:
      1
    shell:
      """
-     cd {params.path}
-     multiqc .
+     multiqc {params.path} -o {params.path}
      """
 
