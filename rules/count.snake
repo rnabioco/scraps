@@ -1,59 +1,19 @@
 
 """ rules for scraps counting """
 
-rule assign_sites_read1:
-  input:
-    "{data}/star/{sample}_R1_2pass_Aligned.sortedByCoord.out.bam"
-  output:
-    bam = "{data}/counts/{sample}_R1.bam",
-    bai = "{data}/counts/{sample}_R1.bam.bai"
-  params:
-    job_name = "assign_sites_read1",
-    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{data}/counts/{sample}_R1_assigned",
-    out_bam = "{data}/counts/{sample}_R1_2pass_Aligned.sortedByCoord.out.bam.featureCounts.bam"
-  log:
-    "{data}/logs/assign_sites_{sample}_R1.txt"
-  threads:
-    12
-  shell:
-    """
-    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
-      polyaformat='SAF'; else
-      polyaformat='GTF';
-    fi
-
-    featureCounts \
-    -s 2 -Q 10 -O \
-    --read2pos 5 \
-    -o {params.out} \
-    -F $polyaformat \
-    -a {POLYA_SITES} \
-    -R BAM \
-    -T {threads} \
-    {input} \
-    2> {log}
-    
-    samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
-    
-    samtools index {output.bam}
-    """
-
 rule assign_sites_read2:
   input:
-    "{data}/star/{sample}_R2_2pass_Aligned.sortedByCoord.out.bam"
+    "{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam"
   output:
-    bam = "{data}/counts/{sample}_R2.bam",
-    bai = "{data}/counts/{sample}_R2.bam.bai"
+    bam = "{results}/counts/{sample}_{read}.bam",
+    bai = "{results}/counts/{sample}_{read}.bam.bai"
   params:
     job_name = "assign_sites_read2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{data}/counts/{sample}_R2_assigned",
-    out_bam = "{data}/counts/{sample}_R2_2pass_Aligned.sortedByCoord.out.bam.featureCounts.bam"
+    out = "{results}/counts/{sample}_{read}_assigned",
+    out_bam = "{results}/counts/{sample}_{read}_Aligned.sortedByCoord.out.bam.featureCounts.bam"
   log:
-    "{data}/logs/assign_sites_{sample}_R2.txt"
+    "logs/assign_sites_{sample}_{read}.txt"
   threads:
     12
   shell:
@@ -83,14 +43,14 @@ rule assign_sites_read2:
     
 rule count:
   input:
-    "{data}/counts/{sample}_{read}.bam"
+    "{results}/counts/{sample}_{read}.bam"
   output:
-    "{data}/counts/{sample}_{read}_counts.tsv.gz"
+    "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
     job_name = "count",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "{data}/logs/count_{sample}_{read}.txt"
+    "logs/count_{sample}_{read}.txt"
   threads:
     1
   shell:

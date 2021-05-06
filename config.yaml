@@ -1,14 +1,29 @@
 # config for scraps snakemake pipeline #
  
 DATA: 
-# Data folder (FASTQs and whitelists in raw_data subfolder)
-# See "sample_data" folder for FASTQ and whitelist naming
+# Data folder containing FASTQs
   "sample_data"
 
-GENOME_DIR:
-# Not included due to size; replace with path to local STAR index
-  "link_to_dbases/cell_ranger/refdata-cellranger-GRCh38-3.0.0/star" 
+# results directory
+RESULTS:
+  "/beevol/home/hemegroup/projects/baseline/results"
+
+# path to STAR executable
+STAR:
+  "/beevol/home/gillena/build/STAR-2.7.8a/bin/Linux_x86_64/STAR"
+
+# path to STAR genome index
+STAR_INDEX:
+  "/beevol/home/hemegroup/ref/cr2020A_star"
   
+# path to Chromium V3 whitelist
+WHITELIST_V3:
+  "/beevol/home/hemegroup/ref/3M-february-2018.txt"
+
+# path to Chromium V2 whitelist
+WHITELIST_V2:
+  "/beevol/home/hemegroup/ref/737K-august-2016.txt"
+
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
 # downstream slop relative to annotated cleavage site
@@ -18,15 +33,17 @@ POLYA_SITES:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
 
-READS:
-#R1 and R2 for counting with both reads, R1 should be omitted if reads are too short
-  - R1
-  - R2
+# TSV relating all sequenced libraries to sane capture names
+FASTQS:
+  "sample_fastqs.tsv"
+    
+# TSV with per-capture metadata and sample ID
+CAPTURES:
+  "sample_captures.tsv"
 
-BC_PATTERN:
-# Sample is 10X 3' v2; 10X 3' v3 is: CCCCCCCCCCCCCCCCNNNNNNNNNNNN
-  "CCCCCCCCCCCCCCCCNNNNNNNNNN"
-
-SAMPLES:
+R1_SAMPLES:
 # Sample basenames
+  - sample
+
+R2_SAMPLES:
   - sample

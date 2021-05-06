@@ -1,0 +1,146 @@
+import os 
+import glob
+from itertools import chain
+import pandas as pd
+
+""" Snakemake rules for scraps cutadapt and STARsolo processing """
+
+SAMPLES_DF = pd.read_csv(FASTQS, sep = "\t")
+CAPTURES_DF = pd.read_csv(CAPTURES, sep = "\t")
+
+""" Extract per-sample fastq paths """
+def _get_fq_paths(wildcards):
+    samples_filtered = SAMPLES_DF[(SAMPLES_DF.exclude == 0) & (SAMPLES_DF.capture == wildcards.sample)]
+
+    fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), samples_filtered.fastqs)
+    fqs = map(lambda x: glob.glob(x), fqs)
+    fqs = list(chain.from_iterable(fqs))
+    
+    return fqs
+
+""" Extract per-capture 10X chemistry versions from gex libs """
+def _get_chem_version(wildcards):
+    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "chromiumV3":
+        args = [WHITELIST_V3,"--soloUMIlen 12"]
+        if wildcards.read == "R2":
+             args.append("--clip5pNbases 0 58")
+    elif chem_version == "chromiumV2":
+        args = [WHITELIST_V2,"--soloUMIlen 10"]
+        if wildcards.read == "R2":
+             args.append("--clip5pNbases 0 56")
+    return args
+
+""" Extract per-capture extra arguments for gex libs """
+def _get_extra_args(wildcards):
+    captures_filtered = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample]
+    return list(captures_filtered.extra_args.unique())
+
+""" This rule is now only necessary for paired-end libraries """
+rule cutadapt_paired:
+    input:
+      _get_fq_paths
+    output:
+      R1 = temp("{results}/cutadapt/{sample}_trimmed.R1.fastq.gz"),
+      R2 = temp("{results}/cutadapt/{sample}_trimmed.R2.fastq.gz")
+    params:
+      job_name = "cutadapt",
+      memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
+    log: "logs/{sample}_cutadapt.out"
+    threads: 24
+    shell:
+      """
+      cutadapt -j 24 \
+         -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
+         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+         -A polya_R2=A{30} \
+         -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
+         -n 4 \
+         -m 75:17 # example for v3; needs to be "min_alignable_read+58" \
+         -o {output.R1} \
+         -p {output.R2} \
+         <(zcat {input}) \
+         <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+      """
+
+""" This rule processes chromium V2/V3 paired-end libraries """
+rule starsolo_gex_bam:
+    input:
+      R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
+      R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
+    output:
+      "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+    params:
+      chemistry = _get_chem_version,
+      extra_args = _get_extra_args,
+      out_dir = "{results}/{sample}/{sample}_R1_", 
+      job_name = "star_gex_R1",
+      memory = "select[mem>32 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=32]"
+    log: "logs/{sample}_star_gex_R1.out"
+    resources:
+      total_impact = 5
+    threads: 14
+    shell:
+      """
+      {STAR} --soloType CB_UMI_Simple \
+      --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
+      --soloUMIfiltering MultiGeneUMI \
+      --soloUMIdedup 1MM_Directional \
+      --readFilesCommand gunzip -c \
+      --runThreadN 12 \
+      --soloCBwhitelist {params.chemistry} \
+      --soloBarcodeMate 2 \
+      --soloCBstart 1 \
+      --soloCBlen 16 \
+      --soloUMIstart 17 \
+      --clipAdapterType CellRanger4 \
+      --genomeDir {STAR_INDEX} \
+      --soloFeatures Gene \
+      --soloCellFilter None {params.extra_args} \
+      --outFileNamePrefix {params.out_dir} \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 32000000000 \
+      --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
+      --readFilesIn {input.R2} {input.R1}
+      
+      rm -rf {params.out_dir}Solo.out
+      """
+
+""" This rule processes chromium V2/V3 libraries (R2 only) """
+rule starsolo_gex_bam:
+    input:
+      R1 = _get_fq_paths
+    output:
+      "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
+    params:
+      chemistry = _get_chem_version,
+      extra_args = _get_extra_args,
+      out_dir = "{results}/{sample}/{sample}_R2_", 
+      job_name = "star_R2",
+      memory = "select[mem>32 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=32]"
+    log: "logs/{sample}_star_gex_R1.out"
+    resources:
+      total_impact = 5
+    threads: 14
+    shell:
+      """
+      {STAR} --soloType CB_UMI_Simple \
+      --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
+      --soloUMIfiltering MultiGeneUMI \
+      --soloUMIdedup 1MM_Directional \
+      --readFilesCommand gunzip -c \
+      --runThreadN 12 \
+      --soloBarcodeReadLength 0 \
+      --soloCBwhitelist {params.chemistry} \
+      --clipAdapterType CellRanger4 \
+      --genomeDir {STAR_INDEX} \
+      --soloFeatures Gene \
+      --soloCellFilter None {params.extra_args} \
+      --outFileNamePrefix {params.out_dir} \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 32000000000 \
+      --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
+      --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
+      
+      rm -rf {params.out_dir}Solo.out
+      """
