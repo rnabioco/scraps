@@ -1,4 +1,4 @@
-shell.executable("/usr/bin/env bash")
+shell.executable("/bin/bash")
 
 """ Snakemake pipeline for 10X Genomics 3' single-cell RNA-seq 3' end counting """
 

@@ -56,6 +56,10 @@ R1_SAMPLES:
   - HTB1261RL_hiseq2500
   - HTB1261DX_novaseq
   - HTB1261RL_novaseq
+  - Brett51_hiseq4000
+  - Brett55_hiseq4000
+  - Foreman_1036_hiseq4000
+  - Foreman_936_hiseq4000
 
 R2_SAMPLES:
   - PT46T_miseq
@@ -73,3 +77,7 @@ R2_SAMPLES:
   - HTB1261RL_novaseq
   - PT46L_hiseq4000
   - PT46T_hiseq4000
+  - Brett51_hiseq4000
+  - Brett55_hiseq4000
+  - Foreman_1036_hiseq4000
+  - Foreman_936_hiseq4000

@@ -19,7 +19,7 @@ def _get_fq_paths(wildcards):
     return fqs
 
 """ Extract per-capture 10X chemistry versions from gex libs """
-def _get_chem_version_R1(wildcards):
+def _get_chem_version_R2(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12"]
@@ -28,7 +28,7 @@ def _get_chem_version_R1(wildcards):
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs """
-def _get_chem_version_R2(wildcards):
+def _get_chem_version_R1(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 0 58"]
@@ -99,7 +99,6 @@ rule starsolo_gex_R1:
       --soloCBstart 1 \
       --soloCBlen 16 \
       --soloUMIstart 17 \
-      --clipAdapterType CellRanger4 \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
       --soloCellFilter None {params.extra_args} \
