@@ -2,11 +2,11 @@
  
 DATA: 
 # Data folder containing FASTQs
-  "sample_data"
+  "/beevol/home/gillena/projects/10x_3p/platform_test_data"
 
 # results directory
 RESULTS:
-  "/beevol/home/hemegroup/projects/baseline/results"
+  "../results_202105"
 
 # path to STAR executable
 STAR:
@@ -43,7 +43,33 @@ CAPTURES:
 
 R1_SAMPLES:
 # Sample basenames
-  - sample
+  - PT46T_miseq
+  - PT46L_miseq
+  - PT46L_nextseq
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261DX_novaseq
+  - HTB1261RL_novaseq
 
 R2_SAMPLES:
-  - sample
+  - PT46T_miseq
+  - PT46L_miseq
+  - PT46L_nextseq
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261DX_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261RL_hiseq2500
+  - HTB1261DX_novaseq
+  - HTB1261RL_novaseq
+  - PT46L_hiseq4000
+  - PT46T_hiseq4000

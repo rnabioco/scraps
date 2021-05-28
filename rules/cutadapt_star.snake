@@ -10,7 +10,7 @@ CAPTURES_DF = pd.read_csv(CAPTURES, sep = "\t")
 
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
-    samples_filtered = SAMPLES_DF[(SAMPLES_DF.exclude == 0) & (SAMPLES_DF.capture == wildcards.sample)]
+    samples_filtered = SAMPLES_DF[(SAMPLES_DF.capture == wildcards.sample)]
 
     fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), samples_filtered.fastqs)
     fqs = map(lambda x: glob.glob(x), fqs)
@@ -19,16 +19,21 @@ def _get_fq_paths(wildcards):
     return fqs
 
 """ Extract per-capture 10X chemistry versions from gex libs """
-def _get_chem_version(wildcards):
+def _get_chem_version_R1(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12"]
-        if wildcards.read == "R2":
-             args.append("--clip5pNbases 0 58")
     elif chem_version == "chromiumV2":
         args = [WHITELIST_V2,"--soloUMIlen 10"]
-        if wildcards.read == "R2":
-             args.append("--clip5pNbases 0 56")
+    return args
+
+""" Extract per-capture 10X chemistry versions from gex libs """
+def _get_chem_version_R2(wildcards):
+    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "chromiumV3":
+        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 0 58"]
+    elif chem_version == "chromiumV2":
+        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 0 56"]
     return args
 
 """ Extract per-capture extra arguments for gex libs """
@@ -53,10 +58,10 @@ rule cutadapt_paired:
       cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
          -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
-         -A polya_R2=A{30} \
+         -A polya_R2=A{{30}} \
          -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
          -n 4 \
-         -m 75:17 # example for v3; needs to be "min_alignable_read+58" \
+         -m 75:17 \
          -o {output.R1} \
          -p {output.R2} \
          <(zcat {input}) \
@@ -64,18 +69,19 @@ rule cutadapt_paired:
       """
 
 """ This rule processes chromium V2/V3 paired-end libraries """
-rule starsolo_gex_bam:
+rule starsolo_gex_R1:
     input:
       R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
       R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
     output:
       "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
     params:
-      chemistry = _get_chem_version,
+      chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R1_", 
       job_name = "star_gex_R1",
-      memory = "select[mem>32 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=32]"
+      memory = 
+      "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
     log: "logs/{sample}_star_gex_R1.out"
     resources:
       total_impact = 5
@@ -99,7 +105,7 @@ rule starsolo_gex_bam:
       --soloCellFilter None {params.extra_args} \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 32000000000 \
+      --limitBAMsortRAM 48000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn {input.R2} {input.R1}
       
@@ -107,17 +113,17 @@ rule starsolo_gex_bam:
       """
 
 """ This rule processes chromium V2/V3 libraries (R2 only) """
-rule starsolo_gex_bam:
+rule starsolo_gex_R2:
     input:
       R1 = _get_fq_paths
     output:
       "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
     params:
-      chemistry = _get_chem_version,
+      chemistry = _get_chem_version_R2,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2",
-      memory = "select[mem>32 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=32]"
+      memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
     log: "logs/{sample}_star_gex_R1.out"
     resources:
       total_impact = 5
@@ -138,7 +144,7 @@ rule starsolo_gex_bam:
       --soloCellFilter None {params.extra_args} \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 32000000000 \
+      --limitBAMsortRAM 48000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
       

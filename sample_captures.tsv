@@ -1,2 +1,10 @@
 capture	chemistry	notes	extra_args
-sample	chromiumV2	NA	" "
+PT46L_miseq	chromiumV2	NA	" "
+PT46T_miseq	chromiumV2	NA	" "
+PT46L_nextseq	chromiumV2	NA	" "
+HTB1261RL_hiseq2500	chromiumV3	NA	" "
+HTB1261DX_hiseq2500	chromiumV3	NA	" "
+HTB1261RL_novaseq	chromiumV3	NA	" "
+HTB1261DX_novaseq	chromiumV3	NA	" "
+PT46L_hiseq4000	chromiumV2	NA	" "
+PT46T_hiseq4000	chromiumV2	NA	" "
