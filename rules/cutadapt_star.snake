@@ -123,7 +123,7 @@ rule starsolo_gex_R2:
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2",
       memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_gex_R1.out"
+    log: "logs/{sample}_star_gex_R2.out"
     resources:
       total_impact = 5
     threads: 14
