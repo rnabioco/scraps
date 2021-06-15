@@ -40,7 +40,7 @@ rule assign_sites_read2:
     
     samtools index {output.bam}
     """
-    
+
 rule count:
   input:
     "{results}/counts/{sample}_{read}.bam"
@@ -48,6 +48,7 @@ rule count:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
     job_name = "count",
+    temp = "{results}/counts/{sample}_{read}_filter.bam",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/count_{sample}_{read}.txt"
@@ -55,12 +56,17 @@ rule count:
     1
   shell:
     """
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools index {params.temp}
     umi_tools count \
       --per-gene \
-      --gene-tag=XT \
+      --gene-tag=XT 
       --assigned-status-tag=XS \
       --per-cell \
-      -I {input} \
+      --extract-umi-method=tag \
+      --umi-tag=UB \
+      --cell-tag=CB \
+      -I {params.temp} \
       -S {output} \
       > {log}
     """
