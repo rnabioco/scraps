@@ -60,7 +60,7 @@ rule count:
     samtools index {params.temp}
     umi_tools count \
       --per-gene \
-      --gene-tag=XT 
+      --gene-tag=XT \
       --assigned-status-tag=XS \
       --per-cell \
       --extract-umi-method=tag \
