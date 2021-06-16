@@ -41,14 +41,36 @@ rule assign_sites_read2:
     samtools index {output.bam}
     """
 
+rule filter:
+  input:
+    "{results}/counts/{sample}_R2.bam"
+  output:
+    "{results}/counts/{sample}_R2_filter.done"
+  params:
+    job_name = "filter",
+    temp = "{results}/counts/{sample}_R2_filter.bam",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "logs/filter_{sample}_R2.txt"
+  threads:
+    1
+  shell:
+    """
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools index {params.temp}
+    python3 ~/projects/scraps_comp/code/scraps/inst/scripts/filter_bam.py -i {params.temp} -o {input}
+    samtools index {input}
+    touch {output}
+    """
+
 rule count:
   input:
-    "{results}/counts/{sample}_{read}.bam"
+    "{results}/counts/{sample}_{read}.bam",
+    "{results}/counts/{sample}_R2_filter.done"
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
     job_name = "count",
-    temp = "{results}/counts/{sample}_{read}_filter.bam",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/count_{sample}_{read}.txt"
@@ -56,8 +78,6 @@ rule count:
     1
   shell:
     """
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    samtools index {params.temp}
     umi_tools count \
       --per-gene \
       --gene-tag=XT \

@@ -8,7 +8,7 @@ suitable for cellranger and starsolo output
 
 def filter_bam_by_A(bam, outbam, nmin, fraq_min):
     samfile = pysam.AlignmentFile(bam, "rb")
-    outfile = pysam.AlignmentFile(outbam, "w", template = samfile)
+    outfile = pysam.AlignmentFile(outbam, "wb", template = samfile)
     #samfile.references
     i = 0
     k = 0
