@@ -79,7 +79,7 @@ def main():
     parser.add_argument('-n',
                         '--ntail',
                         help ="""number of reads to stream from each file for calculations""",
-                        default = 10,
+                        default = 5,
                         required = False)
 
     parser.add_argument('-f',

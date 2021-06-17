@@ -41,7 +41,7 @@ rule assign_sites_read2:
     samtools index {output.bam}
     """
 
-rule filter:
+rule filterR2:
   input:
     "{results}/counts/{sample}_R2.bam"
   output:
@@ -53,7 +53,7 @@ rule filter:
   log:
     "logs/filter_{sample}_R2.txt"
   threads:
-    1
+    4
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
@@ -63,10 +63,32 @@ rule filter:
     touch {output}
     """
 
+rule filterR1:
+  input:
+    "{results}/counts/{sample}_R1.bam"
+  output:
+    "{results}/counts/{sample}_R1_filter.done"
+  params:
+    job_name = "filter",
+    temp = "{results}/counts/{sample}_R1_filter.bam",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "logs/filter_{sample}_R1.txt"
+  threads:
+    4
+  shell:
+    """
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools index {params.temp}
+    mv {params.temp} {input}
+    samtools index {input}
+    touch {output}
+    """
+
 rule count:
   input:
     "{results}/counts/{sample}_{read}.bam",
-    "{results}/counts/{sample}_R2_filter.done"
+    "{results}/counts/{sample}_{read}_filter.done"
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
@@ -86,7 +108,7 @@ rule count:
       --extract-umi-method=tag \
       --umi-tag=UB \
       --cell-tag=CB \
-      -I {params.temp} \
+      -I {input} \
       -S {output} \
       > {log}
     """
