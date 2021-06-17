@@ -1,14 +1,14 @@
 
 """ rules for scraps counting """
 
-rule assign_sites_read2:
+rule assign_sites:
   input:
     "{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam"
   output:
     bam = "{results}/counts/{sample}_{read}.bam",
     bai = "{results}/counts/{sample}_{read}.bam.bai"
   params:
-    job_name = "assign_sites_read2",
+    job_name = "assign_sites_{read}",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/counts/{sample}_{read}_assigned",
     out_bam = "{results}/counts/{sample}_{read}_Aligned.sortedByCoord.out.bam.featureCounts.bam"
