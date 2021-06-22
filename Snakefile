@@ -19,10 +19,12 @@ STAR = config["STAR"]
 
 rule all:
   input:
-    # Generat read 1 & 2 BAMs;
+    # Generate read 1 & 2 BAMs;
     expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
     # Generate read 2 BAMS;
     expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
+    # Generate read 1 BAMS;
+    expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R1_SAMPLES, read = "read1"),
     # Generates read 1 (positional) counts;
     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
     # Generates read 2 (trimmed) counts;
@@ -31,6 +33,7 @@ rule all:
     # Generates bed files;
     expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
     expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
+
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"
 include: "rules/count.snake"

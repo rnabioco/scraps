@@ -18,7 +18,7 @@ def _get_fq_paths(wildcards):
     
     return fqs
 
-""" Extract per-capture 10X chemistry versions from gex libs """
+""" Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
@@ -27,13 +27,22 @@ def _get_chem_version_R2(wildcards):
         args = [WHITELIST_V2,"--soloUMIlen 10"]
     return args
 
-""" Extract per-capture 10X chemistry versions from gex libs """
+""" Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 0 58"]
     elif chem_version == "chromiumV2":
         args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 0 56"]
+    return args
+
+""" Extract per-capture 10X chemistry versions from gex libs (R1)"""
+def _get_chem_version_read1(wildcards):
+    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "chromiumV3":
+        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58"]
+    elif chem_version == "chromiumV2":
+        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56"]
     return args
 
 """ Extract per-capture extra arguments for gex libs """
@@ -101,6 +110,8 @@ rule starsolo_gex_R1:
       --soloUMIstart 17 \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
+      --alignMatesGapMax 100000 \
+      --alignIntronMax 100000 \
       --soloCellFilter None {params.extra_args} \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
@@ -146,6 +157,45 @@ rule starsolo_gex_R2:
       --limitBAMsortRAM 48000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
+      
+      rm -rf {params.out_dir}Solo.out
+      """
+
+""" This rule processes chromium V2/V3 libraries (R1 only)"""
+rule starsolo_gex_read1:
+    input:
+      R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz"
+    output:
+      "{results}/{sample}/{sample}_read1_Aligned.sortedByCoord.out.bam"
+    params:
+      chemistry = _get_chem_version_read1,
+      extra_args = _get_extra_args,
+      out_dir = "{results}/{sample}/{sample}_read1_", 
+      job_name = "star_gex_read1",
+      memory = 
+      "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
+    log: "logs/{sample}_star_gex_read1.out"
+    resources:
+      total_impact = 5
+    threads: 14
+    shell:
+      """
+      {STAR} --soloType CB_UMI_Simple \
+      --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
+      --soloUMIfiltering MultiGeneUMI \
+      --soloUMIdedup 1MM_Directional \
+      --readFilesCommand gunzip -c \
+      --runThreadN 12 \
+      --soloBarcodeReadLength 0
+      --soloCBwhitelist {params.chemistry} \
+      --genomeDir {STAR_INDEX} \
+      --soloFeatures Gene \
+      --soloCellFilter None {params.extra_args} \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 48000000000 \
+      --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
+      --outFileNamePrefix {params.out_dir} \
+      --readFilesIn $(echo {input.R1} | sed 's/ /,/g') $(echo {input.R1} | sed 's/ /,/g')
       
       rm -rf {params.out_dir}Solo.out
       """
