@@ -33,6 +33,7 @@ rule all:
     # Generates bed files;
     expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
     expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
+    expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "read1")
 
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"

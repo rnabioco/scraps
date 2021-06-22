@@ -128,6 +128,27 @@ rule filterR1:
     touch {output}
     """
 
+rule filterread1:
+  input:
+    "{results}/counts/{sample}_read1.bam"
+  output:
+    "{results}/counts/{sample}_read1_filter.done"
+  params:
+    job_name = "filter",
+    temp = "{results}/counts/{sample}_read1_filter.bam",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "logs/filter_{sample}_read1.txt"
+  threads:
+    4
+  shell:
+    """
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    mv {params.temp} {input}
+    samtools index {input}
+    touch {output}
+    """
+
 rule count:
   input:
     "{results}/counts/{sample}_{read}.bam",
@@ -214,4 +235,32 @@ rule bedR2:
       > {log}
 
     bedtools genomecov -ibam {params.dedup} -3 -dz | gzip > {output}
+    """
+
+rule bedread1:
+  input:
+    "{results}/counts/{sample}_read1.bam",
+    "{results}/counts/{sample}_read1_filter.done"
+  output:
+    "{results}/counts/{sample}_read1.bed.gz"
+  params:
+    job_name = "bed",
+    dedup = "{results}/counts/{sample}_read1_dedup.bam",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "logs/bed_{sample}_read1.txt"
+  threads:
+    4
+  shell:
+    """
+    umi_tools dedup \
+      --extract-umi-method=tag \
+      --umi-tag=UB \
+      --per-cell \
+      --cell-tag=CB \
+      -I {input} \
+      -S {params.dedup} \
+      > {log}
+
+    bedtools genomecov -ibam {params.dedup} -5 -dz | gzip > {output}
     """
