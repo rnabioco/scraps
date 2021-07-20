@@ -104,7 +104,7 @@ rule starsolo_gex_R1:
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
       --soloCBwhitelist {params.chemistry} \
-      --soloBarcodeMate 2 \
+      --soloBarcodeMate 1 \
       --soloCBstart 1 \
       --soloCBlen 16 \
       --soloUMIstart 17 \
@@ -117,7 +117,7 @@ rule starsolo_gex_R1:
       --outSAMtype BAM SortedByCoordinate \
       --limitBAMsortRAM 48000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
-      --readFilesIn {input.R2} {input.R1}
+      --readFilesIn {input.R1} {input.R2}
       
       rm -rf {params.out_dir}Solo.out
       """
@@ -173,7 +173,7 @@ rule starsolo_gex_read1:
       out_dir = "{results}/{sample}/{sample}_read1_", 
       job_name = "star_gex_read1",
       memory = 
-      "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
+      "select[mem>112 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=112]"
     log: "logs/{sample}_star_gex_read1.out"
     resources:
       total_impact = 5
@@ -186,16 +186,17 @@ rule starsolo_gex_read1:
       --soloUMIdedup 1MM_Directional \
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
-      --soloBarcodeReadLength 0
+      --soloBarcodeReadLength 0 \
+      --outSAMmultNmax 1 \
       --soloCBwhitelist {params.chemistry} \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
       --soloCellFilter None {params.extra_args} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 48000000000 \
+      --limitBAMsortRAM 112000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --outFileNamePrefix {params.out_dir} \
-      --readFilesIn $(echo {input.R1} | sed 's/ /,/g') $(echo {input.R1} | sed 's/ /,/g')
+      --readFilesIn {input.R1} {input.R1}
       
       rm -rf {params.out_dir}Solo.out
       """

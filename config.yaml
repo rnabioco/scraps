@@ -6,7 +6,7 @@ DATA:
 
 # results directory
 RESULTS:
-  "../results_202105"
+  "../results_202106"
 
 # path to STAR executable
 STAR:
@@ -60,6 +60,8 @@ R1_SAMPLES:
   - Brett55_hiseq4000
   - Foreman_1036_hiseq4000
   - Foreman_936_hiseq4000
+  - HTB1285_novaseq
+  - HTB1279_novaseq
 
 R2_SAMPLES:
   - PT46T_miseq
@@ -81,3 +83,5 @@ R2_SAMPLES:
   - Brett55_hiseq4000
   - Foreman_1036_hiseq4000
   - Foreman_936_hiseq4000
+  - HTB1285_novaseq
+  - HTB1279_novaseq
