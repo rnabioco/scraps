@@ -96,7 +96,7 @@ rule bedR1:
       -S {params.dedup} \
       > {log}
     
-    samtools view -f 0x82 {params.dedup} -b > {params.r}
+    samtools view -f 0x42 {params.dedup} -b > {params.r}
     bedtools genomecov -ibam {params.r} -5 -dz | gzip > {output}
     """
 
