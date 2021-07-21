@@ -1,12 +1,94 @@
 
 """ rules for scraps counting """
-rule filterR2:
+
+rule assign_sites_read2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
-    #"{results}/counts/{sample}_R2.bam"
   output:
+    bam = "{results}/counts/{sample}_R2.bam",
+    bai = "{results}/counts/{sample}_R2.bam.bai"
+  params:
+    job_name = "assign_sites_read2",
+    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
+    out = "{results}/counts/{sample}_R2_assigned",
+    out_bam = "{results}/counts/{sample}_R2_Aligned.sortedByCoord.out.bam.featureCounts.bam"
+  log:
+    "logs/assign_sites_{sample}_R2.txt"
+  threads:
+    12
+  shell:
+    """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
+    featureCounts \
+    -s 1 -Q 10 -O \
+    --read2pos 3 \
+    -o {params.out} \
+    -F $polyaformat \
+    -a {POLYA_SITES} \
+    -R BAM \
+    -T {threads} \
+    {input} \
+    2> {log}
+    
+    samtools sort \
+    {params.out_bam} \
+    -o {output.bam}
+    
+    samtools index {output.bam}
+
+    rm -rf {params.out_bam}
+    """
+
+rule assign_sites_read1:
+  input:
+    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+  output:
+    bam = "{results}/counts/{sample}_R1.bam",
+    bai = "{results}/counts/{sample}_R1.bam.bai"
+  params:
+    job_name = "assign_sites_read1",
+    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
+    out = "{results}/counts/{sample}_R1_assigned",
+    out_bam = "{results}/counts/{sample}_R1_Aligned.sortedByCoord.out.bam.featureCounts.bam"
+  log:
+    "logs/assign_sites_{sample}_R1.txt"
+  threads:
+    12
+  shell:
+    """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
+    featureCounts \
+    -s 1 -Q 10 -O \
+    --read2pos 5 \
+    -o {params.out} \
+    -F $polyaformat \
+    -a {POLYA_SITES} \
+    -R BAM \
+    -T {threads} \
+    {input} \
+    2> {log}
+
+    samtools sort \
+    {params.out_bam} \
+    -o {output.bam}
+
+    samtools index {output.bam}
+    rm -rf {params.out_bam}
+    """
+
+rule filterR2:
+  input:
     "{results}/counts/{sample}_R2.bam"
-    #"{results}/counts/{sample}_R2_filter.done"
+  output:
+    "{results}/counts/{sample}_R2_filter.done"
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R2_filter.bam",
@@ -19,18 +101,17 @@ rule filterR2:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
     samtools index {params.temp}
-    python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
-    samtools index {output}
+    python3 inst/scripts/filter_bam.py -i {params.temp} -o {input}
+    samtools index {input}
     rm -rf {params.temp}
+    touch {output}
     """
 
 rule filterR1:
   input:
-    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
-    #"{results}/counts/{sample}_R1.bam"
-  output:
     "{results}/counts/{sample}_R1.bam"
-    #"{results}/counts/{sample}_R1_filter.done"
+  output:
+    "{results}/counts/{sample}_R1_filter.done"
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R1_filter.bam",
@@ -42,8 +123,9 @@ rule filterR1:
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    mv {params.temp} {output}
-    samtools index {output}
+    mv {params.temp} {input}
+    samtools index {input}
+    touch {output}
     """
 
 rule filterread1:
@@ -68,24 +150,51 @@ rule filterread1:
     samtools index {output}
     """
 
+rule count:
+  input:
+    "{results}/counts/{sample}_{read}.bam",
+    "{results}/counts/{sample}_{read}_filter.done"
+  output:
+    "{results}/counts/{sample}_{read}_counts.tsv.gz"
+  params:
+    job_name = "count",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "logs/count_{sample}_{read}.txt"
+  threads:
+    4
+  shell:
+    """
+    umi_tools count \
+      --per-gene \
+      --gene-tag=XT \
+      --assigned-status-tag=XS \
+      --per-cell \
+      --extract-umi-method=tag \
+      --umi-tag=UB \
+      --cell-tag=CB \
+      -I {input} \
+      -S {output} \
+      > {log}
+    """
+
 rule bedR1:
   input:
     "{results}/counts/{sample}_R1.bam",
-    #"{results}/counts/{sample}_R1_filter.done"
+    "{results}/counts/{sample}_R1_filter.done"
   output:
     "{results}/counts/{sample}_R1.bed.gz"
   params:
     job_name = "bed",
     dedup = "{results}/counts/{sample}_R1_dedup.bam",
     r = "{results}/counts/{sample}_R1_r.bam",
-    memory = "select[mem>72] rusage[mem=72]" # LSF format; change as needed
+    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
     "logs/bed_{sample}_R1.txt"
   threads:
     4
   shell:
     """
-    # would need --paired if not previously filtered
     umi_tools dedup \
       --extract-umi-method=tag \
       --umi-tag=UB \
@@ -95,7 +204,7 @@ rule bedR1:
       -I {input} \
       -S {params.dedup} \
       > {log}
-    
+    # 0x82 for R2
     samtools view -f 0x42 {params.dedup} -b > {params.r}
     bedtools genomecov -ibam {params.r} -5 -dz | gzip > {output}
     """
@@ -103,13 +212,13 @@ rule bedR1:
 rule bedR2:
   input:
     "{results}/counts/{sample}_R2.bam",
-    #"{results}/counts/{sample}_R2_filter.done"
+    "{results}/counts/{sample}_R2_filter.done"
   output:
     "{results}/counts/{sample}_R2.bed.gz"
   params:
     job_name = "bed",
     dedup = "{results}/counts/{sample}_R2_dedup.bam",
-    memory = "select[mem>72] rusage[mem=72]" # LSF format; change as needed
+    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
     "logs/bed_{sample}_R2.txt"
   threads:
