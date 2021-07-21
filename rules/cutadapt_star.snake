@@ -31,9 +31,9 @@ def _get_chem_version_R2(wildcards):
 def _get_chem_version_R1(wildcards):
     chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
-        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 0 58"]
+        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
     elif chem_version == "chromiumV2":
-        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 0 56"]
+        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R1)"""
