@@ -206,7 +206,7 @@ rule bedR1:
       > {log}
     # 0x82 for R2
     samtools view -f 0x42 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk '{ print $1, $2 - 1, $2, $3}' - | gzip > {output}
+    bedtools genomecov -ibam {params.r} -5 -dz | awk '{{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
     """
 
 rule bedR2:
@@ -234,7 +234,7 @@ rule bedR2:
       -S {params.dedup} \
       > {log}
 
-    bedtools genomecov -ibam {params.dedup} -3 -dz | awk '{ print $1, $2 - 1, $2, $3}' - | gzip > {output}
+    bedtools genomecov -ibam {params.dedup} -3 -dz | awk '{{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
     """
 
 rule bedread1:
@@ -262,5 +262,5 @@ rule bedread1:
       -S {params.dedup} \
       > {log}
 
-    bedtools genomecov -ibam {params.dedup} -5 -dz | awk '{ print $1, $2 - 1, $2, $3}' - | gzip > {output}
+    bedtools genomecov -ibam {params.dedup} -5 -dz | awk '{{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
     """
