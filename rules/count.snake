@@ -25,7 +25,7 @@ rule assign_sites_read2:
 
     featureCounts \
     -s 1 -Q 10 -O \
-    --read2pos 3 \
+    --read1pos 3 \
     -o {params.out} \
     -F $polyaformat \
     -a {POLYA_SITES} \
@@ -67,7 +67,7 @@ rule assign_sites_read1:
 
     featureCounts \
     -s 1 -Q 10 -O \
-    --read2pos 5 \
+    --read1pos 5 \
     -o {params.out} \
     -F $polyaformat \
     -a {POLYA_SITES} \
