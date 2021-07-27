@@ -3,15 +3,14 @@
 
 rule assign_sites_read2:
   input:
-    "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
+    "{results}/counts/{sample}_R2.bam"
   output:
-    bam = "{results}/counts/{sample}_R2.bam",
-    bai = "{results}/counts/{sample}_R2.bam.bai"
+    bam = "{results}/counts/{sample}_R2_assigned.bam"
   params:
     job_name = "assign_sites_read2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/counts/{sample}_R2_assigned",
-    out_bam = "{results}/counts/{sample}_R2_Aligned.sortedByCoord.out.bam.featureCounts.bam"
+    out_bam = "{results}/counts/{sample}_R2.bam.featureCounts.bam"
   log:
     "logs/assign_sites_{sample}_R2.txt"
   threads:
@@ -45,15 +44,14 @@ rule assign_sites_read2:
 
 rule assign_sites_read1:
   input:
-    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+    "{results}/counts/{sample}_R1.bam"
   output:
-    bam = "{results}/counts/{sample}_R1.bam",
-    bai = "{results}/counts/{sample}_R1.bam.bai"
+    bam = "{results}/counts/{sample}_R1_assigned.bam"
   params:
     job_name = "assign_sites_read1",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/counts/{sample}_R1_assigned",
-    out_bam = "{results}/counts/{sample}_R1_Aligned.sortedByCoord.out.bam.featureCounts.bam"
+    out_bam = "{results}/counts/{sample}_R1.bam.featureCounts.bam"
   log:
     "logs/assign_sites_{sample}_R1.txt"
   threads:
@@ -86,9 +84,9 @@ rule assign_sites_read1:
 
 rule filterR2:
   input:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R2_filter.done"
+    "{results}/counts/{sample}_R2.bam"
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R2_filter.bam",
@@ -101,17 +99,16 @@ rule filterR2:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
     samtools index {params.temp}
-    python3 inst/scripts/filter_bam.py -i {params.temp} -o {input}
-    samtools index {input}
+    python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
+    samtools index {output}
     rm -rf {params.temp}
-    touch {output}
     """
 
 rule filterR1:
   input:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R1_filter.done"
+    "{results}/counts/{sample}_R1.bam"
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R1_filter.bam",
@@ -123,9 +120,8 @@ rule filterR1:
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    mv {params.temp} {input}
-    samtools index {input}
-    touch {output}
+    mv {params.temp} {output}
+    samtools index {output}
     """
 
 rule filterread1:
@@ -152,8 +148,7 @@ rule filterread1:
 
 rule count:
   input:
-    "{results}/counts/{sample}_{read}.bam",
-    "{results}/counts/{sample}_{read}_filter.done"
+    "{results}/counts/{sample}_{read}_assigned.bam"
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
@@ -180,8 +175,7 @@ rule count:
 
 rule bedR1:
   input:
-    "{results}/counts/{sample}_R1.bam",
-    "{results}/counts/{sample}_R1_filter.done"
+    "{results}/counts/{sample}_R1.bam"
   output:
     "{results}/counts/{sample}_R1.bed.gz"
   params:
@@ -211,8 +205,7 @@ rule bedR1:
 
 rule bedR2:
   input:
-    "{results}/counts/{sample}_R2.bam",
-    "{results}/counts/{sample}_R2_filter.done"
+    "{results}/counts/{sample}_R2.bam"
   output:
     "{results}/counts/{sample}_R2.bed.gz"
   params:
@@ -239,8 +232,7 @@ rule bedR2:
 
 rule bedread1:
   input:
-    "{results}/counts/{sample}_read1.bam",
-    #"{results}/counts/{sample}_read1_filter.done"
+    "{results}/counts/{sample}_read1.bam"
   output:
     "{results}/counts/{sample}_read1.bed.gz"
   params:
