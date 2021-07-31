@@ -195,6 +195,7 @@ rule bedR1:
       --per-cell \
       --cell-tag=CB \
       --paired \
+      --method=unique \
       -I {input} \
       -S {params.dedup} \
       > {log}
@@ -223,6 +224,7 @@ rule bedR2:
       --umi-tag=UB \
       --per-cell \
       --cell-tag=CB \
+      --method=unique \
       -I {input} \
       -S {params.dedup} \
       > {log}
@@ -250,6 +252,7 @@ rule bedread1:
       --umi-tag=UB \
       --per-cell \
       --cell-tag=CB \
+      --method=unique \
       -I {input} \
       -S {params.dedup} \
       > {log}
