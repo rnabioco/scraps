@@ -114,6 +114,7 @@ rule starsolo_gex_R1:
       --soloCBstart 1 \
       --soloCBlen 16 \
       --soloUMIstart 17 \
+      --outFilterMultimapNmax 1 \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
       --alignMatesGapMax 100000 \
@@ -152,6 +153,7 @@ rule starsolo_gex_R2:
       --soloUMIdedup 1MM_Directional \
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
+      --outFilterMultimapNmax 1 \
       --soloBarcodeReadLength 0 \
       --soloCBwhitelist {params.chemistry} \
       --clipAdapterType CellRanger4 \
@@ -193,7 +195,7 @@ rule starsolo_gex_read1:
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
       --soloBarcodeReadLength 0 \
-      --outSAMmultNmax 1 \
+      --outFilterMultimapNmax 1 \
       --soloCBwhitelist {params.chemistry} \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
