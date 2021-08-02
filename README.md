@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 
-![](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps_total.txt&query=downloads&colorB=brightgreen)
+![](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
 <!-- badges: end -->
 
 scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
