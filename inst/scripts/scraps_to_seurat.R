@@ -1,20 +1,22 @@
-#' Add scraps output to existing seurat object as new assay
+#' Read scraps output to matrix
 #' 
 #' @param file scraps output table containing 
-#' @param object seurat object
 #' @param n_min  minimum number of observations for a site to be kept
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
+#' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
+#' @param types filter to only these types of PA sites, set to NULL to use all
 #' @param pf data.frame with SAF first column and position factor by gene, calculated by `parse_saf_pf`
-#' @return Seurat object with inserted assay
+#' @return count matrix
 #' @examples 
-#' s_small <- scraps_to_seurat("sample_R2_counts.tsv.gz",
+#' s_small <- scraps_to_matrix("sample_R2_counts.tsv.gz",
 #'                             SeuratObject::pbmc_small,
 #'                             alt_only = FALSE)
 #' 
-scraps_to_seurat <- function(file, object, 
-                             assay_name = "Asite",
-                             n_min = 1,
+scraps_to_matrix <- function(file,
+                             n_min = 5,
                              alt_only = TRUE,
+                             cell_ids = NULL,
+                             types = "3'UTR",
                              pf = NULL) {
   # read file
   dat <- read_tsv(file)
@@ -23,6 +25,10 @@ scraps_to_seurat <- function(file, object,
   dat <- dat %>% group_by(gene) %>% 
     filter(sum(count) >= n_min) %>% 
     ungroup()
+  
+  if (!is.null(types)) {
+    dat <- dat %>% filter(str_detect(gene, types))
+  }
   
   # if TRUE, toss observations where gene only has 1 polyA site
   if (alt_only) {
@@ -59,18 +65,54 @@ scraps_to_seurat <- function(file, object,
   # transform to matrix
   mat <- dat %>% pivot_wider(names_from = cell, values_from = count, values_fill = 0) %>% 
     column_to_rownames("gene")
-  dat4 <<- mat
-  
+
   # keep consistent cell ids
-  emptys <- setdiff(Cells(object), colnames(mat))
-  
-  if (length(emptys) > 0) {
-    empty_mat <- matrix(data = 0, nrow = nrow(mat), ncol = length(emptys))
-    colnames(empty_mat) <- emptys
-    mat <- cbind(mat, empty_mat)
+  if (!is.null(cell_ids)) {
+    emptys <- setdiff(cell_ids, colnames(mat))
+    
+    if (length(emptys) > 0) {
+      empty_mat <- matrix(data = 0, nrow = nrow(mat), ncol = length(emptys))
+      colnames(empty_mat) <- emptys
+      mat <- cbind(mat, empty_mat)
+    }
+    
+    mat <- mat[, cell_ids]
   }
   
-  mat <- mat[, Cells(object)]
+  return(mat)
+}
+
+#' Add scraps output to existing seurat object as new assay
+#' 
+#' @param file scraps output table containing 
+#' @param object seurat object
+#' @param n_min  minimum number of observations for a site to be kept
+#' @param alt_only if TRUE, only keep genes with alternative polyA sites
+#' @param types filter to only these types of PA sites, set to NULL to use all
+#' @param pf data.frame with SAF first column and position factor by gene, calculated by `parse_saf_pf`
+#' @return Seurat object with inserted assay
+#' @examples 
+#' s_small <- scraps_to_seurat("sample_R2_counts.tsv.gz",
+#'                             SeuratObject::pbmc_small,
+#'                             alt_only = FALSE)
+#' 
+scraps_to_seurat <- function(file, object, 
+                             assay_name = "Asite",
+                             n_min = 5,
+                             alt_only = TRUE,
+                             types = "3'UTR",
+                             pf = NULL) {
+  cell_ids <- Cells(object)
+  
+  mat <- scraps_to_matrix(file,
+                          object, 
+                          assay_name = assay_name,
+                          n_min = n_min,
+                          alt_only = alt_only,
+                          cell_ids = cell_ids,
+                          types = types,
+                          pf = pf)
+
   object[[assay_name]] <- CreateAssayObject(counts = mat)
   
   return(object)
