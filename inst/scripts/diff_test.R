@@ -98,18 +98,22 @@ PA_DEXSeq <- function(mat,
   dxd <- DEXSeq::estimateExonFoldChanges(dxd)
   dxr1 <- DEXSeq::DEXSeqResults(dxd)
 
-  
   mat1 <- mat[, cell_ids1, drop = FALSE]
   mat1[mat1 > 0] <- 1
   mat2 <- mat[, cell_ids2, drop = FALSE]
   mat2[mat2 > 0] <- 1
   
+  pct <- data.frame(
+    full_site = rownames(mat),
+    pct_1 = Matrix::rowMeans(mat1),
+    pct_2 = Matrix::rowMeans(mat2))
+  
   sig <- as.data.frame(dxr1) %>% 
     select(gene = groupID, padj, log2FC = log2fold_target_comparison) %>% 
     arrange(padj) %>% 
     rownames_to_column("full_site") %>% 
-    mutate(pct_1 = Matrix::rowMeans(mat1),
-           pct_2 = Matrix::rowMeans(mat2)) %>%
+    mutate(full_site = str_replace(full_site, ":", "_")) %>% 
+    left_join(pct, by = "full_site") %>% 
     filter(padj <= padj_cut, abs(log2FC) >= fc_cut) %>% 
     filter(gene != "NA")
 }
