@@ -128,26 +128,7 @@ scraps_to_seurat <- function(file, object,
 #' 
 parse_saf_pf <- function(file,
                          alt_only = TRUE) {
-  # read SAF and split for gene symbol
-  saf <- read_tsv(file) %>% 
-    mutate(GeneID2 = str_remove(GeneID, Chr)) %>% 
-    separate(GeneID2, 
-             sep = "_", 
-             into = c("gene", 
-                      "genbank", 
-                      "id", 
-                      "chrom", 
-                      "pos",
-                      "strand",
-                      "class"),
-             remove = FALSE) %>% 
-    mutate(pos = as.numeric(pos)) %>% 
-    filter(gene != "NA") %>% 
-    filter(!is.na(pos)) %>% 
-    mutate(Start = Start - 1)
-  
-  # convert to bed format
-  bed1 <- saf %>% select(chrom = Chr, start = Start, end = End, strand, gene, GeneID)
+  bed1 <- parse_saf(file)
   
   # remove symbols that come from different chromosomes
   diffchrom <- bed1 %>% distinct(gene, chrom) %>% 
@@ -184,4 +165,50 @@ parse_saf_pf <- function(file,
   }
   
   bed3 %>% select(GeneID, pf)
+}
+
+parse_saf <- function(file) {
+  # read SAF and split for gene symbol
+  saf <- read_tsv(file) %>% 
+    mutate(GeneID2 = str_remove(GeneID, Chr)) %>% 
+    separate(GeneID2, 
+             sep = "_", 
+             into = c("gene", 
+                      "genbank", 
+                      "id", 
+                      "chrom", 
+                      "pos",
+                      "strand",
+                      "class"),
+             remove = FALSE) %>% 
+    mutate(pos = as.numeric(pos)) %>% 
+    filter(gene != "NA") %>% 
+    filter(!is.na(pos)) %>% 
+    mutate(Start = Start - 1)
+  
+  # convert to bed format
+  bed1 <- saf %>% select(chrom = Chr, start = Start, end = End, strand, gene, GeneID)
+  bed1
+}
+
+parse_gtf <- function(file) {
+  gtf <- rtracklayer::import(file)
+  tbl_gtf <- as.tbl_intervalcustom(gtf)
+}
+
+as.tbl_intervalcustom <- function(x) {
+  res <- tibble(
+    chrom = as.character(x@seqnames),
+    start = x@ranges@start - 1,
+    end = x@ranges@start - 1 + x@ranges@width,
+    name = x@elementMetadata$gene_name,
+    transcript = x@elementMetadata$transcript_id,
+    transcript_type =  x@elementMetadata$transcript_type,
+    score = rep(".", length(x)),
+    strand = as.character(x@strand),
+    type = x@elementMetadata$type,
+    exon_number = as.numeric(x@elementMetadata$exon_number)
+  )
+  res <- mutate(res, strand = ifelse(strand == "*", ".", strand))
+  res
 }
