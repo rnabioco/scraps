@@ -7,16 +7,18 @@
 #' @param padj_cut max adjusted p value cutoff
 #' @param pseudo_n number of pseudobulk profiles to make for each group
 #' @param types filter to only these types of PA sites, set to NULL to use all
+#' @param indep_fil independent filtering for DEXSeq
 #' @return DEXSeq result table
 #' 
 PA_DEXSeq <- function(mat,
                       cell_ids1,
                       cell_ids2, 
-                      fc_cut = 0.25, 
-                      padj_cut = 0.05,
+                      fc_cut = 0.5, 
+                      padj_cut = 0.1,
                       pseudo_n = 6,
                       seed = 1,
-                      type = c("3'UTR")) {
+                      type = c("3'UTR"),
+                      indep_fil = TRUE) {
   # filter by types
   if (!is.null(type)) {
     mat <- mat[str_detect(rownames(mat), type), ]
@@ -28,18 +30,21 @@ PA_DEXSeq <- function(mat,
              sep = "_", 
              into = c("gene_name", "gene_info"), 
              remove = FALSE,
-             extra = "merge") %>% 
-    distinct(gene_name, gene_info, gene) 
-  keeps2 <- dat2 %>% 
-    group_by(gene_name) %>% 
-    summarize(n = n()) %>% 
-    filter(n > 1) %>% 
-    pull(gene_name)
+             extra = "merge")
+  
+  keeps2 <- dat2$gene_name %>% table() %>%
+    as.data.frame() %>%
+    setNames(c("gene_name", "n")) %>%
+    filter(n > 1) %>%
+    pull(gene_name) %>% 
+    as.vector()
+  
   keeps <- dat2 %>% filter(gene_name %in% keeps2) %>% 
     pull(gene)
   mat <- mat[keeps, ]
   
   # pseudobulk
+  message("prepare ", pseudo_n, " pseudo-bulks per sample")
   set.seed(seed)
   cells_1 <- split(sample(cell_ids1), 1:length(cell_ids1)%%pseudo_n)
   set.seed(seed)
@@ -74,8 +79,9 @@ PA_DEXSeq <- function(mat,
   colnames(profile_2) <- str_c("Population2_", 1:length(cells_2))
 
   profile_full <- cbind(profile_1, profile_2)
-  
+
   # prepare DEXSeq
+  message("run DEXSeq")
   st <- data.frame(row.names = c(colnames(profile_1), colnames(profile_2)),
                    condition = c(rep("target", ncol(profile_1)),
                                  rep("comparison", ncol(profile_2))))
@@ -91,12 +97,13 @@ PA_DEXSeq <- function(mat,
   dxd <- DEXSeq::DEXSeqDataSet(profile_full, 
                                sampleData = st, groupID = ft$gene_name,
                                featureID = ft$gene_info, design= ~sample+exon+condition:exon)
+  
   # run
   dxd <- DEXSeq::estimateSizeFactors(dxd, locfunc = genefilter::shorth)
   dxd <- DEXSeq::estimateDispersions(dxd)
   dxd <- DEXSeq::testForDEU(dxd)
   dxd <- DEXSeq::estimateExonFoldChanges(dxd)
-  dxr1 <- DEXSeq::DEXSeqResults(dxd)
+  dxr1 <- DEXSeq::DEXSeqResults(dxd, independentFiltering = indep_fil)
 
   mat1 <- mat[, cell_ids1, drop = FALSE]
   mat1[mat1 > 0] <- 1

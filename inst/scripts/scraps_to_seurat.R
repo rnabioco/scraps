@@ -14,12 +14,17 @@
 #' 
 scraps_to_matrix <- function(file,
                              n_min = 5,
-                             alt_only = TRUE,
+                             alt_only = FALSE,
                              cell_ids = NULL,
                              types = "3'UTR",
                              pf = NULL) {
   # read file
+  message("read file")
   dat <- read_tsv(file)
+  if (!is.null(cell_ids)) {
+    dat <- dat %>% 
+      filter(cell %in% cell_ids)
+  }
   
   # filter if total counts too low
   dat <- dat %>% group_by(gene) %>% 
@@ -27,23 +32,26 @@ scraps_to_matrix <- function(file,
     ungroup()
   
   if (!is.null(types)) {
+    message("filter for ", str_c(types, collapse = ". "))
     dat <- dat %>% filter(str_detect(gene, types))
   }
   
   # if TRUE, toss observations where gene only has 1 polyA site
   if (alt_only) {
+    message("filter for genes with alternative sites")
     dat2 <- dat %>% separate(gene, 
                              sep = "_", 
                              into = c("gene_name", "gene_info"), 
                              remove = FALSE,
                              extra = "merge") %>% 
-      distinct(gene_name, gene_info, gene) 
+      distinct(gene, gene_name, gene_info)
     
-    keeps2 <- dat2 %>% 
-      group_by(gene_name) %>% 
-      summarize(n = n()) %>% 
-      filter(n > 1) %>% 
-      pull(gene_name)
+    keeps2 <- dat2$gene_name %>% table() %>%
+      as.data.frame() %>%
+      setNames(c("gene_name", "n")) %>%
+      filter(n > 1) %>%
+      pull(gene_name) %>% 
+      as.vector()
     
     keeps <- dat2 %>% filter(gene_name %in% keeps2) %>% 
       pull(gene)
@@ -53,6 +61,7 @@ scraps_to_matrix <- function(file,
   
   # use psi values if pf is used
   if (!is.null(pf)) {
+    message("calculate normalized PSI value")
     dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
       mutate(gene_name = str_remove(gene, "_.+")) %>% 
       mutate(count2 = pf * count) %>% 
@@ -63,6 +72,7 @@ scraps_to_matrix <- function(file,
   }
   
   # transform to matrix
+  message("convert to matrix")
   mat <- dat %>% pivot_wider(names_from = cell, values_from = count, values_fill = 0) %>% 
     column_to_rownames("gene")
 
@@ -71,6 +81,7 @@ scraps_to_matrix <- function(file,
     emptys <- setdiff(cell_ids, colnames(mat))
     
     if (length(emptys) > 0) {
+      message("filling empty 0s")
       empty_mat <- matrix(data = 0, nrow = nrow(mat), ncol = length(emptys))
       colnames(empty_mat) <- emptys
       mat <- cbind(mat, empty_mat)
@@ -212,3 +223,4 @@ as.tbl_intervalcustom <- function(x) {
   res <- mutate(res, strand = ifelse(strand == "*", ".", strand))
   res
 }
+
