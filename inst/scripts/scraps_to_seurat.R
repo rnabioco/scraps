@@ -5,6 +5,7 @@
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
 #' @param types filter to only these types of PA sites, set to NULL to use all
+#' @param types2 another filter to only these types of PA sites, set to NULL to use all
 #' @param pf data.frame with SAF first column and position factor by gene, calculated by `parse_saf_pf`
 #' @return count matrix
 #' @examples 
@@ -17,6 +18,7 @@ scraps_to_matrix <- function(file,
                              alt_only = FALSE,
                              cell_ids = NULL,
                              types = "3'UTR",
+                             types2 = NULL,
                              pf = NULL) {
   # read file
   message("read file")
@@ -34,6 +36,11 @@ scraps_to_matrix <- function(file,
   if (!is.null(types)) {
     message("filter for ", str_c(types, collapse = ". "))
     dat <- dat %>% filter(str_detect(gene, types))
+  }
+  
+  if (!is.null(types2)) {
+    message("filter for ", str_c(types2, collapse = ". "))
+    dat <- dat %>% filter(str_detect(gene, types2))
   }
   
   # if TRUE, toss observations where gene only has 1 polyA site

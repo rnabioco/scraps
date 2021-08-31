@@ -37,10 +37,15 @@ PA_DEXSeq <- function(mat,
     setNames(c("gene_name", "n")) %>%
     filter(n > 1) %>%
     pull(gene_name) %>% 
+    unique() %>% 
     as.vector()
+  message("number of genes with 2+ PA sites: ", length(keeps2))
   
   keeps <- dat2 %>% filter(gene_name %in% keeps2) %>% 
-    pull(gene)
+    pull(gene) %>%
+    unique()
+  message("number of peaks tested: ", length(keeps))
+  
   mat <- mat[keeps, ]
   
   # pseudobulk

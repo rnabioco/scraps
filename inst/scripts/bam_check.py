@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from functools import reduce
 from  collections import defaultdict
+import statistics
 
-""" Filter BAM files to only reads with soft-clipped A tail,
-suitable for cellranger and starsolo output
+""" QC for various metrics
 """
 
 def qc_bam_read1(bam):
@@ -31,11 +31,24 @@ def qc_bam_read1(bam):
             continue
 
         j += 1
+
+        # parse read name
+        id,run,cell,lane,tile,x,y =read.query_name.split(":")
+        tile = lane + ":" + tile
+        try:
+            CB = read.get_tag('CB')
+        except KeyError:
+            continue
+
         if j == 1:
             readlen = len(read.query_qualities)
             d = defaultdict(lambda: [0]*readlen)
             d2 = defaultdict(lambda: [0]*readlen)
             phred = []
+            cs = defaultdict(int)
+            cp = defaultdict(int)
+            ts = defaultdict(int)
+            tp = defaultdict(int)
 
         if not read.is_reverse:
             i += 1
@@ -45,11 +58,6 @@ def qc_bam_read1(bam):
                 phredfill = [np.nan for _ in range(readlen - len(read.query_qualities))]
                 phredfill2 = np.concatenate([read.query_qualities,np.array(phredfill)])
                 phred.append(phredfill2)
-            # if i == 1000000:
-            #     print("finished " + "1000000" + " reads for phred score")
-            if i == 10000000:
-                # print("finished " + "10000000" + " reads for nucleotide composition")
-                break
 
         else:
             i += 1
@@ -59,13 +67,16 @@ def qc_bam_read1(bam):
                 phredfill = [np.nan for _ in range(readlen - len(read.query_qualities))]
                 phredfill2 = np.concatenate([np.flip(read.query_qualities),np.array(phredfill)])
                 phred.append(phredfill2)
-            # if i == 1000000:
-            #     print("finished " + "1000000" + " reads for phred score")
-            if i == 10000000:
-                # print("finished " + "10000000" + " reads for nucleotide composition")
-                break
 
-    return(d, phred)
+        phred_part1 = statistics.mean(phredfill2[58:(58 + 40)])
+        phred_part2 = statistics.mean(phredfill2[(58-20):58])
+        if not np.isnan(phred_part1):
+            cs[CB] += 1
+            cp[CB] = cp[CB] + phred_part1
+            ts[tile] += 1
+            tp[tile] = tp[tile] + phred_part1
+
+    return(d, phred, cs, cp, ts, tp)
 
 def qc_bam_unmapped_read1(bam):
     samfile = pysam.AlignmentFile(bam, "rb")
@@ -84,11 +95,24 @@ def qc_bam_unmapped_read1(bam):
             continue
 
         j += 1
+
+        # parse read name
+        id,run,cell,lane,tile,x,y =read.query_name.split(":")
+        tile = lane + ":" + tile
+        try:
+            CB = read.get_tag('CR')
+        except KeyError:
+            continue
+
         if j == 1:
             readlen = len(read.query_qualities)
             d = defaultdict(lambda: [0]*readlen)
             d2 = defaultdict(lambda: [0]*readlen)
             phred = []
+            cs = defaultdict(int)
+            cp = defaultdict(int)
+            ts = defaultdict(int)
+            tp = defaultdict(int)
 
         if not read.is_reverse:
             i += 1
@@ -98,11 +122,6 @@ def qc_bam_unmapped_read1(bam):
                phredfill = [np.nan for _ in range(readlen - len(read.query_qualities))]
                phredfill2 = np.concatenate([read.query_qualities,np.array(phredfill)])
                phred.append(phredfill2)
-            # if i % 1000000 == 0:
-            #     print("finished " + "1000000" + " reads for phred score")
-            if i % 10000000 == 0:
-                # print("finished " + "10000000" + " reads for nucleotide composition")
-                break
 
         else:
             i += 1
@@ -112,13 +131,16 @@ def qc_bam_unmapped_read1(bam):
                phredfill = [np.nan for _ in range(readlen - len(read.query_qualities))]
                phredfill2 = np.concatenate([np.flip(read.query_qualities),np.array(phredfill)])
                phred.append(phredfill2)
-            # if i % 1000000 == 0:
-            #    print("finished " + "1000000" + " reads for phred score")
-            if i % 10000000 == 0:
-            #     print("finished " + "10000000" + " reads for nucleotide composition")
-                 break
-                
-    return(d, phred)
+
+        phred_part1 = statistics.mean(phredfill2[58:(58 + 40)])
+        phred_part2 = statistics.mean(phredfill2[(58-20):58])
+        if not np.isnan(phred_part1):
+            cs[CB] += 1
+            cp[CB] = cp[CB] + phred_part1
+            ts[tile] += 1
+            tp[tile] = tp[tile] + phred_part1
+
+    return(d, phred, cs, cp, ts, tp)
 
 def plot_line(df, plotname):
     plot = df.plot.line()
@@ -148,6 +170,13 @@ def do_plot_box(phred, out_name):
     df = pd.DataFrame(phred)
     plot_box(df, out_name + "_phred.pdf")
 
+def dicts_to_csv(s, p, out_name, name2):
+    df_count = pd.DataFrame.from_dict([s])
+    df_phred = pd.DataFrame.from_dict([p])
+    df2 = df_count.append(df_phred, ignore_index=True)
+    df2.iloc[1] = df2.iloc[1] / df2.iloc[0]
+    df2.T.to_csv(out_name + name2 + ".csv")
+
 def main():
     parser = argparse.ArgumentParser(description = """
         Utility to render reports on Read1 quality
@@ -173,127 +202,29 @@ def main():
                         help ="""mode, default to check mapped read1, can be set to unmapped""",
                         default = "mapped",
                         required = False)
-
+    parser.add_argument('-w',
+                        '--writecsv',
+                        help ="""whether to output csv qc metrics""",
+                        action="store_true")
     args=parser.parse_args()
 
     in_bam = args.inbam
     out_name = args.outname
     qc_mode = args.qcmode
+    wr = args.writecsv
 
     if qc_mode == "mapped":
         print("checking paired and mapped read1")
-        d,phred = qc_bam_read1(in_bam)
+        d,phred,cs,cp,ts,tp = qc_bam_read1(in_bam)
     elif qc_mode == "unmapped":
         print("checking unmapped read1")
-        d,phred = qc_bam_unmapped_read1(in_bam)
+        d,phred,cs,cp,ts,tp = qc_bam_unmapped_read1(in_bam)
 
     do_plot_nt(d, out_name)
     do_plot_box(phred, out_name)
 
+    if wr:
+        dicts_to_csv(cs, cp, out_name, "_barcode")
+        dicts_to_csv(ts, tp, out_name, "_tile")
+
 if __name__ == '__main__': main()
-#
-# bam = "/Users/rf/scraps072321/qc/PT46L_miseq_R1_Aligned.sortedByCoord.out.bam"
-# outbam = "/Users/rf/scraps072321/DX12_r1_corrected2.bam"
-# samfile = pysam.AlignmentFile(bam, "rb")
-# outfile = pysam.AlignmentFile(outbam, "w", template = samfile)
-# target_len = 58
-# i = 0
-# j = 0
-# k = 0
-# filter_cut = 5
-# d = defaultdict(lambda: [0]*151)
-# d2 = defaultdict(lambda: [0]*151)
-# phred = []
-# np.empty((0, 151), int)
-# for read in samfile.fetch(until_eof = True):
-#     if read.is_unmapped:
-#         # not mapped, toss
-#         continue
-#
-#     if not read.is_proper_pair:
-#         # not properly paired, toss
-#         continue
-#
-#     if not read.is_read1:
-#         # not read1, toss
-#         continue
-#
-#     i += 1
-#     if i == 1:
-#         readlen = len(read.query_qualities)
-#
-#     cigstring = read.cigarstring
-#
-#     if not read.is_reverse:
-#         # pattern = "^([0-9]{1,})S"
-#         # try:
-#         #     clipn = int(re.search(pattern, cigstring).group(1))
-#         #     diffn = clipn - target_len
-#         #     if abs(diffn) > filter_cut:
-#         #         #outlier, toss
-#         #         continue
-#         # except AttributeError:
-#         #     # no soft clipping at the 5'end, toss
-#         #     continue
-#         # read.reference_start = read.reference_start - diffn
-#         #outfile.write(read)
-#         k += 1
-#         for x, char in enumerate(read.seq):
-#             d[char][x] += 1
-#         if k <= 1000000:
-#            phredfill = [np.nan for _ in range(151 - len(read.query_qualities))]
-#            phredfill2 = np.concatenate([read.query_qualities,np.array(phredfill)])
-#            phred.append(phredfill2)
-#
-#     else:
-#         pattern = "M([0-9]{1,})S$"
-#         try:
-#             clipn = int(re.search(pattern, cigstring).group(1))
-#             diffn = clipn - target_len
-#             if abs(diffn) > filter_cut:
-#                 #outlier, toss
-#                 continue
-#         except AttributeError:
-#             # no soft clipping at the 5'end, toss
-#             continue
-#         # read.reference_start = read.reference_start + diffn
-#         #outfile.write(read)
-#         k += 1
-#         for x, char in enumerate(read.get_forward_sequence()):
-#             d[char][x] += 1
-#         if k <= 1000000:
-#            phredfill = [np.nan for _ in range(151 - len(read.query_qualities))]
-#            phredfill2 = np.concatenate([np.flip(read.query_qualities),np.array(phredfill)])
-#            phred.append(phredfill2)
-#
-#     if k % 1000000 == 0:
-#         print(k)
-#     if k % 10000000 == 0:
-#         print(k)
-#         break
-
-# df_atcg = pd.DataFrame.from_dict(d)
-# try:
-#     df_atcg = df_atcg[["A", "T", "C", "G", "N"]]
-# except KeyError:
-#     df_atcg = df_atcg[["A", "T", "C", "G"]]
-#     # df_atcg = df_atcg.reindex(sorted(df_atcg.columns), axis=1)
-# df_atcg/df_atcg.iloc[1].sum()
-#
-# plot_line(df_atcg/df_atcg.iloc[1].sum(), "PT46L_miseq_r1_ntcomp.pdf")
-
-# for read in samfile.fetch(until_eof = True):
-#     if not read.is_read1:
-#         # not read1, toss
-#         continue
-#     print(read.seq)
-#     print(len(read.query_qualities))
-#     break
-#
-#
-# df = pd.DataFrame(phred)
-# plot_box(df, "PT46L_miseq_r1_phred.pdf")
-#
-#
-# pysam.idxstats(bam)
-# int(n/n * 100)
