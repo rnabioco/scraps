@@ -11,7 +11,7 @@ import statistics
 """ QC for various metrics
 """
 
-def qc_bam_read1(bam):
+def qc_bam_read1(bam, nreads):
     samfile = pysam.AlignmentFile(bam, "rb")
     # total numbers
     n = reduce(lambda x, y: x + y, [ int(chrom.split("\t")[2]) for chrom in pysam.idxstats(bam).split("\n")[:-1] ])
@@ -30,15 +30,15 @@ def qc_bam_read1(bam):
             # not read1, toss
             continue
 
-        j += 1
-
         # parse read name
         id,run,cell,lane,tile,x,y =read.query_name.split(":")
         tile = lane + ":" + tile
         try:
-            CB = read.get_tag('CB')
+            CB = read.get_tag('CR')
         except KeyError:
             continue
+
+        j += 1
 
         if j == 1:
             readlen = len(read.query_qualities)
@@ -76,9 +76,12 @@ def qc_bam_read1(bam):
             ts[tile] += 1
             tp[tile] = tp[tile] + phred_part1
 
+        if i > nreads:
+            break
+
     return(d, phred, cs, cp, ts, tp)
 
-def qc_bam_unmapped_read1(bam):
+def qc_bam_unmapped_read1(bam, nreads):
     samfile = pysam.AlignmentFile(bam, "rb")
     # total numbers
     n = reduce(lambda x, y: x + y, [ int(chrom.split("\t")[2]) for chrom in pysam.idxstats(bam).split("\n")[:-1] ])
@@ -94,8 +97,6 @@ def qc_bam_unmapped_read1(bam):
             # not read1, toss
             continue
 
-        j += 1
-
         # parse read name
         id,run,cell,lane,tile,x,y =read.query_name.split(":")
         tile = lane + ":" + tile
@@ -103,6 +104,8 @@ def qc_bam_unmapped_read1(bam):
             CB = read.get_tag('CR')
         except KeyError:
             continue
+
+        j += 1
 
         if j == 1:
             readlen = len(read.query_qualities)
@@ -139,6 +142,9 @@ def qc_bam_unmapped_read1(bam):
             cp[CB] = cp[CB] + phred_part1
             ts[tile] += 1
             tp[tile] = tp[tile] + phred_part1
+
+        if i > nreads:
+            break
 
     return(d, phred, cs, cp, ts, tp)
 
@@ -206,19 +212,25 @@ def main():
                         '--writecsv',
                         help ="""whether to output csv qc metrics""",
                         action="store_true")
+    parser.add_argument('-n',
+                        '--numberreads',
+                        help ="""upper limit for reads to check""",
+                        default = 10000000,
+                        required = False)
     args=parser.parse_args()
 
     in_bam = args.inbam
     out_name = args.outname
     qc_mode = args.qcmode
     wr = args.writecsv
+    nreads = int(args.numberreads)
 
     if qc_mode == "mapped":
         print("checking paired and mapped read1")
-        d,phred,cs,cp,ts,tp = qc_bam_read1(in_bam)
+        d,phred,cs,cp,ts,tp = qc_bam_read1(in_bam, nreads)
     elif qc_mode == "unmapped":
         print("checking unmapped read1")
-        d,phred,cs,cp,ts,tp = qc_bam_unmapped_read1(in_bam)
+        d,phred,cs,cp,ts,tp = qc_bam_unmapped_read1(in_bam, nreads)
 
     do_plot_nt(d, out_name)
     do_plot_box(phred, out_name)
