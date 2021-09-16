@@ -11,7 +11,7 @@ import statistics
 """ QC for various metrics
 """
 
-def qc_bam_read1(bam, nreads):
+def qc_bam_read1(bam, nreads, readlen_default = None):
     samfile = pysam.AlignmentFile(bam, "rb")
     # total numbers
     n = reduce(lambda x, y: x + y, [ int(chrom.split("\t")[2]) for chrom in pysam.idxstats(bam).split("\n")[:-1] ])
@@ -41,7 +41,10 @@ def qc_bam_read1(bam, nreads):
         j += 1
 
         if j == 1:
-            readlen = len(read.query_qualities)
+            if readlen_default is None:
+                readlen = len(read.query_qualities)
+            else:
+                readlen = readlen_default
             d = defaultdict(lambda: [0]*readlen)
             d2 = defaultdict(lambda: [0]*readlen)
             phred = []
@@ -108,7 +111,10 @@ def qc_bam_unmapped_read1(bam, nreads):
         j += 1
 
         if j == 1:
-            readlen = len(read.query_qualities)
+            if readlen_default is None:
+                readlen = len(read.query_qualities)
+            else:
+                readlen = readlen_default
             d = defaultdict(lambda: [0]*readlen)
             d2 = defaultdict(lambda: [0]*readlen)
             phred = []
@@ -217,6 +223,11 @@ def main():
                         help ="""upper limit for reads to check""",
                         default = 10000000,
                         required = False)
+    parser.add_argument('-l',
+                        '--readlength',
+                        help ="""default read length, otherwise inferred""",
+                        default = None,
+                        required = False)
     args=parser.parse_args()
 
     in_bam = args.inbam
@@ -224,13 +235,17 @@ def main():
     qc_mode = args.qcmode
     wr = args.writecsv
     nreads = int(args.numberreads)
+    if args.readlength is None:
+        lread = None
+    else:
+        lread = int(args.readlength)
 
     if qc_mode == "mapped":
         print("checking paired and mapped read1")
-        d,phred,cs,cp,ts,tp = qc_bam_read1(in_bam, nreads)
+        d,phred,cs,cp,ts,tp = qc_bam_read1(in_bam, nreads, lread)
     elif qc_mode == "unmapped":
         print("checking unmapped read1")
-        d,phred,cs,cp,ts,tp = qc_bam_unmapped_read1(in_bam, nreads)
+        d,phred,cs,cp,ts,tp = qc_bam_unmapped_read1(in_bam, nreads, lread)
 
     do_plot_nt(d, out_name)
     do_plot_box(phred, out_name)
