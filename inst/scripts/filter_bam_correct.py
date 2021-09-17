@@ -14,7 +14,7 @@ suitable for cellranger and starsolo output
 def correct_bam_read1(bam, outbam, target_len, filter_cut):
 
     samfile = pysam.AlignmentFile(bam, "rb")
-    outfile = pysam.AlignmentFile(outbam, "w", template = samfile)
+    outfile = pysam.AlignmentFile(outbam, "wb", template = samfile)
 
     # total numbers
     n = reduce(lambda x, y: x + y, [ int(chrom.split("\t")[2]) for chrom in pysam.idxstats(bam).split("\n")[:-1] ])
@@ -52,9 +52,11 @@ def correct_bam_read1(bam, outbam, target_len, filter_cut):
             except AttributeError:
                 # no soft clipping at the 5'end, toss
                 continue
-            i += 1
+
             read.reference_start = read.reference_start - diffn
-            outfile.write(read)
+            if read.reference_start > 0:
+            	outfile.write(read)
+		i += 1
             if not diffn == 0:
                 k += 1
 
@@ -69,9 +71,10 @@ def correct_bam_read1(bam, outbam, target_len, filter_cut):
             except AttributeError:
                 # no soft clipping at the 5'end, toss
                 continue
-            i += 1
             read.reference_start = read.reference_start + diffn
-            outfile.write(read)
+            if read.reference_start > 0:
+                outfile.write(read)
+                i += 1
             if not diffn == 0:
                 k += 1
 

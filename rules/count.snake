@@ -112,6 +112,7 @@ rule filterR1:
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R1_filter.bam",
+    temp2 = "{results}/counts/{sample}_R1_filter2.bam",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/filter_{sample}_R1.txt"
@@ -120,7 +121,9 @@ rule filterR1:
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    mv {params.temp} {output}
+    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2}
+    samtools sort {params.temp2} -o {output}
+    # mv {params.temp} {output}
     samtools index {output}
     """
 
@@ -142,7 +145,8 @@ rule filterread1:
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    mv {params.temp} {output}
+    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {output}
+    #mv {params.temp} {output}
     samtools index {output}
     """
 
