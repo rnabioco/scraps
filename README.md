@@ -6,15 +6,12 @@
 <!-- badges: end -->
 
 scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
-mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq
-libraries.
+mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq libraries.
 
-Currently implemented as a snakemake pipeline for 10X Genomics
-3' end v2/3 libraries, scraps will eventually be expanded into 
-a standalone package for analyzing a range of RNA processing
+Currently implemented as a <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for 
+10X Genomics 3' end v2/3 libraries (and other platforms with similar library structure, including Drop-seq, 
+Microwell-seq, and BD Rhapsody), scraps will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
-
-For more information, see our manuscript [IN PREPARATION].
 
 ## Dependencies
 
@@ -40,6 +37,5 @@ scraps requires the following as input (defined in config.yaml):
 See the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
 
-<https://github.com/rnabioco/scraps>
-
+## Workflow
 ![workflow](inst/flow.png)
