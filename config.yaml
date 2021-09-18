@@ -1,8 +1,4 @@
 # config for scraps snakemake pipeline #
- 
-DATA: 
-# Data folder containing FASTQs
-  "sample_data/raw_data"
 
 # results directory
 RESULTS:
