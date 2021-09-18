@@ -6,7 +6,6 @@ import pandas as pd
 """ Snakemake rules for scraps cutadapt and STARsolo processing """
 
 SAMPLES_DF = pd.read_csv(FASTQS, sep = "\t")
-SAMPLES_DF = pd.read_csv(SAMPLES, sep = "\t")
 
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
