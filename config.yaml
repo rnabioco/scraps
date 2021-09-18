@@ -39,7 +39,7 @@ CAPTURES:
 
 R1_SAMPLES:
 # Sample basenames
-  - sample
+  - test
 
 R2_SAMPLES:
-  - sample
+  - test
