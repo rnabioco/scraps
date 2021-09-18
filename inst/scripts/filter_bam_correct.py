@@ -55,10 +55,10 @@ def correct_bam_read1(bam, outbam, target_len, filter_cut):
 
             read.reference_start = read.reference_start - diffn
             if read.reference_start > 0:
-            	outfile.write(read)
-		i += 1
-            if not diffn == 0:
-                k += 1
+                outfile.write(read)
+                i += 1
+                if not diffn == 0:
+                    k += 1
 
         else:
             pattern = "M([0-9]{1,})S$"
@@ -75,8 +75,8 @@ def correct_bam_read1(bam, outbam, target_len, filter_cut):
             if read.reference_start > 0:
                 outfile.write(read)
                 i += 1
-            if not diffn == 0:
-                k += 1
+                if not diffn == 0:
+                    k += 1
 
         if int(n / i * 100) == 0:
             print(i)
