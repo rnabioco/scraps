@@ -6,7 +6,7 @@ DATA:
 
 # results directory
 RESULTS:
-  "../results"
+  "results"
 
 # path to STAR executable, if not in PATH
 STAR:
@@ -43,7 +43,7 @@ CAPTURES:
 
 R1_SAMPLES:
 # Sample basenames
-  - test
+  - sample
 
 R2_SAMPLES:
-  - test
+  - sample
