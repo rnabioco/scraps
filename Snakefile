@@ -4,7 +4,6 @@ shell.executable("/bin/bash")
 
 configfile: "config.yaml"
 
-DATA = config["DATA"]
 RESULTS = config["RESULTS"]
 R1_SAMPLES = config["R1_SAMPLES"]
 R2_SAMPLES = config["R2_SAMPLES"]
