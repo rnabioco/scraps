@@ -42,6 +42,46 @@ rule assign_sites_read2:
     rm -rf {params.out_bam}
     """
 
+rule assign_sites_read1:
+  input:
+    "{results}/counts/{sample}_R1.bam"
+  output:
+    bam = "{results}/counts/{sample}_R1_assigned.bam"
+  params:
+    job_name = "assign_sites_read1",
+    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
+    out = "{results}/counts/{sample}_R1_assigned",
+    out_bam = "{results}/counts/{sample}_R1.bam.featureCounts.bam"
+  log:
+    "logs/assign_sites_{sample}_R1.txt"
+  threads:
+    12
+  shell:
+    """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
+    featureCounts \
+    -s 2 -Q 10 -O \
+    --read2pos 5 \
+    -o {params.out} \
+    -F $polyaformat \
+    -a {POLYA_SITES} \
+    -R BAM \
+    -T {threads} \
+    {input} \
+    2> {log}
+
+    samtools sort \
+    {params.out_bam} \
+    -o {output.bam}
+
+    samtools index {output.bam}
+    rm -rf {params.out_bam}
+    """
+    
 rule filterR2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
