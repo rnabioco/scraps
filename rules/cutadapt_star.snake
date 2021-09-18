@@ -6,7 +6,7 @@ import pandas as pd
 """ Snakemake rules for scraps cutadapt and STARsolo processing """
 
 SAMPLES_DF = pd.read_csv(FASTQS, sep = "\t")
-CAPTURES_DF = pd.read_csv(CAPTURES, sep = "\t")
+SAMPLES_DF = pd.read_csv(SAMPLES, sep = "\t")
 
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
@@ -20,7 +20,7 @@ def _get_fq_paths(wildcards):
 
 """ Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
-    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12"]
     elif chem_version == "chromiumV2":
@@ -31,7 +31,7 @@ def _get_chem_version_R2(wildcards):
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
-    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
     elif chem_version == "chromiumV2":
@@ -42,7 +42,7 @@ def _get_chem_version_R1(wildcards):
 
 """ Extract per-capture 10X chemistry versions from gex libs (R1)"""
 def _get_chem_version_read1(wildcards):
-   chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+   chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
    if chem_version == "chromiumV3":
        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
    elif chem_version == "chromiumV2":
@@ -53,7 +53,7 @@ def _get_chem_version_read1(wildcards):
 
 """ Extract per-capture extra arguments for gex libs """
 def _get_extra_args(wildcards):
-    captures_filtered = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample]
+    captures_filtered = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample]
     return list(captures_filtered.extra_args.unique())
 
 """ This rule is now only necessary for paired-end libraries """
