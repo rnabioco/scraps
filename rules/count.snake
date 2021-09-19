@@ -13,14 +13,14 @@ def _get_chem_length_R1(wildcards):
 
 rule assign_sites_read2:
   input:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2.bam"
   output:
-    bam = "{results}/counts/{sample}_R2_assigned.bam"
+    bam = "{results}/temp/{sample}_R2_assigned.bam"
   params:
     job_name = "assign_sites_read2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{results}/counts/{sample}_R2_assigned",
-    out_bam = "{results}/counts/{sample}_R2.bam.featureCounts.bam"
+    out = "{results}/temp/{sample}_R2_assigned",
+    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
   log:
     "logs/assign_sites_{sample}_R2.txt"
   threads:
@@ -54,14 +54,14 @@ rule assign_sites_read2:
 
 rule assign_sites_read1:
   input:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/temp/{sample}_R1.bam"
   output:
-    bam = "{results}/counts/{sample}_R1_assigned.bam"
+    bam = "{results}/temp/{sample}_R1_assigned.bam"
   params:
     job_name = "assign_sites_read1",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{results}/counts/{sample}_R1_assigned",
-    out_bam = "{results}/counts/{sample}_R1.bam.featureCounts.bam"
+    out = "{results}/temp/{sample}_R1_assigned",
+    out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
   log:
     "logs/assign_sites_{sample}_R1.txt"
   threads:
@@ -96,11 +96,11 @@ rule filterR2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2.bam"
   params:
     job_name = "filter",
-    temp = "{results}/counts/{sample}_R2_filter.bam",
-    tempbai = "{results}/counts/{sample}_R2_filter.bam.bai",
+    temp = "{results}/temp/{sample}_R2_filter.bam",
+    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/filter_{sample}_R2.txt"
@@ -120,12 +120,12 @@ rule filterR1:
   input:
     "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/temp/{sample}_R1.bam"
   params:
     job_name = "filter",
     length = _get_chem_length_R1,
-    temp = "{results}/counts/{sample}_R1_filter.bam",
-    temp2 = "{results}/counts/{sample}_R1_filter2.bam",
+    temp = "{results}/temp/{sample}_R1_filter.bam",
+    temp2 = "{results}/temp/{sample}_R1_filter2.bam",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/filter_{sample}_R1.txt"
@@ -144,7 +144,7 @@ rule filterR1:
     
 rule count:
   input:
-    "{results}/counts/{sample}_{read}_assigned.bam"
+    "{results}/temp/{sample}_{read}_assigned.bam"
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
@@ -171,13 +171,13 @@ rule count:
 
 rule bedR1:
   input:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/temp/{sample}_R1.bam"
   output:
-    "{results}/counts/{sample}_R1.bed.gz"
+    "{results}/bed/{sample}_R1.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/counts/{sample}_R1_dedup.bam",
-    r = "{results}/counts/{sample}_R1_r.bam",
+    dedup = "{results}/temp/{sample}_R1_dedup.bam",
+    r = "{results}/temp/{sample}_R1_r.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
     "logs/bed_{sample}_R1.txt"
@@ -203,12 +203,12 @@ rule bedR1:
 
 rule bedR2:
   input:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2.bam"
   output:
-    "{results}/counts/{sample}_R2.bed.gz"
+    "{results}/bed/{sample}_R2.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/counts/{sample}_R2_dedup.bam",
+    dedup = "{results}/temp/{sample}_R2_dedup.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
     "logs/bed_{sample}_R2.txt"

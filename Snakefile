@@ -27,8 +27,8 @@ rule all:
     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
     # expand("{data}/multiqc_report.html", data = DATA)
     # Generates bed files;
-    expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
-    expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2")
+    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
+    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2")
 
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"
