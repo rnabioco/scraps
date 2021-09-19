@@ -15,7 +15,7 @@ rule assign_sites_read2:
   input:
     "{results}/temp/{sample}_R2.bam"
   output:
-    bam = "{results}/temp/{sample}_R2_assigned.bam"
+    bam = temp("{results}/temp/{sample}_R2_assigned.bam")
   params:
     job_name = "assign_sites_read2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
@@ -56,7 +56,7 @@ rule assign_sites_read1:
   input:
     "{results}/temp/{sample}_R1.bam"
   output:
-    bam = "{results}/temp/{sample}_R1_assigned.bam"
+    bam = temp("{results}/temp/{sample}_R1_assigned.bam")
   params:
     job_name = "assign_sites_read1",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
@@ -96,7 +96,7 @@ rule filterR2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/temp/{sample}_R2.bam"
+    temp("{results}/temp/{sample}_R2.bam")
   params:
     job_name = "filter",
     temp = "{results}/temp/{sample}_R2_filter.bam",
@@ -120,7 +120,7 @@ rule filterR1:
   input:
     "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/temp/{sample}_R1.bam"
+    temp("{results}/temp/{sample}_R1.bam")
   params:
     job_name = "filter",
     length = _get_chem_length_R1,
