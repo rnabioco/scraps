@@ -1,3 +1,13 @@
+""" Extract correction length target"""
+def _get_chem_length_R1(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "chromiumV3":
+        args = ["58"]
+    elif chem_version == "chromiumV2":
+        args = ["56"]
+    elif chem_version == "dropseq":
+        args = ["50"]
+    return args
 
 """ rules for scraps counting """
 
@@ -111,6 +121,7 @@ rule filterR1:
     "{results}/counts/{sample}_R1.bam"
   params:
     job_name = "filter",
+    length = _get_chem_length_R1,
     temp = "{results}/counts/{sample}_R1_filter.bam",
     temp2 = "{results}/counts/{sample}_R1_filter2.bam",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
@@ -121,7 +132,7 @@ rule filterR1:
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2}
+    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
     samtools sort {params.temp2} -o {output}
     # mv {params.temp} {output}
     samtools index {output}
