@@ -25,18 +25,18 @@ def _get_chem_version_R2(wildcards):
     elif chem_version == "chromiumV2":
         args = [WHITELIST_V2,"--soloUMIlen 10"]
     elif chem_version == "dropseq":
-        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
+        args = ["None", "--soloUMIlen 8"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
-        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
+        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
     elif chem_version == "chromiumV2":
-        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0"]
+        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
     elif chem_version == "dropseq":
-        args = ["None --soloUMIlen 8 --clip5pNbases 50 0"]
+        args = ["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R1)"""
@@ -110,9 +110,6 @@ rule starsolo_gex_R1:
       --runThreadN 12 \
       --soloCBwhitelist {params.chemistry} \
       --soloBarcodeMate 1 \
-      --soloCBstart 1 \
-      --soloCBlen 16 \
-      --soloUMIstart 17 \
       --outFilterMultimapNmax 1 \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \

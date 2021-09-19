@@ -100,6 +100,7 @@ rule filterR2:
   params:
     job_name = "filter",
     temp = "{results}/counts/{sample}_R2_filter.bam",
+    tempbai = "{results}/counts/{sample}_R2_filter.bam.bai",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
     "logs/filter_{sample}_R2.txt"
@@ -112,6 +113,7 @@ rule filterR2:
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
     samtools index {output}
     rm -rf {params.temp}
+    rm -rf {params.tempbai}
     """
 
 rule filterR1:
@@ -136,6 +138,8 @@ rule filterR1:
     samtools sort {params.temp2} -o {output}
     # mv {params.temp} {output}
     samtools index {output}
+    rm -rf {params.temp}
+    rm -rf {params.temp2}
     """
     
 rule count:
@@ -194,6 +198,7 @@ rule bedR1:
     # 0x82 for R2
     samtools view -f 0x42 {params.dedup} -b > {params.r}
     bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    rm -rf {params.r}
     """
 
 rule bedR2:
