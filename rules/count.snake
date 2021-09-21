@@ -11,6 +11,8 @@ def _get_chem_length_R1(wildcards):
         args = ["54"]
     elif chem_version == "bd":
         args = ["53"]
+    elif chem_version == "indrop":
+        args = ["32"]
     return args
 
 """ rules for scraps counting """
