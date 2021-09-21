@@ -40,6 +40,9 @@ R1_SAMPLES:
 # Sample basenames
   - test
   - test2
+  - test3
+
 R2_SAMPLES:
   - test
   - test2
+  - test3

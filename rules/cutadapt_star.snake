@@ -17,6 +17,15 @@ def _get_fq_paths(wildcards):
     
     return fqs
 
+""" Process complex barcodes into simple, if needed"""
+def _get_bc_cut(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "microwellseq":
+        args = "CGACTCACTACAGGG...TCGGTGACACGATCG"
+    else:
+        args = ""
+    return args
+
 """ Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
@@ -25,7 +34,9 @@ def _get_chem_version_R2(wildcards):
     elif chem_version == "chromiumV2":
         args = [WHITELIST_V2,"--soloUMIlen 10"]
     elif chem_version == "dropseq":
-        args = ["None", "--soloUMIlen 8"]
+        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
@@ -37,6 +48,8 @@ def _get_chem_version_R1(wildcards):
         args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
     elif chem_version == "dropseq":
         args = ["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R1)"""
@@ -48,6 +61,8 @@ def _get_chem_version_read1(wildcards):
        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0"]
    elif chem_version == "dropseq":
        args = ["None --soloUMIlen 8 --clip5pNbases 50 0"]
+   elif chem_version == "microwellseq":
+       args = ["None --soloUMIlen 6 --clip5pNbases 84 0"]
    return args
 
 """ Extract per-capture extra arguments for gex libs """
@@ -64,12 +79,18 @@ rule cutadapt_paired:
       R2 = temp("{results}/cutadapt/{sample}_trimmed.R2.fastq.gz")
     params:
       job_name = "cutadapt",
+      bc_cut = _get_bc_cut,
+      info = "{results}/cutadapt/temp_{sample}.info",
+      temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
+      temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
       memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
     log: "logs/{sample}_cutadapt.out"
     threads: 24
     shell:
       """
-      cutadapt -j 24 \
+      if [ -z "{params.bc_cut}" ] ; then
+        echo "no additional trimming"
+        cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
          -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
          -A polya_R2=A{{30}} \
@@ -80,10 +101,25 @@ rule cutadapt_paired:
          -p {output.R2} \
          <(zcat {input}) \
          <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+      else
+        cutadapt -j 24 --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+        awk -F "\t" '$8 ~ /;1/ {{ beforeseq=$5; beforequal=$9 }} $8 ~ /;2/ {{ printf("@%s\\n%s%s%s\\n+\\n%s%s%s\\n", $1, beforeseq, $5, $7, beforequal, $9, $11) }}' {params.info} | gzip > {params.temp}
+        cutadapt -j 24 \
+         -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
+         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+         -A polya_R2=A{{30}} \
+         -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
+         -n 4 \
+         -m 75:17 \
+         -o {output.R1} \
+         -p {output.R2} \
+         <(zcat {params.temp}) \
+         <(zcat {params.temp2})
+      fi
       """
 
 """ This rule processes chromium V2/V3 paired-end libraries """
-rule starsolo_gex_R1:
+rule starsolo_R1:
     input:
       R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
       R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
@@ -93,10 +129,10 @@ rule starsolo_gex_R1:
       chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R1_", 
-      job_name = "star_gex_R1",
+      job_name = "star_R1",
       memory = 
       "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_gex_R1.out"
+    log: "logs/{sample}_star_R1.out"
     resources:
       total_impact = 5
     threads: 14
@@ -126,7 +162,7 @@ rule starsolo_gex_R1:
       """
 
 """ This rule processes chromium V2/V3 libraries (R2 only) """
-rule starsolo_gex_R2:
+rule starsolo_R2:
     input:
       R1 = _get_fq_paths
     output:
@@ -137,7 +173,7 @@ rule starsolo_gex_R2:
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2",
       memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_gex_R2.out"
+    log: "logs/{sample}_star_R2.out"
     resources:
       total_impact = 5
     threads: 14

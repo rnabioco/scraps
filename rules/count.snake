@@ -7,6 +7,8 @@ def _get_chem_length_R1(wildcards):
         args = ["56"]
     elif chem_version == "dropseq":
         args = ["50"]
+    elif chem_version == "microwellseq":
+        args = ["54"]
     return args
 
 """ rules for scraps counting """
