@@ -12,7 +12,7 @@ scraps (**S**ingle **C**ell **R**N**A** **P**rocessing **S**oftware) is currentl
 Microwell-seq, and BD Rhapsody). It will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
 
-<img src="inst/flow.png" width="230" align="left" style="margin-right: 50px;margin-top:15px;margin-bottom:10px;">
+<img src="inst/flow.png" width="230" align="right">
 
 ---
 
@@ -45,6 +45,18 @@ Snakemake --snakefile Snakefile \
 | inDrop | [8 + 6 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/inDrop.html) | indrop | |
 
 ---
+
+## Setup
+1. Clone repository:
+`
+git clone https://github.com/rnabioco/scraps
+`
+2. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/`
+3. Edit settings in `config.yaml`
+4. List files in `sample_fastqs.tsv`
+5. Run!
+
+___
 
 ## Dependencies
 
