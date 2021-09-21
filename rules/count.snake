@@ -9,6 +9,8 @@ def _get_chem_length_R1(wildcards):
         args = ["50"]
     elif chem_version == "microwellseq":
         args = ["54"]
+    elif chem_version == "bd":
+        args = ["53"]
     return args
 
 """ rules for scraps counting """

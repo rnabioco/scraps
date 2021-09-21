@@ -22,6 +22,8 @@ def _get_bc_cut(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "microwellseq":
         args = "CGACTCACTACAGGG...TCGGTGACACGATCG"
+    if chem_version == "bd":
+        args = "ACTGGCCTGCGA...GGTAGCGGTGACA"
     else:
         args = ""
     return args
@@ -37,6 +39,8 @@ def _get_chem_version_R2(wildcards):
         args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
     elif chem_version == "microwellseq":
         args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
@@ -50,6 +54,8 @@ def _get_chem_version_R1(wildcards):
         args = ["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
     elif chem_version == "microwellseq":
         args = ["None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R1)"""
