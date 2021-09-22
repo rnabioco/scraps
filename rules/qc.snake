@@ -2,19 +2,21 @@
 
 rule qccheck:
    input:
-     expand("{data}/counts/{sample}_{read}_counts.tsv.gz", data = DATA, sample = SAMPLE, read = READS)
+     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = READS)
    output:
-     "{data}/multiqc_report.html"
+     "{results}/report/multiqc_report.html"
    params:
      job_name = "qc",
-     path = "{data}",
+     path = "results/report",
      memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
-     "{data}/logs/multiqc.txt"
+     "logs/multiqc.txt"
    threads:
      1
    shell:
      """
-     multiqc {params.path} -o {params.path}
+     export LC_ALL=en_US.utf-8
+     export LANG=en_US.utf-8
+     multiqc . -o {params.path}
      """
 

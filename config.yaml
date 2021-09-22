@@ -9,7 +9,7 @@ RESULTS:
 
 # path to STAR executable, if not in PATH
 STAR:
-  "/beevol/home/ruifu/gitlib/STAR-2.7.9a/bin/Linux_x86_64_static/STAR"
+  "STAR"
 
 # path to STAR genome index
 STAR_INDEX:
