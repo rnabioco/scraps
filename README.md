@@ -79,9 +79,13 @@ AC135178.2_NA_ENSG00000263809_chr17_8377523_-_Intron,RPL26_6154_ENSG00000161970_
 ACTG1_71_ENSG00000184009_chr17_81509999_-_3'UTR(M)      ACATCAGGTGATGTCT        1
 ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        1
 ```
-3. [html report](inst/test_output/report/multiqc_report.html) : various metrics from steps in the pipeline
+3. [html report](https://raw.githack.com/rnabioco/scraps/master/inst/test_output/report/multiqc_report.html) : various metrics from steps in the pipeline
 
-[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage
+[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage.
+
+<p align="center">
+  <img src="man/figures/pa_setx.png" width="500"/>
+</p>
 
 ___
 
