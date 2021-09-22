@@ -22,6 +22,7 @@ scraps requires the following as input (defined in config.yaml and sample_fastqs
 
   - 10X Genomics 3' v2/3 single-cell FASTQs or other platforms (with names "_R1.fastq.gz"" and "_R2fastq.gz"")
   - A STAR genome index (must be generated with STAR 2.7.4a and above)
+  - Whitelist for cell barcodes (optional but recommended to speed up run time)
   - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a>, hg38 and mm10 files are included in ref subdirectory)
 
 To run test data, simply execute:
@@ -39,6 +40,7 @@ Snakemake --snakefile Snakefile \
 | :--------|:------------| :------------| :---------|
 | 10x Chromium V3 | [16 + 12 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV3 | ✓ |
 | 10x Chromium V2 | [16 + 10 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV2 | ✓ |
+| 10x Chromium Visium | [16 + 10 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | visium | |
 | Drop-seq | [12 + 8 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/Drop-seq.html) | dropseq | ✓ |
 | Microwell-seq | [6x3 + 6 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/Microwell-seq.html) | microwellseq | ✓ |
 | BD Rhapsody | [9x3 + 8 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/BD_Rhapsody.html) | bd | |
@@ -52,6 +54,7 @@ Snakemake --snakefile Snakefile \
 git clone https://github.com/rnabioco/scraps
 `
 2. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/`
+Download links: [GRCh38 index]() [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
 3. Edit settings in `config.yaml`
 4. List files in `sample_fastqs.tsv`
 5. Run!
