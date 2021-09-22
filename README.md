@@ -60,6 +60,14 @@ git clone https://github.com/rnabioco/scraps
 
 ___
 
+## Output
+1. bed : TVN-priming site pileup
+2. count table : +-10 around PolyA_DB sites, by cell barcode
+
+[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage
+
+___
+
 ## Dependencies
 
 scraps requires the following executables in your PATH:
