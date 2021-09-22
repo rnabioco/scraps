@@ -7,16 +7,17 @@ rule qccheck:
      "{results}/report/multiqc_report.html"
    params:
      job_name = "qc",
-     path = "results/report",
+     target = "{results}",
+     path = "{results}/report",
      memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
-     "logs/multiqc.txt"
+     "{results}/logs/multiqc.txt"
    threads:
      1
    shell:
      """
      export LC_ALL=en_US.utf-8
      export LANG=en_US.utf-8
-     multiqc . -o {params.path}
+     multiqc {params.target} -o {params.path}
      """
 

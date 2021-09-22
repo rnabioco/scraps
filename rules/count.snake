@@ -28,7 +28,7 @@ rule assign_sites_read2:
     out = "{results}/temp/{sample}_R2_assigned",
     out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
   log:
-    "logs/assign_sites_{sample}_R2.txt"
+    "{results}/logs/assign_sites_{sample}_R2.txt"
   threads:
     12
   shell:
@@ -69,7 +69,7 @@ rule assign_sites_read1:
     out = "{results}/temp/{sample}_R1_assigned",
     out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
   log:
-    "logs/assign_sites_{sample}_R1.txt"
+    "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
     12
   shell:
@@ -80,7 +80,7 @@ rule assign_sites_read1:
     fi
 
     featureCounts \
-    -s 2 -Q 10 -O \
+    -s 2 -Q 10 -O -p \
     --read2pos 5 \
     -o {params.out} \
     -F $polyaformat \
@@ -109,7 +109,7 @@ rule filterR2:
     tempbai = "{results}/temp/{sample}_R2_filter.bam.bai",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/filter_{sample}_R2.txt"
+    "{results}/logs/filter_{sample}_R2.txt"
   threads:
     4
   shell:
@@ -135,7 +135,7 @@ rule filterR1:
     final = "{results}/counts/{sample}_R1_counts.tsv.gz",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/filter_{sample}_R1.txt"
+    "{results}/logs/filter_{sample}_R1.txt"
   threads:
     4
   shell:
@@ -164,7 +164,7 @@ rule count:
     job_name = "count",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/count_{sample}_{read}.txt"
+    "{results}/logs/count_{sample}_{read}.txt"
   threads:
     4
   shell:
@@ -193,7 +193,7 @@ rule bedR1:
     r = "{results}/temp/{sample}_R1_r.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
-    "logs/bed_{sample}_R1.txt"
+    "{results}/logs/bed_{sample}_R1.txt"
   threads:
     4
   shell:
@@ -224,7 +224,7 @@ rule bedR2:
     dedup = "{results}/temp/{sample}_R2_dedup.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
-    "logs/bed_{sample}_R2.txt"
+    "{results}/logs/bed_{sample}_R2.txt"
   threads:
     4
   shell:

@@ -81,7 +81,7 @@ rule cutadapt_paired:
       temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
       memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
-    log: "logs/{sample}_cutadapt.out"
+    log: "{results}/logs/{sample}_cutadapt.out"
     threads: 24
     shell:
       """
@@ -129,7 +129,7 @@ rule starsolo_R1:
       job_name = "star_R1",
       memory = 
       "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_R1.out"
+    log: "{results}/logs/{sample}_star_R1.out"
     resources:
       total_impact = 5
     threads: 14
@@ -170,7 +170,7 @@ rule starsolo_R2:
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2",
       memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_R2.out"
+    log: "{results}/logs/{sample}_star_R2.out"
     resources:
       total_impact = 5
     threads: 14
