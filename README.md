@@ -53,8 +53,7 @@ Snakemake --snakefile Snakefile \
 `
 git clone https://github.com/rnabioco/scraps
 `
-2. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/`
-Download links: [GRCh38 index]() [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
+2. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
 3. Edit settings in `config.yaml`
 4. List files in `sample_fastqs.tsv`
 5. Run!
