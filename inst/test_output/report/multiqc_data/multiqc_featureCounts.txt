@@ -1,0 +1,7 @@
+Sample	Total	Assigned	Unassigned_Unmapped	Unassigned_MappingQuality	Unassigned_Chimera	Unassigned_FragmentLength	Unassigned_Duplicate	Unassigned_MultiMapping	Unassigned_Secondary	Unassigned_Nonjunction	Unassigned_NoFeatures	Unassigned_Overlapping_Length	Unassigned_Ambiguity	percent_assigned
+test2_R1	0	0	0	0	0	0	0	0	0	0	0	0	0	
+test2_R2	528	112	0	0	0	0	0	0	0	0	416	0	0	21.21212121212121
+test3_R1	99	8	0	0	0	0	0	0	0	0	91	0	0	8.080808080808081
+test3_R2	332	66	0	0	0	0	0	0	0	0	266	0	0	19.879518072289155
+test_R1	3111	561	0	0	0	0	0	0	0	0	2550	0	0	18.0327868852459
+test_R2	248	65	0	0	0	0	0	0	0	0	183	0	0	26.209677419354836

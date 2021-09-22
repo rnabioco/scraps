@@ -1,0 +1,2 @@
+Sample	pairs_processed	r1_with_adapters	r2_with_adapters	pairs_too_short	pairs_written	bp_processed	bp_written	percent_trimmed
+62	10000	517	1664	32	9968	3020000	2972275	1.580298013245033

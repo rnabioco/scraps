@@ -1,0 +1,8 @@
+Sample	Cutadapt_mqc-generalstats-cutadapt-percent_trimmed	STAR_mqc-generalstats-star-uniquely_mapped_percent	STAR_mqc-generalstats-star-uniquely_mapped	featureCounts_mqc-generalstats-featurecounts-Assigned	featureCounts_mqc-generalstats-featurecounts-percent_assigned
+62	1.580298013245033				
+test2_R1		0.0	0.0	0	
+test2_R2		79.41	7941.0	112	21.21212121212121
+test3_R1		22.88	2272.0	8	8.080808080808081
+test3_R2		68.26	6826.0	66	19.879518072289155
+test_R1		38.97	3885.0	561	18.0327868852459
+test_R2		85.26	8526.0	65	26.209677419354836

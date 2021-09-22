@@ -1,0 +1,2340 @@
+{
+    "report_data_sources": {
+        "Cutadapt": {
+            "all_sections": {
+                "62": "/beevol/home/ruifu/projects/scraps091721/scraps/logs/test_cutadapt.out.out"
+            }
+        },
+        "STAR": {
+            "SummaryLog": {
+                "test_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test/test_R2_Log.final.out",
+                "test_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test/test_R1_Log.final.out",
+                "test2_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test2/test2_R1_Log.final.out",
+                "test2_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test2/test2_R2_Log.final.out",
+                "test3_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test3/test3_R1_Log.final.out",
+                "test3_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/test3/test3_R2_Log.final.out"
+            }
+        },
+        "featureCounts": {
+            "all_sections": {
+                "test3_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test3_R1_assigned.summary",
+                "test_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test_R2_assigned.summary",
+                "test3_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test3_R2_assigned.summary",
+                "test2_R2": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test2_R2_assigned.summary",
+                "test2_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test2_R1_assigned.summary",
+                "test_R1": "/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test_R1_assigned.summary"
+            }
+        }
+    },
+    "report_general_stats_data": [
+        {
+            "62": {
+                "pairs_processed": 10000,
+                "r1_with_adapters": 517,
+                "r2_with_adapters": 1664,
+                "pairs_too_short": 32,
+                "pairs_written": 9968,
+                "bp_processed": 3020000,
+                "bp_written": 2972275,
+                "percent_trimmed": 1.580298013245033
+            }
+        },
+        {
+            "test_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 148.0,
+                "uniquely_mapped": 8526.0,
+                "uniquely_mapped_percent": 85.26,
+                "avg_mapped_read_length": 147.91,
+                "num_splices": 3195.0,
+                "num_annotated_splices": 3148.0,
+                "num_GTAG_splices": 3169.0,
+                "num_GCAG_splices": 10.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 15.0,
+                "mismatch_rate": 0.65,
+                "deletion_rate": 0.01,
+                "deletion_length": 1.29,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.2,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 425.0,
+                "multimapped_toomany_percent": 4.25,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 10.38,
+                "unmapped_other_percent": 0.11,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 1038,
+                "unmapped_other": 11
+            },
+            "test_R1": {
+                "total_reads": 9968.0,
+                "avg_input_read_length": 242.0,
+                "uniquely_mapped": 3885.0,
+                "uniquely_mapped_percent": 38.97,
+                "avg_mapped_read_length": 233.53,
+                "num_splices": 1719.0,
+                "num_annotated_splices": 1703.0,
+                "num_GTAG_splices": 1706.0,
+                "num_GCAG_splices": 8.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 4.0,
+                "mismatch_rate": 2.44,
+                "deletion_rate": 0.01,
+                "deletion_length": 1.26,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.12,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 161.0,
+                "multimapped_toomany_percent": 1.62,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 59.38,
+                "unmapped_other_percent": 0.03,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 5919,
+                "unmapped_other": 3
+            },
+            "test2_R1": {
+                "total_reads": 0.0,
+                "avg_input_read_length": 0.0,
+                "uniquely_mapped": 0.0,
+                "uniquely_mapped_percent": 0.0,
+                "avg_mapped_read_length": 0.0,
+                "num_splices": 0.0,
+                "num_annotated_splices": 0.0,
+                "num_GTAG_splices": 0.0,
+                "num_GCAG_splices": 0.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 0.0,
+                "deletion_rate": 0.0,
+                "deletion_length": 0.0,
+                "insertion_rate": 0.0,
+                "insertion_length": 0.0,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 0.0,
+                "multimapped_toomany_percent": 0.0,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 0.0,
+                "unmapped_other_percent": 0.0,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 0,
+                "unmapped_other": 0
+            },
+            "test2_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 111.0,
+                "uniquely_mapped": 7941.0,
+                "uniquely_mapped_percent": 79.41,
+                "avg_mapped_read_length": 111.3,
+                "num_splices": 3386.0,
+                "num_annotated_splices": 3321.0,
+                "num_GTAG_splices": 3347.0,
+                "num_GCAG_splices": 13.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 25.0,
+                "mismatch_rate": 0.83,
+                "deletion_rate": 0.02,
+                "deletion_length": 2.13,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.29,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 622.0,
+                "multimapped_toomany_percent": 6.22,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 13.98,
+                "unmapped_other_percent": 0.39,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 1398,
+                "unmapped_other": 39
+            },
+            "test3_R1": {
+                "total_reads": 9929.0,
+                "avg_input_read_length": 236.0,
+                "uniquely_mapped": 2272.0,
+                "uniquely_mapped_percent": 22.88,
+                "avg_mapped_read_length": 214.22,
+                "num_splices": 647.0,
+                "num_annotated_splices": 615.0,
+                "num_GTAG_splices": 631.0,
+                "num_GCAG_splices": 2.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 14.0,
+                "mismatch_rate": 2.16,
+                "deletion_rate": 0.02,
+                "deletion_length": 1.19,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.47,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 172.0,
+                "multimapped_toomany_percent": 1.73,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 75.34,
+                "unmapped_other_percent": 0.04,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 7481,
+                "unmapped_other": 4
+            },
+            "test3_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 146.0,
+                "uniquely_mapped": 6826.0,
+                "uniquely_mapped_percent": 68.26,
+                "avg_mapped_read_length": 142.9,
+                "num_splices": 2092.0,
+                "num_annotated_splices": 2019.0,
+                "num_GTAG_splices": 2049.0,
+                "num_GCAG_splices": 4.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 39.0,
+                "mismatch_rate": 1.34,
+                "deletion_rate": 0.02,
+                "deletion_length": 1.33,
+                "insertion_rate": 0.02,
+                "insertion_length": 1.6,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 366.0,
+                "multimapped_toomany_percent": 3.66,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 27.83,
+                "unmapped_other_percent": 0.25,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 2783,
+                "unmapped_other": 25
+            }
+        },
+        {
+            "test3_R1": {
+                "Total": 99,
+                "Assigned": 8,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 91,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 8.080808080808081
+            },
+            "test_R2": {
+                "Total": 248,
+                "Assigned": 65,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 183,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 26.209677419354836
+            },
+            "test3_R2": {
+                "Total": 332,
+                "Assigned": 66,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 266,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 19.879518072289155
+            },
+            "test2_R2": {
+                "Total": 528,
+                "Assigned": 112,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 416,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 21.21212121212121
+            },
+            "test2_R1": {
+                "Total": 0,
+                "Assigned": 0,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 0,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0
+            },
+            "test_R1": {
+                "Total": 3111,
+                "Assigned": 561,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 2550,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 18.0327868852459
+            }
+        }
+    ],
+    "report_general_stats_headers": [
+        {
+            "percent_trimmed": {
+                "title": "% BP Trimmed",
+                "description": "% Total Base Pairs trimmed",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "RdYlBu-rev",
+                "namespace": "Cutadapt",
+                "rid": "mqc-generalstats-cutadapt-percent_trimmed",
+                "format": "{:,.1f}",
+                "colour": "55,126,184",
+                "hidden": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "shared_key": null,
+                "modify": null,
+                "placement": 1000.0,
+                "dmax": 100.0,
+                "dmin": 0.0
+            }
+        },
+        {
+            "uniquely_mapped_percent": {
+                "title": "% Aligned",
+                "description": "% Uniquely mapped reads",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "YlGn",
+                "namespace": "STAR",
+                "rid": "mqc-generalstats-star-uniquely_mapped_percent",
+                "format": "{:,.1f}",
+                "colour": "77,175,74",
+                "hidden": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "shared_key": null,
+                "modify": null,
+                "placement": 1000.0,
+                "dmax": 100.0,
+                "dmin": 0.0
+            },
+            "uniquely_mapped": {
+                "title": "M Aligned",
+                "description": "Uniquely mapped reads (millions)",
+                "min": 0,
+                "scale": "PuRd",
+                "modify": 1e-06,
+                "shared_key": "read_count",
+                "namespace": "STAR",
+                "rid": "mqc-generalstats-star-uniquely_mapped",
+                "format": "{:,.1f}",
+                "colour": "77,175,74",
+                "hidden": null,
+                "max": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "placement": 1000.0,
+                "dmax": 0.008525999999999999,
+                "dmin": 0.0
+            }
+        },
+        {
+            "percent_assigned": {
+                "title": "% Assigned",
+                "description": "% Assigned reads",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "RdYlGn",
+                "namespace": "featureCounts",
+                "rid": "mqc-generalstats-featurecounts-percent_assigned",
+                "format": "{:,.1f}",
+                "colour": "152,78,163",
+                "hidden": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "shared_key": null,
+                "modify": null,
+                "placement": 1000.0,
+                "dmax": 100.0,
+                "dmin": 0.0
+            },
+            "Assigned": {
+                "title": "M Assigned",
+                "description": "Assigned reads (millions)",
+                "min": 0,
+                "scale": "PuBu",
+                "modify": 1e-06,
+                "shared_key": "read_count",
+                "namespace": "featureCounts",
+                "rid": "mqc-generalstats-featurecounts-Assigned",
+                "format": "{:,.1f}",
+                "colour": "152,78,163",
+                "hidden": null,
+                "max": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "placement": 1000.0,
+                "dmax": 0.008525999999999999,
+                "dmin": 0.0
+            }
+        }
+    ],
+    "report_multiqc_command": "/beevol/home/ruifu/.local/bin/multiqc . -o results/report",
+    "report_plot_data": {
+        "cutadapt_filtered_reads_plot": {
+            "plot_type": "bar_graph",
+            "samples": [
+                [
+                    "62"
+                ]
+            ],
+            "datasets": [
+                [
+                    {
+                        "name": "Pairs passing filters",
+                        "data": [
+                            9968.0
+                        ]
+                    },
+                    {
+                        "name": "Pairs that were too short",
+                        "data": [
+                            32.0
+                        ]
+                    }
+                ]
+            ],
+            "config": {
+                "id": "cutadapt_filtered_reads_plot",
+                "title": "Cutadapt: Filtered Reads",
+                "ylab": "Counts"
+            }
+        },
+        "cutadapt_trimmed_sequences_plot": {
+            "plot_type": "xy_line",
+            "datasets": [
+                [
+                    {
+                        "name": "62 - First read: Adapter TSO_R1",
+                        "data": [
+                            [
+                                3,
+                                330
+                            ],
+                            [
+                                4,
+                                29
+                            ],
+                            [
+                                5,
+                                12
+                            ],
+                            [
+                                6,
+                                1
+                            ],
+                            [
+                                10,
+                                1
+                            ],
+                            [
+                                22,
+                                1
+                            ],
+                            [
+                                25,
+                                1
+                            ],
+                            [
+                                28,
+                                1
+                            ],
+                            [
+                                29,
+                                1
+                            ],
+                            [
+                                30,
+                                5
+                            ],
+                            [
+                                94,
+                                1
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - First read: Adapter TruSeq_R1",
+                        "data": [
+                            [
+                                3,
+                                105
+                            ],
+                            [
+                                4,
+                                34
+                            ],
+                            [
+                                5,
+                                2
+                            ],
+                            [
+                                7,
+                                2
+                            ],
+                            [
+                                9,
+                                4
+                            ],
+                            [
+                                10,
+                                1
+                            ],
+                            [
+                                12,
+                                2
+                            ],
+                            [
+                                18,
+                                2
+                            ],
+                            [
+                                24,
+                                1
+                            ],
+                            [
+                                25,
+                                1
+                            ],
+                            [
+                                29,
+                                1
+                            ],
+                            [
+                                35,
+                                1
+                            ],
+                            [
+                                52,
+                                1
+                            ],
+                            [
+                                58,
+                                1
+                            ],
+                            [
+                                61,
+                                1
+                            ],
+                            [
+                                62,
+                                1
+                            ],
+                            [
+                                65,
+                                3
+                            ],
+                            [
+                                69,
+                                1
+                            ],
+                            [
+                                94,
+                                1
+                            ],
+                            [
+                                105,
+                                1
+                            ],
+                            [
+                                107,
+                                1
+                            ],
+                            [
+                                112,
+                                1
+                            ],
+                            [
+                                124,
+                                1
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - Second read: Adapter TSO_R2",
+                        "data": [
+                            [
+                                3,
+                                258
+                            ],
+                            [
+                                4,
+                                17
+                            ],
+                            [
+                                5,
+                                7
+                            ],
+                            [
+                                9,
+                                2
+                            ],
+                            [
+                                11,
+                                2
+                            ],
+                            [
+                                13,
+                                1
+                            ],
+                            [
+                                17,
+                                2
+                            ],
+                            [
+                                18,
+                                1
+                            ],
+                            [
+                                20,
+                                2
+                            ],
+                            [
+                                22,
+                                5
+                            ],
+                            [
+                                23,
+                                14
+                            ],
+                            [
+                                25,
+                                37
+                            ],
+                            [
+                                26,
+                                22
+                            ],
+                            [
+                                27,
+                                19
+                            ],
+                            [
+                                28,
+                                103
+                            ],
+                            [
+                                29,
+                                47
+                            ],
+                            [
+                                30,
+                                285
+                            ],
+                            [
+                                31,
+                                6
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - Second read: Adapter polya_R2",
+                        "data": [
+                            [
+                                3,
+                                220
+                            ],
+                            [
+                                4,
+                                105
+                            ],
+                            [
+                                5,
+                                41
+                            ],
+                            [
+                                6,
+                                25
+                            ],
+                            [
+                                7,
+                                17
+                            ],
+                            [
+                                8,
+                                11
+                            ],
+                            [
+                                9,
+                                4
+                            ],
+                            [
+                                10,
+                                22
+                            ],
+                            [
+                                11,
+                                12
+                            ],
+                            [
+                                12,
+                                12
+                            ],
+                            [
+                                13,
+                                13
+                            ],
+                            [
+                                14,
+                                20
+                            ],
+                            [
+                                15,
+                                16
+                            ],
+                            [
+                                16,
+                                14
+                            ],
+                            [
+                                17,
+                                16
+                            ],
+                            [
+                                18,
+                                8
+                            ],
+                            [
+                                19,
+                                8
+                            ],
+                            [
+                                20,
+                                11
+                            ],
+                            [
+                                21,
+                                16
+                            ],
+                            [
+                                22,
+                                15
+                            ],
+                            [
+                                23,
+                                11
+                            ],
+                            [
+                                24,
+                                8
+                            ],
+                            [
+                                25,
+                                7
+                            ],
+                            [
+                                26,
+                                6
+                            ],
+                            [
+                                27,
+                                6
+                            ],
+                            [
+                                28,
+                                9
+                            ],
+                            [
+                                29,
+                                11
+                            ],
+                            [
+                                30,
+                                10
+                            ],
+                            [
+                                31,
+                                15
+                            ],
+                            [
+                                32,
+                                9
+                            ],
+                            [
+                                33,
+                                10
+                            ],
+                            [
+                                34,
+                                4
+                            ],
+                            [
+                                35,
+                                10
+                            ],
+                            [
+                                36,
+                                5
+                            ],
+                            [
+                                37,
+                                6
+                            ],
+                            [
+                                38,
+                                8
+                            ],
+                            [
+                                39,
+                                8
+                            ],
+                            [
+                                40,
+                                2
+                            ],
+                            [
+                                41,
+                                5
+                            ],
+                            [
+                                42,
+                                6
+                            ],
+                            [
+                                43,
+                                7
+                            ],
+                            [
+                                44,
+                                4
+                            ],
+                            [
+                                45,
+                                3
+                            ],
+                            [
+                                46,
+                                1
+                            ],
+                            [
+                                47,
+                                3
+                            ],
+                            [
+                                48,
+                                7
+                            ],
+                            [
+                                49,
+                                5
+                            ],
+                            [
+                                50,
+                                4
+                            ],
+                            [
+                                51,
+                                8
+                            ],
+                            [
+                                52,
+                                2
+                            ],
+                            [
+                                53,
+                                5
+                            ],
+                            [
+                                54,
+                                3
+                            ],
+                            [
+                                55,
+                                2
+                            ],
+                            [
+                                56,
+                                1
+                            ],
+                            [
+                                57,
+                                5
+                            ],
+                            [
+                                58,
+                                3
+                            ],
+                            [
+                                59,
+                                1
+                            ],
+                            [
+                                60,
+                                2
+                            ],
+                            [
+                                61,
+                                3
+                            ],
+                            [
+                                62,
+                                1
+                            ],
+                            [
+                                63,
+                                3
+                            ],
+                            [
+                                64,
+                                3
+                            ],
+                            [
+                                65,
+                                5
+                            ],
+                            [
+                                66,
+                                1
+                            ],
+                            [
+                                67,
+                                1
+                            ],
+                            [
+                                68,
+                                2
+                            ],
+                            [
+                                69,
+                                2
+                            ],
+                            [
+                                70,
+                                2
+                            ],
+                            [
+                                71,
+                                2
+                            ],
+                            [
+                                72,
+                                1
+                            ],
+                            [
+                                73,
+                                1
+                            ],
+                            [
+                                74,
+                                3
+                            ],
+                            [
+                                75,
+                                4
+                            ],
+                            [
+                                76,
+                                1
+                            ],
+                            [
+                                77,
+                                1
+                            ],
+                            [
+                                78,
+                                2
+                            ],
+                            [
+                                79,
+                                2
+                            ],
+                            [
+                                80,
+                                1
+                            ],
+                            [
+                                82,
+                                1
+                            ],
+                            [
+                                83,
+                                2
+                            ],
+                            [
+                                85,
+                                1
+                            ],
+                            [
+                                86,
+                                2
+                            ],
+                            [
+                                88,
+                                3
+                            ],
+                            [
+                                89,
+                                1
+                            ],
+                            [
+                                91,
+                                1
+                            ],
+                            [
+                                92,
+                                1
+                            ],
+                            [
+                                94,
+                                2
+                            ],
+                            [
+                                96,
+                                1
+                            ],
+                            [
+                                97,
+                                1
+                            ],
+                            [
+                                98,
+                                1
+                            ],
+                            [
+                                101,
+                                1
+                            ],
+                            [
+                                106,
+                                1
+                            ],
+                            [
+                                107,
+                                1
+                            ],
+                            [
+                                108,
+                                2
+                            ],
+                            [
+                                110,
+                                1
+                            ],
+                            [
+                                111,
+                                1
+                            ],
+                            [
+                                112,
+                                1
+                            ],
+                            [
+                                113,
+                                1
+                            ],
+                            [
+                                114,
+                                3
+                            ],
+                            [
+                                117,
+                                1
+                            ],
+                            [
+                                118,
+                                2
+                            ],
+                            [
+                                119,
+                                1
+                            ],
+                            [
+                                120,
+                                3
+                            ],
+                            [
+                                121,
+                                8
+                            ],
+                            [
+                                122,
+                                2
+                            ],
+                            [
+                                123,
+                                3
+                            ],
+                            [
+                                124,
+                                1
+                            ],
+                            [
+                                125,
+                                4
+                            ],
+                            [
+                                126,
+                                1
+                            ],
+                            [
+                                127,
+                                1
+                            ],
+                            [
+                                128,
+                                2
+                            ],
+                            [
+                                136,
+                                1
+                            ],
+                            [
+                                137,
+                                1
+                            ],
+                            [
+                                141,
+                                1
+                            ],
+                            [
+                                142,
+                                1
+                            ],
+                            [
+                                146,
+                                1
+                            ],
+                            [
+                                149,
+                                1
+                            ],
+                            [
+                                150,
+                                2
+                            ],
+                            [
+                                151,
+                                3
+                            ]
+                        ]
+                    }
+                ],
+                [
+                    {
+                        "name": "62 - First read: Adapter TSO_R1",
+                        "data": [
+                            [
+                                3,
+                                2.1126760563380285
+                            ],
+                            [
+                                4,
+                                0.7416879795396419
+                            ],
+                            [
+                                5,
+                                1.2244897959183672
+                            ],
+                            [
+                                6,
+                                0.4166666666666667
+                            ],
+                            [
+                                10,
+                                1.0
+                            ],
+                            [
+                                22,
+                                1.0
+                            ],
+                            [
+                                25,
+                                1.0
+                            ],
+                            [
+                                28,
+                                1.0
+                            ],
+                            [
+                                29,
+                                1.0
+                            ],
+                            [
+                                30,
+                                5.0
+                            ],
+                            [
+                                94,
+                                1.0
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - First read: Adapter TruSeq_R1",
+                        "data": [
+                            [
+                                3,
+                                0.6722151088348272
+                            ],
+                            [
+                                4,
+                                0.8695652173913043
+                            ],
+                            [
+                                5,
+                                0.2040816326530612
+                            ],
+                            [
+                                7,
+                                3.3333333333333335
+                            ],
+                            [
+                                9,
+                                4.0
+                            ],
+                            [
+                                10,
+                                1.0
+                            ],
+                            [
+                                12,
+                                2.0
+                            ],
+                            [
+                                18,
+                                2.0
+                            ],
+                            [
+                                24,
+                                1.0
+                            ],
+                            [
+                                25,
+                                1.0
+                            ],
+                            [
+                                29,
+                                1.0
+                            ],
+                            [
+                                35,
+                                1.0
+                            ],
+                            [
+                                52,
+                                1.0
+                            ],
+                            [
+                                58,
+                                1.0
+                            ],
+                            [
+                                61,
+                                1.0
+                            ],
+                            [
+                                62,
+                                1.0
+                            ],
+                            [
+                                65,
+                                3.0
+                            ],
+                            [
+                                69,
+                                1.0
+                            ],
+                            [
+                                94,
+                                1.0
+                            ],
+                            [
+                                105,
+                                1.0
+                            ],
+                            [
+                                107,
+                                1.0
+                            ],
+                            [
+                                112,
+                                1.0
+                            ],
+                            [
+                                124,
+                                1.0
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - Second read: Adapter TSO_R2",
+                        "data": [
+                            [
+                                3,
+                                1.651728553137004
+                            ],
+                            [
+                                4,
+                                0.43478260869565216
+                            ],
+                            [
+                                5,
+                                0.7142857142857142
+                            ],
+                            [
+                                9,
+                                2.0
+                            ],
+                            [
+                                11,
+                                2.0
+                            ],
+                            [
+                                13,
+                                1.0
+                            ],
+                            [
+                                17,
+                                2.0
+                            ],
+                            [
+                                18,
+                                1.0
+                            ],
+                            [
+                                20,
+                                2.0
+                            ],
+                            [
+                                22,
+                                5.0
+                            ],
+                            [
+                                23,
+                                14.0
+                            ],
+                            [
+                                25,
+                                37.0
+                            ],
+                            [
+                                26,
+                                22.0
+                            ],
+                            [
+                                27,
+                                19.0
+                            ],
+                            [
+                                28,
+                                103.0
+                            ],
+                            [
+                                29,
+                                47.0
+                            ],
+                            [
+                                30,
+                                285.0
+                            ],
+                            [
+                                31,
+                                6.0
+                            ]
+                        ]
+                    },
+                    {
+                        "name": "62 - Second read: Adapter polya_R2",
+                        "data": [
+                            [
+                                3,
+                                1.4084507042253522
+                            ],
+                            [
+                                4,
+                                2.6854219948849103
+                            ],
+                            [
+                                5,
+                                4.183673469387755
+                            ],
+                            [
+                                6,
+                                10.416666666666668
+                            ],
+                            [
+                                7,
+                                28.333333333333336
+                            ],
+                            [
+                                8,
+                                55.0
+                            ],
+                            [
+                                9,
+                                4.0
+                            ],
+                            [
+                                10,
+                                22.0
+                            ],
+                            [
+                                11,
+                                12.0
+                            ],
+                            [
+                                12,
+                                12.0
+                            ],
+                            [
+                                13,
+                                13.0
+                            ],
+                            [
+                                14,
+                                20.0
+                            ],
+                            [
+                                15,
+                                16.0
+                            ],
+                            [
+                                16,
+                                14.0
+                            ],
+                            [
+                                17,
+                                16.0
+                            ],
+                            [
+                                18,
+                                8.0
+                            ],
+                            [
+                                19,
+                                8.0
+                            ],
+                            [
+                                20,
+                                11.0
+                            ],
+                            [
+                                21,
+                                16.0
+                            ],
+                            [
+                                22,
+                                15.0
+                            ],
+                            [
+                                23,
+                                11.0
+                            ],
+                            [
+                                24,
+                                8.0
+                            ],
+                            [
+                                25,
+                                7.0
+                            ],
+                            [
+                                26,
+                                6.0
+                            ],
+                            [
+                                27,
+                                6.0
+                            ],
+                            [
+                                28,
+                                9.0
+                            ],
+                            [
+                                29,
+                                11.0
+                            ],
+                            [
+                                30,
+                                10.0
+                            ],
+                            [
+                                31,
+                                15.0
+                            ],
+                            [
+                                32,
+                                9.0
+                            ],
+                            [
+                                33,
+                                10.0
+                            ],
+                            [
+                                34,
+                                4.0
+                            ],
+                            [
+                                35,
+                                10.0
+                            ],
+                            [
+                                36,
+                                5.0
+                            ],
+                            [
+                                37,
+                                6.0
+                            ],
+                            [
+                                38,
+                                8.0
+                            ],
+                            [
+                                39,
+                                8.0
+                            ],
+                            [
+                                40,
+                                2.0
+                            ],
+                            [
+                                41,
+                                5.0
+                            ],
+                            [
+                                42,
+                                6.0
+                            ],
+                            [
+                                43,
+                                7.0
+                            ],
+                            [
+                                44,
+                                4.0
+                            ],
+                            [
+                                45,
+                                3.0
+                            ],
+                            [
+                                46,
+                                1.0
+                            ],
+                            [
+                                47,
+                                3.0
+                            ],
+                            [
+                                48,
+                                7.0
+                            ],
+                            [
+                                49,
+                                5.0
+                            ],
+                            [
+                                50,
+                                4.0
+                            ],
+                            [
+                                51,
+                                8.0
+                            ],
+                            [
+                                52,
+                                2.0
+                            ],
+                            [
+                                53,
+                                5.0
+                            ],
+                            [
+                                54,
+                                3.0
+                            ],
+                            [
+                                55,
+                                2.0
+                            ],
+                            [
+                                56,
+                                1.0
+                            ],
+                            [
+                                57,
+                                5.0
+                            ],
+                            [
+                                58,
+                                3.0
+                            ],
+                            [
+                                59,
+                                1.0
+                            ],
+                            [
+                                60,
+                                2.0
+                            ],
+                            [
+                                61,
+                                3.0
+                            ],
+                            [
+                                62,
+                                1.0
+                            ],
+                            [
+                                63,
+                                3.0
+                            ],
+                            [
+                                64,
+                                3.0
+                            ],
+                            [
+                                65,
+                                5.0
+                            ],
+                            [
+                                66,
+                                1.0
+                            ],
+                            [
+                                67,
+                                1.0
+                            ],
+                            [
+                                68,
+                                2.0
+                            ],
+                            [
+                                69,
+                                2.0
+                            ],
+                            [
+                                70,
+                                2.0
+                            ],
+                            [
+                                71,
+                                2.0
+                            ],
+                            [
+                                72,
+                                1.0
+                            ],
+                            [
+                                73,
+                                1.0
+                            ],
+                            [
+                                74,
+                                3.0
+                            ],
+                            [
+                                75,
+                                4.0
+                            ],
+                            [
+                                76,
+                                1.0
+                            ],
+                            [
+                                77,
+                                1.0
+                            ],
+                            [
+                                78,
+                                2.0
+                            ],
+                            [
+                                79,
+                                2.0
+                            ],
+                            [
+                                80,
+                                1.0
+                            ],
+                            [
+                                82,
+                                1.0
+                            ],
+                            [
+                                83,
+                                2.0
+                            ],
+                            [
+                                85,
+                                1.0
+                            ],
+                            [
+                                86,
+                                2.0
+                            ],
+                            [
+                                88,
+                                3.0
+                            ],
+                            [
+                                89,
+                                1.0
+                            ],
+                            [
+                                91,
+                                1.0
+                            ],
+                            [
+                                92,
+                                1.0
+                            ],
+                            [
+                                94,
+                                2.0
+                            ],
+                            [
+                                96,
+                                1.0
+                            ],
+                            [
+                                97,
+                                1.0
+                            ],
+                            [
+                                98,
+                                1.0
+                            ],
+                            [
+                                101,
+                                1.0
+                            ],
+                            [
+                                106,
+                                1.0
+                            ],
+                            [
+                                107,
+                                1.0
+                            ],
+                            [
+                                108,
+                                2.0
+                            ],
+                            [
+                                110,
+                                1.0
+                            ],
+                            [
+                                111,
+                                1.0
+                            ],
+                            [
+                                112,
+                                1.0
+                            ],
+                            [
+                                113,
+                                1.0
+                            ],
+                            [
+                                114,
+                                3.0
+                            ],
+                            [
+                                117,
+                                1.0
+                            ],
+                            [
+                                118,
+                                2.0
+                            ],
+                            [
+                                119,
+                                1.0
+                            ],
+                            [
+                                120,
+                                3.0
+                            ],
+                            [
+                                121,
+                                8.0
+                            ],
+                            [
+                                122,
+                                2.0
+                            ],
+                            [
+                                123,
+                                3.0
+                            ],
+                            [
+                                124,
+                                1.0
+                            ],
+                            [
+                                125,
+                                4.0
+                            ],
+                            [
+                                126,
+                                1.0
+                            ],
+                            [
+                                127,
+                                1.0
+                            ],
+                            [
+                                128,
+                                2.0
+                            ],
+                            [
+                                136,
+                                1.0
+                            ],
+                            [
+                                137,
+                                1.0
+                            ],
+                            [
+                                141,
+                                1.0
+                            ],
+                            [
+                                142,
+                                1.0
+                            ],
+                            [
+                                146,
+                                1.0
+                            ],
+                            [
+                                149,
+                                1.0
+                            ],
+                            [
+                                150,
+                                2.0
+                            ],
+                            [
+                                151,
+                                3.0
+                            ]
+                        ]
+                    }
+                ]
+            ],
+            "config": {
+                "id": "cutadapt_trimmed_sequences_plot",
+                "title": "Cutadapt: Lengths of Trimmed Sequences",
+                "ylab": "Counts",
+                "xlab": "Length Trimmed (bp)",
+                "xDecimals": false,
+                "ymin": 0,
+                "tt_label": "<b>{point.x} bp trimmed</b>: {point.y:.0f}",
+                "data_labels": [
+                    {
+                        "name": "Counts",
+                        "ylab": "Count"
+                    },
+                    {
+                        "name": "Obs/Exp",
+                        "ylab": "Observed / Expected"
+                    }
+                ]
+            }
+        },
+        "star_alignment_plot": {
+            "plot_type": "bar_graph",
+            "samples": [
+                [
+                    "test2_R1",
+                    "test2_R2",
+                    "test3_R1",
+                    "test3_R2",
+                    "test_R1",
+                    "test_R2"
+                ]
+            ],
+            "datasets": [
+                [
+                    {
+                        "name": "Uniquely mapped",
+                        "data": [
+                            0.0,
+                            7941.0,
+                            2272.0,
+                            6826.0,
+                            3885.0,
+                            8526.0
+                        ],
+                        "color": "#437bb1"
+                    },
+                    {
+                        "name": "Mapped to too many loci",
+                        "data": [
+                            0.0,
+                            622.0,
+                            172.0,
+                            366.0,
+                            161.0,
+                            425.0
+                        ],
+                        "color": "#f7a35c"
+                    },
+                    {
+                        "name": "Unmapped: too short",
+                        "data": [
+                            0.0,
+                            1398.0,
+                            7481.0,
+                            2783.0,
+                            5919.0,
+                            1038.0
+                        ],
+                        "color": "#b1084c"
+                    },
+                    {
+                        "name": "Unmapped: other",
+                        "data": [
+                            0.0,
+                            39.0,
+                            4.0,
+                            25.0,
+                            3.0,
+                            11.0
+                        ],
+                        "color": "#7f0000"
+                    }
+                ]
+            ],
+            "config": {
+                "id": "star_alignment_plot",
+                "title": "STAR: Alignment Scores",
+                "ylab": "# Reads",
+                "cpswitch_counts_label": "Number of Reads"
+            }
+        },
+        "featureCounts_assignment_plot": {
+            "plot_type": "bar_graph",
+            "samples": [
+                [
+                    "test2_R1",
+                    "test2_R2",
+                    "test3_R1",
+                    "test3_R2",
+                    "test_R1",
+                    "test_R2"
+                ]
+            ],
+            "datasets": [
+                [
+                    {
+                        "name": "Assigned",
+                        "data": [
+                            0.0,
+                            112.0,
+                            8.0,
+                            66.0,
+                            561.0,
+                            65.0
+                        ]
+                    },
+                    {
+                        "name": "Unassigned_NoFeatures",
+                        "data": [
+                            0.0,
+                            416.0,
+                            91.0,
+                            266.0,
+                            2550.0,
+                            183.0
+                        ]
+                    }
+                ]
+            ],
+            "config": {
+                "id": "featureCounts_assignment_plot",
+                "title": "featureCounts: Assignments",
+                "ylab": "# Reads",
+                "cpswitch_counts_label": "Number of Reads"
+            }
+        }
+    },
+    "report_saved_raw_data": {
+        "multiqc_cutadapt": {
+            "62": {
+                "pairs_processed": 10000,
+                "r1_with_adapters": 517,
+                "r2_with_adapters": 1664,
+                "pairs_too_short": 32,
+                "pairs_written": 9968,
+                "bp_processed": 3020000,
+                "bp_written": 2972275,
+                "percent_trimmed": 1.580298013245033
+            }
+        },
+        "multiqc_star": {
+            "test_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 148.0,
+                "uniquely_mapped": 8526.0,
+                "uniquely_mapped_percent": 85.26,
+                "avg_mapped_read_length": 147.91,
+                "num_splices": 3195.0,
+                "num_annotated_splices": 3148.0,
+                "num_GTAG_splices": 3169.0,
+                "num_GCAG_splices": 10.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 15.0,
+                "mismatch_rate": 0.65,
+                "deletion_rate": 0.01,
+                "deletion_length": 1.29,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.2,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 425.0,
+                "multimapped_toomany_percent": 4.25,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 10.38,
+                "unmapped_other_percent": 0.11,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 1038,
+                "unmapped_other": 11
+            },
+            "test_R1": {
+                "total_reads": 9968.0,
+                "avg_input_read_length": 242.0,
+                "uniquely_mapped": 3885.0,
+                "uniquely_mapped_percent": 38.97,
+                "avg_mapped_read_length": 233.53,
+                "num_splices": 1719.0,
+                "num_annotated_splices": 1703.0,
+                "num_GTAG_splices": 1706.0,
+                "num_GCAG_splices": 8.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 4.0,
+                "mismatch_rate": 2.44,
+                "deletion_rate": 0.01,
+                "deletion_length": 1.26,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.12,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 161.0,
+                "multimapped_toomany_percent": 1.62,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 59.38,
+                "unmapped_other_percent": 0.03,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 5919,
+                "unmapped_other": 3
+            },
+            "test2_R1": {
+                "total_reads": 0.0,
+                "avg_input_read_length": 0.0,
+                "uniquely_mapped": 0.0,
+                "uniquely_mapped_percent": 0.0,
+                "avg_mapped_read_length": 0.0,
+                "num_splices": 0.0,
+                "num_annotated_splices": 0.0,
+                "num_GTAG_splices": 0.0,
+                "num_GCAG_splices": 0.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 0.0,
+                "deletion_rate": 0.0,
+                "deletion_length": 0.0,
+                "insertion_rate": 0.0,
+                "insertion_length": 0.0,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 0.0,
+                "multimapped_toomany_percent": 0.0,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 0.0,
+                "unmapped_other_percent": 0.0,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 0,
+                "unmapped_other": 0
+            },
+            "test2_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 111.0,
+                "uniquely_mapped": 7941.0,
+                "uniquely_mapped_percent": 79.41,
+                "avg_mapped_read_length": 111.3,
+                "num_splices": 3386.0,
+                "num_annotated_splices": 3321.0,
+                "num_GTAG_splices": 3347.0,
+                "num_GCAG_splices": 13.0,
+                "num_ATAC_splices": 1.0,
+                "num_noncanonical_splices": 25.0,
+                "mismatch_rate": 0.83,
+                "deletion_rate": 0.02,
+                "deletion_length": 2.13,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.29,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 622.0,
+                "multimapped_toomany_percent": 6.22,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 13.98,
+                "unmapped_other_percent": 0.39,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 1398,
+                "unmapped_other": 39
+            },
+            "test3_R1": {
+                "total_reads": 9929.0,
+                "avg_input_read_length": 236.0,
+                "uniquely_mapped": 2272.0,
+                "uniquely_mapped_percent": 22.88,
+                "avg_mapped_read_length": 214.22,
+                "num_splices": 647.0,
+                "num_annotated_splices": 615.0,
+                "num_GTAG_splices": 631.0,
+                "num_GCAG_splices": 2.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 14.0,
+                "mismatch_rate": 2.16,
+                "deletion_rate": 0.02,
+                "deletion_length": 1.19,
+                "insertion_rate": 0.01,
+                "insertion_length": 1.47,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 172.0,
+                "multimapped_toomany_percent": 1.73,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 75.34,
+                "unmapped_other_percent": 0.04,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 7481,
+                "unmapped_other": 4
+            },
+            "test3_R2": {
+                "total_reads": 10000.0,
+                "avg_input_read_length": 146.0,
+                "uniquely_mapped": 6826.0,
+                "uniquely_mapped_percent": 68.26,
+                "avg_mapped_read_length": 142.9,
+                "num_splices": 2092.0,
+                "num_annotated_splices": 2019.0,
+                "num_GTAG_splices": 2049.0,
+                "num_GCAG_splices": 4.0,
+                "num_ATAC_splices": 0.0,
+                "num_noncanonical_splices": 39.0,
+                "mismatch_rate": 1.34,
+                "deletion_rate": 0.02,
+                "deletion_length": 1.33,
+                "insertion_rate": 0.02,
+                "insertion_length": 1.6,
+                "multimapped": 0.0,
+                "multimapped_percent": 0.0,
+                "multimapped_toomany": 366.0,
+                "multimapped_toomany_percent": 3.66,
+                "unmapped_mismatches_percent": 0.0,
+                "unmapped_tooshort_percent": 27.83,
+                "unmapped_other_percent": 0.25,
+                "unmapped_mismatches": 0,
+                "unmapped_tooshort": 2783,
+                "unmapped_other": 25
+            }
+        },
+        "multiqc_featureCounts": {
+            "test3_R1": {
+                "Total": 99,
+                "Assigned": 8,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 91,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 8.080808080808081
+            },
+            "test_R2": {
+                "Total": 248,
+                "Assigned": 65,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 183,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 26.209677419354836
+            },
+            "test3_R2": {
+                "Total": 332,
+                "Assigned": 66,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 266,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 19.879518072289155
+            },
+            "test2_R2": {
+                "Total": 528,
+                "Assigned": 112,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 416,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 21.21212121212121
+            },
+            "test2_R1": {
+                "Total": 0,
+                "Assigned": 0,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 0,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0
+            },
+            "test_R1": {
+                "Total": 3111,
+                "Assigned": 561,
+                "Unassigned_Unmapped": 0,
+                "Unassigned_MappingQuality": 0,
+                "Unassigned_Chimera": 0,
+                "Unassigned_FragmentLength": 0,
+                "Unassigned_Duplicate": 0,
+                "Unassigned_MultiMapping": 0,
+                "Unassigned_Secondary": 0,
+                "Unassigned_Nonjunction": 0,
+                "Unassigned_NoFeatures": 2550,
+                "Unassigned_Overlapping_Length": 0,
+                "Unassigned_Ambiguity": 0,
+                "percent_assigned": 18.0327868852459
+            }
+        },
+        "multiqc_general_stats": {
+            "62": {
+                "Cutadapt_mqc-generalstats-cutadapt-percent_trimmed": 1.580298013245033
+            },
+            "test_R2": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 85.26,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 8526.0,
+                "featureCounts_mqc-generalstats-featurecounts-percent_assigned": 26.209677419354836,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 65
+            },
+            "test_R1": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 38.97,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 3885.0,
+                "featureCounts_mqc-generalstats-featurecounts-percent_assigned": 18.0327868852459,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 561
+            },
+            "test2_R1": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 0.0,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 0.0,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 0
+            },
+            "test2_R2": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 79.41,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 7941.0,
+                "featureCounts_mqc-generalstats-featurecounts-percent_assigned": 21.21212121212121,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 112
+            },
+            "test3_R1": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 22.88,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 2272.0,
+                "featureCounts_mqc-generalstats-featurecounts-percent_assigned": 8.080808080808081,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 8
+            },
+            "test3_R2": {
+                "STAR_mqc-generalstats-star-uniquely_mapped_percent": 68.26,
+                "STAR_mqc-generalstats-star-uniquely_mapped": 6826.0,
+                "featureCounts_mqc-generalstats-featurecounts-percent_assigned": 19.879518072289155,
+                "featureCounts_mqc-generalstats-featurecounts-Assigned": 66
+            }
+        }
+    },
+    "config_analysis_dir_abs": [
+        "/beevol/home/ruifu/projects/scraps091721/scraps"
+    ],
+    "config_analysis_dir": [
+        "."
+    ],
+    "config_creation_date": "2021-09-22, 13:07",
+    "config_git_hash": null,
+    "config_intro_text": null,
+    "config_report_comment": null,
+    "config_report_header_info": null,
+    "config_script_path": "/beevol/home/ruifu/.local/lib/python3.6/site-packages/multiqc/utils",
+    "config_short_version": "1.9",
+    "config_subtitle": null,
+    "config_title": null,
+    "config_version": "1.9"
+}

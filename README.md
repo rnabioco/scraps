@@ -57,12 +57,29 @@ git clone https://github.com/rnabioco/scraps
 3. Edit settings in `config.yaml`
 4. List files in `sample_fastqs.tsv`
 5. Run!
+(sample results can be found at [inst/test_output/](inst/test_output/))
 
 ___
 
 ## Output
-1. bed : TVN-priming site pileup
+1. bedgraph : TVN-priming site pileup
+```
+chr11   215106  215107  1
+chr11   689216  689217  1
+chr11   812862  812863  1
+chr11   812870  812871  2
+chr11   812871  812872  2
+```
 2. count table : +-10 around PolyA_DB sites, by cell barcode
+```
+gene    cell    count
+AC135178.2_NA_ENSG00000263809_chr17_8377523_-_Intron,RPL26_6154_ENSG00000161970_chr17_8377523_-_3'UTR(M)        AACTCCCGTTCCTCCA        1
+AC135178.2_NA_ENSG00000263809_chr17_8377523_-_Intron,RPL26_6154_ENSG00000161970_chr17_8377523_-_3'UTR(M)        CCCATACGTTAAAGAC        1
+AC135178.2_NA_ENSG00000263809_chr17_8377523_-_Intron,RPL26_6154_ENSG00000161970_chr17_8377523_-_3'UTR(M)        CGTCCATTCGACAGCC        1
+ACTG1_71_ENSG00000184009_chr17_81509999_-_3'UTR(M)      ACATCAGGTGATGTCT        1
+ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        1
+```
+3. [html report](inst/test_output/report/multiqc_report.html) : various metrics from steps in the pipeline
 
 [R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage
 
