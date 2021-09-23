@@ -34,4 +34,5 @@ jobs:
       - name: install snakemake and run workflow
         run: |
           conda env create -f scraps_conda.yml
+          conda activate scraps_conda
           snakemake -np
