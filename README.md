@@ -39,3 +39,9 @@ for general information on executing and manipulating snakemake pipelines.
 
 ## Workflow
 ![workflow](inst/flow.png)
+
+## Bonus function - measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay 
+
+([Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
+
+Use SAF file marking all gene regions (5'UTR, intron, CDS, 3'UTR)
