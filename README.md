@@ -1,8 +1,8 @@
 # scraps <img src="man/figures/logo.png" align="right">
 
 <!-- badges: start -->
-
-![](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
+![Snakemake Check](https://github.com/rnabioco/scraps/actions/workflows/snakemake_run.yml/badge.svg)
+![Github Clones](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
 <!-- badges: end -->
 
 scraps (**S**ingle **C**ell **R**NA **P**rocessing **S**oftware) extracts
