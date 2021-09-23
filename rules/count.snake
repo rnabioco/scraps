@@ -1,18 +1,34 @@
+""" Extract correction length target"""
+def _get_chem_length_R1(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "chromiumV3":
+        args = ["58"]
+    elif chem_version == "chromiumV2":
+        args = ["56"]
+    elif chem_version == "dropseq":
+        args = ["50"]
+    elif chem_version == "microwellseq":
+        args = ["54"]
+    elif chem_version == "bd":
+        args = ["53"]
+    elif chem_version == "indrop":
+        args = ["32"]
+    return args
 
 """ rules for scraps counting """
 
 rule assign_sites_read2:
   input:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2.bam"
   output:
-    bam = "{results}/counts/{sample}_R2_assigned.bam"
+    bam = temp("{results}/temp/{sample}_R2_assigned.bam")
   params:
     job_name = "assign_sites_read2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{results}/counts/{sample}_R2_assigned",
-    out_bam = "{results}/counts/{sample}_R2.bam.featureCounts.bam"
+    out = "{results}/temp/{sample}_R2_assigned",
+    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
   log:
-    "logs/assign_sites_{sample}_R2.txt"
+    "{results}/logs/assign_sites_{sample}_R2.txt"
   threads:
     12
   shell:
@@ -44,16 +60,16 @@ rule assign_sites_read2:
 
 rule assign_sites_read1:
   input:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/temp/{sample}_R1.bam"
   output:
-    bam = "{results}/counts/{sample}_R1_assigned.bam"
+    bam = temp("{results}/temp/{sample}_R1_assigned.bam")
   params:
     job_name = "assign_sites_read1",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{results}/counts/{sample}_R1_assigned",
-    out_bam = "{results}/counts/{sample}_R1.bam.featureCounts.bam"
+    out = "{results}/temp/{sample}_R1_assigned",
+    out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
   log:
-    "logs/assign_sites_{sample}_R1.txt"
+    "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
     12
   shell:
@@ -64,7 +80,7 @@ rule assign_sites_read1:
     fi
 
     featureCounts \
-    -s 2 -Q 10 -O \
+    -s 2 -Q 10 -O -p \
     --read2pos 5 \
     -o {params.out} \
     -F $polyaformat \
@@ -86,13 +102,14 @@ rule filterR2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R2.bam"
+    temp("{results}/temp/{sample}_R2.bam")
   params:
     job_name = "filter",
-    temp = "{results}/counts/{sample}_R2_filter.bam",
+    temp = "{results}/temp/{sample}_R2_filter.bam",
+    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/filter_{sample}_R2.txt"
+    "{results}/logs/filter_{sample}_R2.txt"
   threads:
     4
   shell:
@@ -102,41 +119,52 @@ rule filterR2:
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
     samtools index {output}
     rm -rf {params.temp}
+    rm -rf {params.tempbai}
     """
 
 rule filterR1:
   input:
     "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
-    "{results}/counts/{sample}_R1.bam"
+    temp("{results}/temp/{sample}_R1.bam")
   params:
     job_name = "filter",
-    temp = "{results}/counts/{sample}_R1_filter.bam",
-    temp2 = "{results}/counts/{sample}_R1_filter2.bam",
+    length = _get_chem_length_R1,
+    temp = "{results}/temp/{sample}_R1_filter.bam",
+    temp2 = "{results}/temp/{sample}_R1_filter2.bam",
+    final = "{results}/counts/{sample}_R1_counts.tsv.gz",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/filter_{sample}_R1.txt"
+    "{results}/logs/filter_{sample}_R1.txt"
   threads:
     4
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2}
+    set +e
+    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
+    exitcode=$?
+    if [ $exitcode -eq 1 ]
+    then
+      touch {params.final}
+    fi
     samtools sort {params.temp2} -o {output}
     # mv {params.temp} {output}
     samtools index {output}
+    rm -rf {params.temp}
+    rm -rf {params.temp2}
     """
     
 rule count:
   input:
-    "{results}/counts/{sample}_{read}_assigned.bam"
+    "{results}/temp/{sample}_{read}_assigned.bam"
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
     job_name = "count",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "logs/count_{sample}_{read}.txt"
+    "{results}/logs/count_{sample}_{read}.txt"
   threads:
     4
   shell:
@@ -156,16 +184,16 @@ rule count:
 
 rule bedR1:
   input:
-    "{results}/counts/{sample}_R1.bam"
+    "{results}/temp/{sample}_R1.bam"
   output:
-    "{results}/counts/{sample}_R1.bed.gz"
+    "{results}/bed/{sample}_R1.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/counts/{sample}_R1_dedup.bam",
-    r = "{results}/counts/{sample}_R1_r.bam",
+    dedup = "{results}/temp/{sample}_R1_dedup.bam",
+    r = "{results}/temp/{sample}_R1_r.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
-    "logs/bed_{sample}_R1.txt"
+    "{results}/logs/bed_{sample}_R1.txt"
   threads:
     4
   shell:
@@ -183,19 +211,20 @@ rule bedR1:
     # 0x82 for R2
     samtools view -f 0x42 {params.dedup} -b > {params.r}
     bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    rm -rf {params.r}
     """
 
 rule bedR2:
   input:
-    "{results}/counts/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2.bam"
   output:
-    "{results}/counts/{sample}_R2.bed.gz"
+    "{results}/bed/{sample}_R2.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/counts/{sample}_R2_dedup.bam",
+    dedup = "{results}/temp/{sample}_R2_dedup.bam",
     memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
   log:
-    "logs/bed_{sample}_R2.txt"
+    "{results}/logs/bed_{sample}_R2.txt"
   threads:
     4
   shell:

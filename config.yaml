@@ -32,17 +32,17 @@ POLYA_SITES:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
 
-# TSV relating all sequenced libraries to sane capture names
+# TSV relating all sequenced libraries to sane capture names and other metadata
 FASTQS:
   "sample_fastqs.tsv"
-    
-# TSV with per-capture metadata and sample ID
-CAPTURES:
-  "sample_captures.tsv"
 
 R1_SAMPLES:
 # Sample basenames
   - test
+  - test2
+  - test3
 
 R2_SAMPLES:
   - test
+  - test2
+  - test3
