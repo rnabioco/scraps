@@ -84,8 +84,9 @@ ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        
 
 [R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage.
 
-<p align="center">
-  <img src="man/figures/pa_setx.png" width="500"/>
+<p float="left">
+  <img src="man/figures/example.png" width="400"/>
+  <img src="man/figures/pa_setx.png" width="400"/>
 </p>
 
 ___
