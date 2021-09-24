@@ -12,7 +12,7 @@ scraps (**S**ingle **C**ell **R**N**A** **P**rocessing **S**oftware) is currentl
 Microwell-seq, and BD Rhapsody). It will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
 
-<img src="inst/flow.png" width="230" align="right">
+<img src="inst/flow.png" width="300" align="right">
 
 ---
 
