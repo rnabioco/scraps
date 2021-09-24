@@ -1,0 +1,9 @@
+run_accession	sample_alias	fastq_ftp
+SRR7345558	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR734/008/SRR7345558/SRR7345558_1.fastq.gz
+SRR7345559	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR734/009/SRR7345559/SRR7345559_1.fastq.gz
+SRR7345560	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR734/000/SRR7345560/SRR7345560_1.fastq.gz
+SRR7345562	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR734/002/SRR7345562/SRR7345562_subreads.fastq.gz
+SRR7617314	P1_CB_Microglia	ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/004/SRR7617314/SRR7617314_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/004/SRR7617314/SRR7617314_2.fastq.gz
+SRR7617315	P1_CB_Astrocytes	ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR761/005/SRR7617315/SRR7617315_2.fastq.gz
+SRR7623730	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR762/000/SRR7623730/SRR7623730_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR762/000/SRR7623730/SRR7623730_2.fastq.gz
+SRR7652917	mm_p1_cerebellum_01	ftp.sra.ebi.ac.uk/vol1/fastq/SRR765/007/SRR7652917/SRR7652917_subreads.fastq.gz

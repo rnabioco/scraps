@@ -1,0 +1,14 @@
+Module	Section	Sample Name	Source
+Cutadapt	all_sections	62	/beevol/home/ruifu/projects/scraps091721/scraps/logs/test_cutadapt.out.out
+STAR	SummaryLog	test_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/test/test_R2_Log.final.out
+STAR	SummaryLog	test_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/test/test_R1_Log.final.out
+STAR	SummaryLog	test2_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/test2/test2_R1_Log.final.out
+STAR	SummaryLog	test2_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/test2/test2_R2_Log.final.out
+STAR	SummaryLog	test3_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/test3/test3_R1_Log.final.out
+STAR	SummaryLog	test3_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/test3/test3_R2_Log.final.out
+featureCounts	all_sections	test3_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test3_R1_assigned.summary
+featureCounts	all_sections	test_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test_R2_assigned.summary
+featureCounts	all_sections	test3_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test3_R2_assigned.summary
+featureCounts	all_sections	test2_R2	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test2_R2_assigned.summary
+featureCounts	all_sections	test2_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test2_R1_assigned.summary
+featureCounts	all_sections	test_R1	/beevol/home/ruifu/projects/scraps091721/scraps/results/temp/test_R1_assigned.summary
