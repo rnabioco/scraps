@@ -6,7 +6,6 @@ import pandas as pd
 """ Snakemake rules for scraps cutadapt and STARsolo processing """
 
 SAMPLES_DF = pd.read_csv(FASTQS, sep = "\t")
-CAPTURES_DF = pd.read_csv(CAPTURES, sep = "\t")
 
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
@@ -18,42 +17,54 @@ def _get_fq_paths(wildcards):
     
     return fqs
 
+""" Process complex barcodes into simple, if needed"""
+def _get_bc_cut(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    if chem_version == "microwellseq":
+        args = "CGACTCACTACAGGG...TCGGTGACACGATCG"
+    if chem_version == "bd":
+        args = "ACTGGCCTGCGA...GGTAGCGGTGACA"
+    else:
+        args = ""
+    return args
+
 """ Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
-    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
         args = [WHITELIST_V3,"--soloUMIlen 12"]
     elif chem_version == "chromiumV2":
         args = [WHITELIST_V2,"--soloUMIlen 10"]
     elif chem_version == "dropseq":
         args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
+    elif chem_version == "indrop":
+        args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
-    chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
     if chem_version == "chromiumV3":
-        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
+        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
     elif chem_version == "chromiumV2":
-        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0"]
+        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
     elif chem_version == "dropseq":
-        args = ["None --soloUMIlen 8 --clip5pNbases 50 0"]
+        args = ["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
+    elif chem_version == "microwellseq":
+        args = ["None --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9"]
     return args
-
-""" Extract per-capture 10X chemistry versions from gex libs (R1)"""
-def _get_chem_version_read1(wildcards):
-   chem_version = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample].chemistry.unique()
-   if chem_version == "chromiumV3":
-       args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0"]
-   elif chem_version == "chromiumV2":
-       args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0"]
-   elif chem_version == "dropseq":
-       args = ["None --soloUMIlen 8 --clip5pNbases 50 0"]
-   return args
 
 """ Extract per-capture extra arguments for gex libs """
 def _get_extra_args(wildcards):
-    captures_filtered = CAPTURES_DF[CAPTURES_DF.capture == wildcards.sample]
+    captures_filtered = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample]
     return list(captures_filtered.extra_args.unique())
 
 """ This rule is now only necessary for paired-end libraries """
@@ -65,12 +76,18 @@ rule cutadapt_paired:
       R2 = temp("{results}/cutadapt/{sample}_trimmed.R2.fastq.gz")
     params:
       job_name = "cutadapt",
+      bc_cut = _get_bc_cut,
+      info = "{results}/cutadapt/temp_{sample}.info",
+      temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
+      temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
       memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
-    log: "logs/{sample}_cutadapt.out"
+    log: "{results}/logs/{sample}_cutadapt.out"
     threads: 24
     shell:
       """
-      cutadapt -j 24 \
+      if [ -z "{params.bc_cut}" ] ; then
+        echo "no additional trimming"
+        cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
          -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
          -A polya_R2=A{{30}} \
@@ -81,10 +98,25 @@ rule cutadapt_paired:
          -p {output.R2} \
          <(zcat {input}) \
          <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+      else
+        cutadapt -j 24 --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+        awk -F "\t" '$8 ~ /;1/ {{ beforeseq=$5; beforequal=$9 }} $8 ~ /;2/ {{ printf("@%s\\n%s%s%s\\n+\\n%s%s%s\\n", $1, beforeseq, $5, $7, beforequal, $9, $11) }}' {params.info} | gzip > {params.temp}
+        cutadapt -j 24 \
+         -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
+         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+         -A polya_R2=A{{30}} \
+         -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
+         -n 4 \
+         -m 75:17 \
+         -o {output.R1} \
+         -p {output.R2} \
+         <(zcat {params.temp}) \
+         <(zcat {params.temp2})
+      fi
       """
 
 """ This rule processes chromium V2/V3 paired-end libraries """
-rule starsolo_gex_R1:
+rule starsolo_R1:
     input:
       R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
       R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
@@ -94,10 +126,10 @@ rule starsolo_gex_R1:
       chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R1_", 
-      job_name = "star_gex_R1",
+      job_name = "star_R1",
       memory = 
       "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_gex_R1.out"
+    log: "{results}/logs/{sample}_star_R1.out"
     resources:
       total_impact = 5
     threads: 14
@@ -111,9 +143,6 @@ rule starsolo_gex_R1:
       --runThreadN 12 \
       --soloCBwhitelist {params.chemistry} \
       --soloBarcodeMate 1 \
-      --soloCBstart 1 \
-      --soloCBlen 16 \
-      --soloUMIstart 17 \
       --outFilterMultimapNmax 1 \
       --genomeDir {STAR_INDEX} \
       --soloFeatures Gene \
@@ -130,7 +159,7 @@ rule starsolo_gex_R1:
       """
 
 """ This rule processes chromium V2/V3 libraries (R2 only) """
-rule starsolo_gex_R2:
+rule starsolo_R2:
     input:
       R1 = _get_fq_paths
     output:
@@ -141,7 +170,7 @@ rule starsolo_gex_R2:
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2",
       memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
-    log: "logs/{sample}_star_gex_R2.out"
+    log: "{results}/logs/{sample}_star_R2.out"
     resources:
       total_impact = 5
     threads: 14
@@ -166,45 +195,5 @@ rule starsolo_gex_R2:
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
 
-      rm -rf {params.out_dir}Solo.out
-      """
-
-""" This rule processes chromium V2/V3 libraries (R1 only)"""
-rule starsolo_gex_read1:
-    input:
-      R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz"
-    output:
-      "{results}/{sample}/{sample}_read1_Aligned.sortedByCoord.out.bam"
-    params:
-      chemistry = _get_chem_version_read1,
-      extra_args = _get_extra_args,
-      out_dir = "{results}/{sample}/{sample}_read1_", 
-      job_name = "star_gex_read1",
-      memory = 
-      "select[mem>112 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=112]"
-    log: "logs/{sample}_star_gex_read1.out"
-    resources:
-      total_impact = 5
-    threads: 14
-    shell:
-      """
-      {STAR} --soloType CB_UMI_Simple \
-      --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
-      --soloUMIfiltering MultiGeneUMI \
-      --soloUMIdedup 1MM_Directional \
-      --readFilesCommand gunzip -c \
-      --runThreadN 12 \
-      --soloBarcodeReadLength 0 \
-      --outFilterMultimapNmax 1 \
-      --soloCBwhitelist {params.chemistry} \
-      --genomeDir {STAR_INDEX} \
-      --soloFeatures Gene \
-      --soloCellFilter None {params.extra_args} \
-      --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 112000000000 \
-      --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
-      --outFileNamePrefix {params.out_dir} \
-      --readFilesIn {input.R1} {input.R1}
-      
       rm -rf {params.out_dir}Solo.out
       """

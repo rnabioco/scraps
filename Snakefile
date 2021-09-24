@@ -11,10 +11,10 @@ R2_SAMPLES = config["R2_SAMPLES"]
 STAR_INDEX = config["STAR_INDEX"]
 POLYA_SITES = config["POLYA_SITES"]
 FASTQS = config["FASTQS"]
-CAPTURES = config["CAPTURES"]
 WHITELIST_V2 = config["WHITELIST_V2"]
 WHITELIST_V3 = config["WHITELIST_V3"]
 STAR = config["STAR"]
+READS = ["R1", "R2"]
 
 rule all:
   input:
@@ -26,12 +26,12 @@ rule all:
     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
     # Generates read 2 (trimmed) counts;
     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
-    # expand("{data}/multiqc_report.html", data = DATA)
+    expand("{results}/report/multiqc_report.html", results = RESULTS),
     # Generates bed files;
-    expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
-    expand("{results}/counts/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2")
+    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
+    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2")
 
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"
 include: "rules/count.snake"
-#include: "rules/qc.snake"
+include: "rules/qc.snake"

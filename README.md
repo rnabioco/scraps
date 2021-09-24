@@ -1,8 +1,8 @@
 # scraps <img src="man/figures/logo.png" align="right">
 
 <!-- badges: start -->
-
-![](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
+![Snakemake Check](https://github.com/rnabioco/scraps/actions/workflows/snakemake_run.yml/badge.svg)
+![Github Clones](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
 <!-- badges: end -->
 
 ### scraps extracts mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq libraries.
@@ -108,3 +108,11 @@ Alternatively, use [Conda](https://docs.conda.io/en/latest/) to manage these dep
 
 Please also see the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
+
+---
+
+## Bonus function - measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay 
+
+([Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
+
+Use SAF file marking all gene regions (5'UTR, intron, CDS, 3'UTR)
