@@ -5,7 +5,7 @@
 ![Github Clones](https://img.shields.io/badge/dynamic/json.svg?label=Downloads&url=https://raw.githubusercontent.com/raysinensis/clone_counts_public/main/scraps.json&query=downloads&colorB=brightgreen)
 <!-- badges: end -->
 
-### scraps extracts mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq libraries.
+### scraps extracts mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq libraries at near-nucleotide resolution.
 
 scraps (**S**ingle **C**ell **R**N**A** **P**rocessing **S**oftware) is currently implemented as a <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for 
 10X Genomics 3' end v2/3 libraries (and other platforms with similar library structure, including Drop-seq, 
