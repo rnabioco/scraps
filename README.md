@@ -15,7 +15,13 @@ changes in single-cell RNA-seq data.
 <img src="inst/flow.png" width="300" align="right">
 
 ---
-
+-   [Example usage](#example-usage)
+-   [Supported scRNA-seq platforms](#supported-scrna-seq-platforms)
+-   [Output](#output)
+-   [Setup](#setup)
+-   [Dependencies](#dependencies)
+-   [Bonus function](#bonus-function)
+    
 ## Example usage
 
 scraps requires the following as input (defined in config.yaml and sample_fastqs.tsv):
@@ -48,20 +54,6 @@ Snakemake --snakefile Snakefile \
 
 ---
 
-## Setup
-1. Clone repository:
-`
-git clone https://github.com/rnabioco/scraps
-`
-2. Check dependencies (ideally with Conda, see below)
-3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
-4. Edit settings in `config.yaml`
-5. List files in `sample_fastqs.tsv`
-6. Run!
-(sample results can be found at [inst/test_output/](inst/test_output/))
-
-___
-
 ## Output
 1. bedgraph : TVN-priming site pileup
 ```
@@ -91,6 +83,20 @@ ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        
 
 ___
 
+## Setup
+1. Clone repository:
+`
+git clone https://github.com/rnabioco/scraps
+`
+2. Check dependencies (ideally with Conda, see below)
+3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
+4. Edit settings in `config.yaml`
+5. List files in `sample_fastqs.tsv`
+6. Run!
+(sample results can be found at [inst/test_output/](inst/test_output/))
+
+___
+
 ## Dependencies
 
 scraps requires the following executables in your PATH:
@@ -111,8 +117,12 @@ for general information on executing and manipulating snakemake pipelines.
 
 ---
 
-## Bonus function - measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay 
+## Bonus function
 
-([Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
+**measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay**
 
-Use SAF file marking all gene regions (5'UTR, intron, CDS, 3'UTR)
+(Based on widespread RNA decay during apoptosis: [Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
+
+Use SAF file marking all gene regions (5'UTR, intron, CDS, 3'UTR), and helper
+[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R/scraps_priming_region.R) to process output.
+
