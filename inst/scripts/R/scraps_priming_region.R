@@ -203,8 +203,6 @@ dfnot_avg <- function(df, dfgene, vec, k,
 #' @param genes if provided, only calculates based on these genes
 #' @param k quantiles to use, binned by 2000 genes if not given
 #' @return data.frame with count bins
-#' @examples 
-#' saf <- parse_saf_pf("ref/polyadb32.hg38.saf.gz")
 #' 
 countlist_to_bins <- function(countlist,
                               vec,
@@ -273,4 +271,58 @@ countlist_to_bins <- function(countlist,
   
   dfnot2 <- bind_rows(dfnot2_utr5, dfnot2_utr3, dfnot2_cds, dfnot2_intron) %>% 
     mutate(loc = factor(loc, levels = c("utr5", "cds", "intron", "utr3")))
+}
+
+#' calculation cohens_d effect size
+#' 
+#' @param x
+#' @param y
+#' @return cohens_d effect size
+#' 
+cohens_d <- function(x, y) {
+  lx <- length(x)- 1
+  ly <- length(y)- 1
+  md  <- abs(mean(x) - mean(y))        ## mean difference (numerator)
+  csd <- lx * var(x) + ly * var(y)
+  csd <- csd/(lx + ly)
+  csd <- sqrt(csd)                     ## common sd computation
+  if (csd == 0) {
+    return(0)
+  }
+  cd  <- md/csd                        ## cohen's d
+}
+
+#' calculation mean diff and effect size of utr3 priming
+#' 
+#' @param df data.frame with count bins
+#' @param target_loc string for target region, default utr3
+#' @param col1 column designating broader grouping if needed
+#' @param col2 column designating grouping, default to "id" from countlist_to_bins
+#' @param ctrl target control set in col
+#' @return data.frame with stats (mean diff and effecti size)
+#' 
+bin_effectsize <- function(df,
+                           target_loc = "utr3",
+                           col1 = NA,
+                           col2 = "id",
+                           ctrl = NA) {
+  temp <- df %>% mutate(quantile = as.numeric(quantile)) %>%
+    filter(quantile != min(quantile), quantile != max(quantile)) %>% 
+    filter(loc == target_loc) 
+  if (is.na(col1)) {
+    groupvar <- "quantile"
+  } else {
+    groupvar <- c(col1, "quantile")
+  }
+  if (is.na(col1)) {
+    groupvar2 <- col2
+  } else {
+    groupvar2 <- c(col1, "quantile")
+  }
+  temp %>% group_by_at(all_of(vars(groupvar))) %>% 
+    mutate(target := !!sym(col2)) %>% 
+    mutate(score = frac[target == ctrl][1] - frac) %>% 
+    group_by_at(all_of(vars(c(col1, col2) %>% na.omit()))) %>% 
+    summarize(mean = mean(score),
+              effectsize = cohens_d(score, rep(0, length(score))))
 }

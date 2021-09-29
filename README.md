@@ -29,7 +29,7 @@ scraps requires the following as input (defined in config.yaml and sample_fastqs
   - 10X Genomics 3' v2/3 single-cell FASTQs or other platforms (with names "_R1.fastq.gz"" and "_R2fastq.gz"")
   - A STAR genome index (must be generated with STAR 2.7.4a and above)
   - Whitelist for cell barcodes (optional but recommended to speed up run time)
-  - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a>, hg38 and mm10 files are included in ref subdirectory)
+  - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a>, hg38 and mm10 files are included in [ref](https://github.com/rnabioco/scraps/tree/master/ref) subdirectory)
 
 To run test data, simply execute:
 ```
@@ -123,6 +123,6 @@ for general information on executing and manipulating snakemake pipelines.
 
 (Based on widespread RNA decay during apoptosis: [Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
 
-Use SAF file marking all gene regions (5'UTR, intron, CDS, 3'UTR), and helper
+Use SAF (hg38 version provided in [ref](https://github.com/rnabioco/scraps/tree/master/ref) subdirectory) file marking all gene regions (5'UTR, intron, CDS, 3'UTR), and helper
 [R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R/scraps_priming_region.R) to process output.
 
