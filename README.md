@@ -7,7 +7,7 @@
 
 ### scraps extracts mRNA polyadenylation sites from "TVN"-primed single-cell RNA-seq libraries at near-nucleotide resolution.
 
-scraps (**S**ingle **C**ell **R**N**A** **P**rocessing **S**oftware) is currently implemented as a <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for 
+scraps (**S**ingle **C**ell **R**N**A** **P**olyA **S**ite Discovery) is currently implemented as a <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for 
 10X Genomics 3' end v2/3 libraries (and other platforms with similar library structure, including Drop-seq, 
 Microwell-seq, and BD Rhapsody). It will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
@@ -118,6 +118,8 @@ for general information on executing and manipulating snakemake pipelines.
 ---
 
 ## Bonus function
+
+<img src="inst/apop.png" height="250" align="left">
 
 **measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay**
 

@@ -324,5 +324,6 @@ bin_effectsize <- function(df,
     mutate(score = frac[target == ctrl][1] - frac) %>% 
     group_by_at(all_of(vars(c(col1, col2) %>% na.omit()))) %>% 
     summarize(mean = mean(score),
-              effectsize = cohens_d(score, rep(0, length(score))))
+              effectsize = cohens_d(score, rep(0, length(score)))) %>% 
+    ungroup()
 }
