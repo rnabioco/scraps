@@ -319,11 +319,13 @@ bin_effectsize <- function(df,
   } else {
     groupvar2 <- c(col1, "quantile")
   }
-  temp %>% group_by_at(all_of(vars(groupvar))) %>% 
+  temp2 <- temp %>% group_by_at(all_of(vars(groupvar))) %>% 
     mutate(target := !!sym(col2)) %>% 
     mutate(score = frac[target == ctrl][1] - frac) %>% 
     group_by_at(all_of(vars(c(col1, col2) %>% na.omit()))) %>% 
     summarize(mean = mean(score),
-              effectsize = cohens_d(score, rep(0, length(score)))) %>% 
+              effectsize = cohens_d(score, rep(0, length(score))),
+              p = t.test(score, rep(0, length(score)))$p.value) %>% 
     ungroup()
+  temp2 %>% mutate(p = ifelse(is.nan(p), 1, p))
 }

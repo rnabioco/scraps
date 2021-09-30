@@ -121,7 +121,7 @@ for general information on executing and manipulating snakemake pipelines.
 
 <img src="inst/apop.png" height="250" align="left">
 
-**measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay**
+**Measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay**
 
 (Based on widespread RNA decay during apoptosis: [Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
 
