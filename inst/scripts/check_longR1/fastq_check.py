@@ -7,7 +7,7 @@ import re
 import gzip
 import threading
 import requests
-from  collections import defaultdict
+from collections import defaultdict
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
@@ -22,8 +22,8 @@ with scraps workflow, ie read length, qc score, base comp
 """
 
 def get_study_metadata(study_id, logfile):
-    baseurl = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession="
-    fields_url = "&result=read_run&fields=run_accession,sample_alias,fastq_ftp"
+    baseurl = "http://www.ebi.ac.uk/ena/portal/api/filereport?accession="
+    fields_url = "&result=read_run&fields=run_accession,sample_alias,fastq_ftp,fastq_bytes"
     full_url = baseurl + study_id + fields_url
 
   # get study info
@@ -52,7 +52,7 @@ def get_study_metadata(study_id, logfile):
 # m2[5]
 
 
-def get_fastq_links(metadata, fq_ids):
+def get_fastq_links(metadata, fq_ids, nmax = 2):
     dl_cmds = []
     header = metadata.pop(0)
 
@@ -63,7 +63,7 @@ def get_fastq_links(metadata, fq_ids):
 
     for line in metadata:
         try:
-            accession, title, ftp_url = line.rstrip().split("\t")
+            study, accession, title, ftp_url, ftp_size = line.rstrip().split("\t")
         except ValueError:
             continue
 
@@ -86,7 +86,7 @@ def get_fastq_links(metadata, fq_ids):
             sys.exit("unknown ftp urls in metadata")
         dl_cmds.append(ftp_urls)
 
-    return dl_cmds
+    return dl_cmds[0:nmax]
 
 
 # if not sys.stdin.isatty():
@@ -272,7 +272,7 @@ def stream_file(url, path):
 # res2 = ATCG_comp("pipe", 150, nentries = 100000, verbose = False)
 # plot_line(res2, "SRR7617315_2_comp.pdf")
 
-def wrap_stream_analysis(link, output_dir, readn = 100000, cutoff = 28):
+def wrap_stream_analysis(link, output_dir, readn = 1000, cutoff = 28):
     if os.path.exists("pipe"):
         os.remove("pipe")
     print("for " + link + " : " + "check read lengths")
@@ -342,7 +342,13 @@ def main():
     parser.add_argument('-n',
                         '--nreads',
                         help ="""number of reads to stream from each file for calculations""",
-                        default = 100000,
+                        default = 1000,
+                        required = False)
+
+    parser.add_argument('-m',
+                        '--nmax',
+                        help ="""max number of sample/pairs to test""",
+                        default = 2,
                         required = False)
 
     parser.add_argument('-c',
@@ -366,9 +372,12 @@ def main():
     args=parser.parse_args()
 
     study_id = args.study
+    # study_id = "PRJNA400566"
+    # fq_ids = False
     fq_ids = args.ids
     output_dir = args.outputdir
     n_reads = int(args.nreads)
+    nmax = int(args.nmax)
     cut_off = int(args.cutoff)
     write_report = args.report
     over_write = args.overwrite
@@ -382,9 +391,8 @@ def main():
             output_dir = "."
         logfile = os.path.join(output_dir, study_id + "_meta_log.txt")
         log_fp = open(logfile, 'w')
-
         mdata = get_study_metadata(study_id, log_fp)
-        links = get_fastq_links(mdata, fq_ids)
+        links = get_fastq_links(mdata, fq_ids, nmax)
         df = wrap_links_stream(links, output_dir, n_reads, cut_off)
         log_fp.close()
 
@@ -396,7 +404,7 @@ def main():
             df.to_csv(os.path.join(output_dir, study_id + ".csv"))
 
         print("all finished")
-        
+
     else:
         print("not repeating previous check")
 

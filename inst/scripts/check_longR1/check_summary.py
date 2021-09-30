@@ -61,7 +61,7 @@ def main():
     parser.add_argument('-f',
                         '--file',
                         help = """
-                        Csv file with sample info, used previously in scrape_all.sh
+                        Tsv file with sample info, used previously in scrape_all.sh
                         """,
                         required = True)
 
@@ -69,19 +69,19 @@ def main():
 
     file1 = args.file
     df = pd.read_csv(file1, header = None)
-    samples = df[1].tolist()
+    samples = df[0].tolist()
     df_final = pd.DataFrame(columns = ["sample", "judgment", "R1", "R2"])
 
     for sample in samples:
         check = check_files(sample)
         df_final = df_final.append(pd.Series(check, index = df_final.columns), ignore_index=True)
 
-    df_final.to_csv(file1.replace(".csv", "_summary.csv"))
+    df_final.to_csv(file1.replace(".txt", "_summary.csv"))
 
     fig, ax = plt.subplots()
     fig.set_size_inches(6, 6, forward=True)
     fig.set_dpi(300)
     df_final['judgment'].value_counts().plot(kind='bar', ax = ax)
-    fig.savefig(file1.replace(".csv", ".pdf"))
+    fig.savefig(file1.replace(".txt", ".pdf"))
 
 if __name__ == '__main__': main()
