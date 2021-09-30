@@ -42,7 +42,7 @@ Snakemake --snakefile Snakefile \
 ---
 
 ## Supported scRNA-seq platforms
-| Platform | Lib diagram | Setting name | Test data |
+| Platform | Library (BC+UMI+A) | Setting | Test data |
 | :--------|:------------| :------------| :---------|
 | 10x Chromium V3 | [16 + 12 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV3 | ✓ |
 | 10x Chromium V2 | [16 + 10 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV2 | ✓ |
