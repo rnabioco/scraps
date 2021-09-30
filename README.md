@@ -9,7 +9,7 @@
 
 scraps (**S**ingle **C**ell **R**N**A** **P**olyA **S**ite Discovery) is currently implemented as a <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> pipeline for 
 10X Genomics 3' end v2/3 libraries (and other platforms with similar library structure, including Drop-seq, 
-Microwell-seq, and BD Rhapsody). It will eventually be expanded for analyzing a range of RNA processing 
+Microwell-seq, and BD Rhapsody). If long Read1 is available (estimated ~5% of SRA data, or planning new experiments), positional information will be calculated from paired realignment; otherwise, the less optimal anchored Read2 approach is used. scraps will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
 
 <img src="inst/flow.png" width="300" align="right">
