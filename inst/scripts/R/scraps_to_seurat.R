@@ -4,6 +4,7 @@
 #' @param n_min  minimum number of observations for a site to be kept
 #' @param gene_min  minimum number of observations for gene to be kept
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
+#' @param filter_low if TRUE, remove low genes and cell ids, if FALSE, set to -1
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
 #' @param types filter to only these types of PA sites, set to NULL to use all
 #' @param types2 another filter to only these types of PA sites, set to NULL to use all
@@ -17,6 +18,7 @@ scraps_to_matrix <- function(file,
                              n_min = 5,
                              gene_min = 5,
                              alt_only = FALSE,
+                             filter_low = TRUE,
                              cell_ids = NULL,
                              types = "3'UTR",
                              types2 = NULL,
@@ -73,20 +75,36 @@ scraps_to_matrix <- function(file,
   if (!is.null(pf)) {
     message("calculate normalized PSI value")
     if (!is.null(gene_min) & gene_min > n_min) {
-      dat <- dat %>% group_by(gene) %>% 
-        mutate(total = sum(count)) %>% 
-        filter(count >= gene_min) %>% 
-        ungroup() %>% 
-        select(-total)
+      if (filter_low) {
+        dat <- dat %>% group_by(gene) %>% 
+          mutate(total = sum(count)) %>% 
+          filter(total >= gene_min) %>% 
+          ungroup() %>% 
+          select(-total)
+        
+        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
+          mutate(gene_name = str_remove(gene, "_.+")) %>% 
+          mutate(count2 = pf * count) %>% 
+          group_by(gene_name, cell) %>% 
+          summarize(count = sum(count2)/sum(count)) %>% 
+          ungroup() %>% 
+          rename(gene = "gene_name")
+      } else {
+        dat <- dat %>% group_by(gene) %>% 
+          mutate(total = sum(count))
+        
+        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
+          mutate(gene_name = str_remove(gene, "_.+")) %>% 
+          mutate(count2 = pf * count) %>% 
+          group_by(gene_name, cell) %>% 
+          summarize(count = sum(count2)/sum(count), total = first(total)) %>% 
+          mutate(count = ifelse(total >= gene_min, count, -1)) %>% 
+          ungroup() %>% 
+          rename(gene = "gene_name")
+      }
     }
     
-    dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
-      mutate(gene_name = str_remove(gene, "_.+")) %>% 
-      mutate(count2 = pf * count) %>% 
-      group_by(gene_name, cell) %>% 
-      summarize(count = sum(count2)/sum(count)) %>% 
-      ungroup() %>% 
-      rename(gene = "gene_name")
+
   }
   
   # transform to matrix
