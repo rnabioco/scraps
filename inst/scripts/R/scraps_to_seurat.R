@@ -1,7 +1,8 @@
-#' Read scraps output to matrix
+#' Read scraps output from umi_tools to sparseMatrix
 #' 
 #' @param file scraps output table containing 
 #' @param n_min  minimum number of observations for a site to be kept
+#' @param gene_min  minimum number of observations for gene to be kept
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
 #' @param types filter to only these types of PA sites, set to NULL to use all
@@ -10,11 +11,11 @@
 #' @return count matrix
 #' @examples 
 #' s_small <- scraps_to_matrix("sample_R2_counts.tsv.gz",
-#'                             SeuratObject::pbmc_small,
 #'                             alt_only = FALSE)
 #' 
 scraps_to_matrix <- function(file,
                              n_min = 5,
+                             gene_min = 5,
                              alt_only = FALSE,
                              cell_ids = NULL,
                              types = "3'UTR",
@@ -23,6 +24,8 @@ scraps_to_matrix <- function(file,
   # read file
   message("read file")
   dat <- read_tsv(file)
+  
+  # filter for certain ids
   if (!is.null(cell_ids)) {
     dat <- dat %>% 
       filter(cell %in% cell_ids)
@@ -69,6 +72,14 @@ scraps_to_matrix <- function(file,
   # use psi values if pf is used
   if (!is.null(pf)) {
     message("calculate normalized PSI value")
+    if (!is.null(gene_min) & gene_min > n_min) {
+      dat <- dat %>% group_by(gene) %>% 
+        mutate(total = sum(count)) %>% 
+        filter(count >= gene_min) %>% 
+        ungroup() %>% 
+        select(-total)
+    }
+    
     dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
       mutate(gene_name = str_remove(gene, "_.+")) %>% 
       mutate(count2 = pf * count) %>% 
@@ -80,8 +91,28 @@ scraps_to_matrix <- function(file,
   
   # transform to matrix
   message("convert to matrix")
-  mat <- dat %>% pivot_wider(names_from = cell, values_from = count, values_fill = 0) %>% 
-    column_to_rownames("gene")
+  # mat <- dat %>% pivot_wider(names_from = cell, values_from = count, values_fill = 0) %>% 
+  #   column_to_rownames("gene")
+  dat <- dat %>% 
+    mutate(gene = as.factor(gene),
+           cell = as.factor(cell))
+  mat <- Matrix::sparseMatrix(
+    i = as.numeric(dat$gene),
+    j = as.numeric(dat$cell),
+    x = dat$count,
+    dims = c(length(unique(dat$gene)),
+             length(unique(dat$cell))),
+    dimnames = list(
+      select(dat, gene) %>%
+        unique() %>%
+        arrange(gene) %>%
+        pull(gene),
+      select(dat, cell, ) %>%
+        unique() %>%
+        arrange(cell) %>%
+        pull(cell)
+    )
+  )
 
   # keep consistent cell ids
   if (!is.null(cell_ids)) {
@@ -139,14 +170,16 @@ scraps_to_seurat <- function(file, object,
 #' Parse SAF annotation file for position factor (pf) values
 #' 
 #' @param file SAF file used with Scraps
+#' @param types filter to only these types of PA sites, set to NULL to use all
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
 #' @return data.frame with SAF first column and position factor by gene
 #' @examples 
 #' saf <- parse_saf_pf("ref/polyadb32.hg38.saf.gz")
 #' 
 parse_saf_pf <- function(file,
+                         types = "3'UTR",
                          alt_only = TRUE) {
-  bed1 <- parse_saf(file)
+  bed1 <- parse_saf(file, types)
   
   # remove symbols that come from different chromosomes
   diffchrom <- bed1 %>% distinct(gene, chrom) %>% 
@@ -185,12 +218,12 @@ parse_saf_pf <- function(file,
   bed3 %>% select(GeneID, pf)
 }
 
-parse_saf <- function(file) {
+parse_saf <- function(file, types = FALSE, sep = ";") {
   # read SAF and split for gene symbol
   saf <- read_tsv(file) %>% 
     mutate(GeneID2 = str_remove(GeneID, Chr)) %>% 
     separate(GeneID2, 
-             sep = "_", 
+             sep = sep, 
              into = c("gene", 
                       "genbank", 
                       "id", 
@@ -198,11 +231,15 @@ parse_saf <- function(file) {
                       "pos",
                       "strand",
                       "class"),
+             convert = TRUE,
              remove = FALSE) %>% 
+    filter(!is.na(gene) | !is.na(genbank) | !is.na(id)) %>%
     mutate(pos = as.numeric(pos)) %>% 
-    filter(gene != "NA") %>% 
     filter(!is.na(pos)) %>% 
     mutate(Start = Start - 1)
+  
+  if (types != FALSE) {
+    saf <- saf %>% filter(str_detect(class, types))}
   
   # convert to bed format
   bed1 <- saf %>% select(chrom = Chr, start = Start, end = End, strand, gene, GeneID)
