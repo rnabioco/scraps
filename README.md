@@ -52,6 +52,8 @@ Snakemake --snakefile Snakefile \
 | BD Rhapsody | [9x3 + 8 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/BD_Rhapsody.html) | bd | |
 | inDrop | [8 + 6 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/inDrop.html) | indrop | |
 
+Custom chemistry also [supported](https://github.com/rnabioco/scraps/issues/58)
+
 ---
 
 ## Output
@@ -74,7 +76,7 @@ ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        
 ```
 3. [html report](https://raw.githack.com/rnabioco/scraps/master/inst/test_output/report/multiqc_report.html) : various metrics from steps in the pipeline
 
-[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage. Alternatively, a package of the same functions can be installed with `remotes::install_github("rnabioco/scrapR")`
+[R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage. Alternatively, a package of the same functions can be installed with [`remotes::install_github("rnabioco/scrapR")`](https://github.com/rnabioco/scrapR)
 
 <p float="left">
   <img src="man/figures/example.png" height="300"/>
