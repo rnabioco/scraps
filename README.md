@@ -91,7 +91,7 @@ ___
 git clone https://github.com/rnabioco/scraps
 `
 2. Check dependencies (ideally with Conda, see below)
-3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index, needs to be extracted](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
+3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links(all files need to be extracted): [GRCh38 index](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
 4. Edit settings in `config.yaml`
 5. List files in `sample_fastqs.tsv`
 6. Run!
@@ -104,10 +104,12 @@ ___
 scraps requires the following executables in your PATH:
 
   - <a href="https://www.python.org">Python 3</a> (developed with version 3.8.5)
-  - <a href="https://bitbucket.org/snakemake/snakemake/src/master/">Snakemake</a> (developed with version 3.11.2)
+  - <a href="https://bitbucket.org/snakemake/snakemake/src/master">Snakemake</a> (developed with version 3.11.2)
   - <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools</a> (developed with version 1.1.1)
   - <a href="https://cutadapt.readthedocs.io">cutadapt</a> (developed with version 3.4)
   - <a href="https://github.com/alexdobin/STAR">STAR</a> (developed with version 2.7.9a)
+  - <a href="https://www.htslib.org">Samtools</a> (developed with version 1.3.1)
+  - <a href="https://bedtools.readthedocs.io/en/latest">Bedtools</a> (developed with version 2.30.0)
   - <a href="http://subread.sourceforge.net">Subread</a> (developed with version 1.6.2)
   - <a href="https://multiqc.info">MultiQC</a> (developed with version 1.9)
   
