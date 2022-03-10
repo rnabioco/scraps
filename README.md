@@ -111,8 +111,8 @@ scraps requires the following executables in your PATH:
   - <a href="http://subread.sourceforge.net">Subread</a> (developed with version 1.6.2)
   - <a href="https://multiqc.info">MultiQC</a> (developed with version 1.9)
   
-Alternatively, use [Conda](https://docs.conda.io/en/latest/) to manage these dependencies, simply with:
-`conda env create -f scraps_conda.yml`
+Alternatively, we recommend using [Conda](https://docs.conda.io/en/latest/) to manage these dependencies, simply with:
+`conda env create -f scraps_conda.yml` and then `conda activate scraps_conda`
 
 Please also see the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
