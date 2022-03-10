@@ -33,7 +33,7 @@ scraps requires the following as input (defined in config.yaml and sample_fastqs
 
 To run test data, simply execute:
 ```
-Snakemake --snakefile Snakefile \
+snakemake --snakefile Snakefile \
   --configfile config.yaml \
   --resources total_impact=5 \
   --keep-going
@@ -91,7 +91,7 @@ ___
 git clone https://github.com/rnabioco/scraps
 `
 2. Check dependencies (ideally with Conda, see below)
-3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
+3. Place appropriate STAR index in `index/` folder, and barcode whitelists in `ref/` <br>Download links: [GRCh38 index, needs to be extracted](https://scrapsaccessory.s3.us-west-2.amazonaws.com/GRCh38_cr2020A_star.tar.gz); [10x V2 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/737K-august-2016.txt.gz); [10x V3 barcodes](https://scrapsaccessory.s3.us-west-2.amazonaws.com/3M-february-2018.txt.gz)
 4. Edit settings in `config.yaml`
 5. List files in `sample_fastqs.tsv`
 6. Run!
