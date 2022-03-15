@@ -16,6 +16,10 @@ WHITELIST_V3 = config["WHITELIST_V3"]
 STAR = config["STAR"]
 READS = ["R1", "R2"]
 
+import json
+with open('chemistry.json') as fp:
+   chemistry = json.load(fp)
+
 rule all:
   input:
     # Generate read 1 & 2 BAMs;

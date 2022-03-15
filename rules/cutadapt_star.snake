@@ -20,46 +20,19 @@ def _get_fq_paths(wildcards):
 """ Process complex barcodes into simple, if needed"""
 def _get_bc_cut(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
-    if chem_version == "microwellseq":
-        args = "CGACTCACTACAGGG...TCGGTGACACGATCG"
-    if chem_version == "bd":
-        args = "ACTGGCCTGCGA...GGTAGCGGTGACA"
-    else:
-        args = ""
+    chemistry[chem_version]["bc_cut"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
-    if chem_version == "chromiumV3":
-        args = [WHITELIST_V3,"--soloUMIlen 12"]
-    elif chem_version == "chromiumV2":
-        args = [WHITELIST_V2,"--soloUMIlen 10"]
-    elif chem_version == "dropseq":
-        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
-    elif chem_version == "microwellseq":
-        args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
-    elif chem_version == "microwellseq":
-        args = ["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
-    elif chem_version == "indrop":
-        args = ["None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9"]
+    args = eval(chemistry[chem_version]["R2"])
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
-    if chem_version == "chromiumV3":
-        args = [WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
-    elif chem_version == "chromiumV2":
-        args = [WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]
-    elif chem_version == "dropseq":
-        args = ["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]
-    elif chem_version == "microwellseq":
-        args = ["None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"]
-    elif chem_version == "microwellseq":
-        args = ["None --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"]
-    elif chem_version == "microwellseq":
-        args = ["None --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9"]
+    args = eval(chemistry[chem_version]["R1"])
     return args
 
 """ Extract per-capture extra arguments for gex libs """

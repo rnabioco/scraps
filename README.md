@@ -52,7 +52,7 @@ snakemake --snakefile Snakefile \
 | BD Rhapsody | [9x3 + 8 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/BD_Rhapsody.html) | bd | |
 | inDrop | [8 + 6 + 18](https://teichlab.github.io/scg_lib_structs/methods_html/inDrop.html) | indrop | |
 
-Custom chemistry also [supported](https://github.com/rnabioco/scraps/issues/58)
+Custom chemistry also [supported](https://github.com/rnabioco/scraps/tree/master/chemistry.json)
 
 ---
 

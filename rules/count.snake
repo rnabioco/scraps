@@ -1,18 +1,7 @@
 """ Extract correction length target"""
 def _get_chem_length_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
-    if chem_version == "chromiumV3":
-        args = ["58"]
-    elif chem_version == "chromiumV2":
-        args = ["56"]
-    elif chem_version == "dropseq":
-        args = ["50"]
-    elif chem_version == "microwellseq":
-        args = ["54"]
-    elif chem_version == "bd":
-        args = ["53"]
-    elif chem_version == "indrop":
-        args = ["32"]
+    args = chemistry[chem_version]["length"]
     return args
 
 """ rules for scraps counting """
