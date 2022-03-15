@@ -19,19 +19,19 @@ def _get_fq_paths(wildcards):
 
 """ Process complex barcodes into simple, if needed"""
 def _get_bc_cut(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
-    chemistry[chem_version]["bc_cut"]
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
+    args = chemistry[chem_version]["bc_cut"]
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = eval(chemistry[chem_version]["R2"])
     return args
 
 """ Extract per-capture 10X chemistry versions from gex libs (paired)"""
 def _get_chem_version_R1(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = eval(chemistry[chem_version]["R1"])
     return args
 
