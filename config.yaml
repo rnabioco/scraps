@@ -17,11 +17,11 @@ STAR_INDEX:
   
 # path to Chromium V3 whitelist
 WHITELIST_V3:
-  "ref/3M-february-2018.txt"
+  "whitelist/3M-february-2018.txt"
 
 # path to Chromium V2 whitelist
 WHITELIST_V2:
-  "ref/737K-august-2016.txt"
+  "whitelist/737K-august-2016.txt"
 
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
