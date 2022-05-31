@@ -38,6 +38,7 @@ snakemake --snakefile Snakefile \
   --resources total_impact=5 \
   --keep-going
 ```
+[DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf)
 
 ---
 
