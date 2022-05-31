@@ -74,11 +74,13 @@ rule cutadapt_paired:
          <(zcat {input}) \
          <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
       else
-        cutadapt -j 24 --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+        echo "removing internal seq..."
+        cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+        echo "stitching R1 FASTQ back together..."
         python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp_nogzip}
         gzip {params.temp_nogzip}
-
-      cutadapt -j 24 \
+        echo "2nd round of trimming..."
+        cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
          -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
          -A polya_R2=A{{30}} \
