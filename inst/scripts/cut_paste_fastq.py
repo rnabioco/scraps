@@ -1,12 +1,19 @@
+import gzip
 import argparse
 
 """ Paste Cutadapt internal sequence removal back into FASTQ form
 """
 
 def paste_fastq(file_in, file_out):
-    with open(file_in) as file, open(file_out, 'w') as file2:
+    with open(file_in) as file, gzip.open(file_out, 'wt', compresslevel = 1) as file2:
+        i = 0
         for line in file:
+            i += 1
             elements = line.split("\t")
+            if len(elements) < 9:
+                #print("wrong length detected at line", i)
+                #print(line)
+                continue
             if ";1" in elements[7]:
                 seq1 = elements[4]
                 qual1 = elements[8]

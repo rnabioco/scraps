@@ -51,7 +51,6 @@ rule cutadapt_paired:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}.info",
-      temp_nogzip = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq",
       temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
       memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
@@ -77,8 +76,7 @@ rule cutadapt_paired:
         echo "removing internal seq..."
         cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
         echo "stitching R1 FASTQ back together..."
-        python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp_nogzip}
-        gzip {params.temp_nogzip}
+        python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
         echo "2nd round of trimming..."
         cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
