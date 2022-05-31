@@ -51,6 +51,7 @@ rule cutadapt_paired:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}.info",
+      temp_nogzip = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq",
       temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
       memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
@@ -74,8 +75,10 @@ rule cutadapt_paired:
          <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
       else
         cutadapt -j 24 --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
-        awk -F "\t" '$8 ~ /;1/ {{ beforeseq=$5; beforequal=$9 }} $8 ~ /;2/ {{ printf("@%s\\n%s%s%s\\n+\\n%s%s%s\\n", $1, beforeseq, $5, $7, beforequal, $9, $11) }}' {params.info} | gzip > {params.temp}
-        cutadapt -j 24 \
+        python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp_nogzip}
+        gzip {params.temp_nogzip}
+
+      cutadapt -j 24 \
          -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
          -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
          -A polya_R2=A{{30}} \
