@@ -1,6 +1,6 @@
 """ rules for running multiqc and autoreport """
 
-rule qccheck:
+rule qc_check:
    input:
      expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = READS)
    output:
@@ -18,6 +18,6 @@ rule qccheck:
      """
      export LC_ALL=en_US.utf-8
      export LANG=en_US.utf-8
-     multiqc {params.target} -o {params.path}
+     multiqc {params.target} -o {params.path} -c config.yaml
      """
 

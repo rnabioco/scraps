@@ -46,3 +46,12 @@ R2_SAMPLES:
   - test
   - test2
   - test3
+
+# for multiqc report
+report_section_order:
+  cutadapt:
+    order: 1000
+  star:
+    order: 100
+  featureCounts:
+    order: -1000
