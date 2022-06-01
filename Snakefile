@@ -20,20 +20,25 @@ import json
 with open('chemistry.json') as fp:
    chemistry = json.load(fp)
 
+# read 1 positional approach
+R1s = []
+if R1_SAMPLES:
+  R1s.extend(expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"))
+  R1s.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R1_SAMPLES, read = "R1"))
+  R1s.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"))  
+# read 2 trimmed approach
+R2s = []
+if R2_SAMPLES:
+  R2s.extend(expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
+  R2s.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
+  R2s.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
+# combine
+R12s = R1s + R2s # +expand("{results}/report/multiqc_report.html", results = RESULTS) 
+print(R12s)
+
 rule all:
   input:
-    # Generate read 1 & 2 BAMs;
-    expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
-    # Generate read 2 BAMS;
-    expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
-    # Generates read 1 (positional) counts;
-    expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
-    # Generates read 2 (trimmed) counts;
-    expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"),
-    expand("{results}/report/multiqc_report.html", results = RESULTS),
-    # Generates bed files;
-    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R1_SAMPLES, read = "R1"),
-    expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2")
+    R12s = R12s
 
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"

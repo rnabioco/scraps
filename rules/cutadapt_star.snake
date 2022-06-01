@@ -90,6 +90,7 @@ rule cutadapt_paired:
          -p {output.R2} \
          <(zcat {params.temp}) \
          <(zcat {params.temp2})
+        rm {params.info}
       fi
       """
 
