@@ -1,0 +1,20 @@
+""" Download SRR from ENA if FASTQs are not present """
+rule ena_download:
+    input:
+      "config.yaml"
+    output:
+      R1 = "{data}/{sample}_R1.fastq.gz",# data = DATA, sample = R1_SAMPLES),
+      R2 = "{data}/{sample}_R2.fastq.gz"#, data = DATA, sample = R1_SAMPLES)
+    params:
+      job_name = "download",
+      sample = "{sample}",
+      partR1 = "/{sample}/{sample}",
+    #log: "{DATA}/logs/{sample}_download.out"
+    threads: 1
+    shell:
+      """
+      sample={params.sample}
+      part2=${{sample//${{sample:(-4):(-1)}}//00}}
+      wget -c -O {output.R1} ftp.sra.ebi.ac.uk/vol1/fastq/${{part2}}{params.partR1}_1.fastq.gz
+      wget -c -O {output.R2} ftp.sra.ebi.ac.uk/vol1/fastq/${{part2}}{params.partR1}_2.fastq.gz
+      """
