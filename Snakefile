@@ -41,6 +41,7 @@ rule all:
     R12s = R12s
 
 include: "rules/check_versions.snake"
+include: "rules/download.snake"
 include: "rules/cutadapt_star.snake"
 include: "rules/count.snake"
 include: "rules/qc.snake"
