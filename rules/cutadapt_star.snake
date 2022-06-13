@@ -43,6 +43,7 @@ def _get_extra_args(wildcards):
 """ This rule is now only necessary for paired-end libraries """
 rule cutadapt_paired:
     input:
+      #expand("{data}/{sample}_R1.fastq.gz", data = DATA, sample = R1_SAMPLES)
       _get_fq_paths
     output:
       R1 = temp("{results}/cutadapt/{sample}_trimmed.R1.fastq.gz"),
