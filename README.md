@@ -40,6 +40,8 @@ snakemake --snakefile Snakefile \
 ```
 [DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf)
 
+[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/stable/executing/cluster.html)
+
 ---
 
 ## Supported scRNA-seq platforms
