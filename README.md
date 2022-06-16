@@ -20,7 +20,7 @@ changes in single-cell RNA-seq data.
 -   [Output](#output)
 -   [Setup](#setup)
 -   [Dependencies](#dependencies)
--   [Bonus function](#bonus-function)
+-   [Extended function](#bonus-function)
     
 ## Example usage
 
@@ -124,7 +124,7 @@ for general information on executing and manipulating snakemake pipelines.
 
 ---
 
-## Bonus function
+## Extended function
 
 <img src="inst/apop.png" height="250" align="left">
 
