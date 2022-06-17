@@ -33,7 +33,8 @@ if R2_SAMPLES:
   R2s.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
   R2s.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
 # combine
-R12s = R1s + R2s # +expand("{results}/report/multiqc_report.html", results = RESULTS) 
+R12s = R1s + R2s # +expand("{results}/report/multiqc_report.html", results = RESULTS)
+R12s = R12s + expand("{data}/{sample}_R1.fastq.gz", data = DATA, sample = R1_SAMPLES) + expand("{data}/{sample}_R2.fastq.gz", data = DATA, sample = R1_SAMPLES)
 print(R12s)
 
 rule all:
