@@ -20,7 +20,7 @@ changes in single-cell RNA-seq data.
 -   [Output](#output)
 -   [Setup](#setup)
 -   [Dependencies](#dependencies)
--   [Bonus function](#bonus-function)
+-   [Extended function](#bonus-function)
     
 ## Example usage
 
@@ -39,6 +39,8 @@ snakemake --snakefile Snakefile \
   --keep-going
 ```
 [DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf)
+
+[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/stable/executing/cluster.html)
 
 ---
 
@@ -122,7 +124,7 @@ for general information on executing and manipulating snakemake pipelines.
 
 ---
 
-## Bonus function
+## Extended function
 
 <img src="inst/apop.png" height="250" align="left">
 
