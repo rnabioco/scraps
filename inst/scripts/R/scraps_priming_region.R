@@ -2,17 +2,29 @@
 #' 
 #' @param files scraps output table files containing 
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
+#' @param batch batch prefix to use in order for list of files
 #' @return count list for regions
 #' 
 scraps_to_region_counts <- function(files,
-                             cell_ids = NULL) {
+                                    cell_ids = NULL,
+                                    batch = NULL,
+                                    batch_sep = "-") {
   ids <- cell_ids
-  temp <- map(seq_along(files),
-              function(x) read_tsv(files[x]))
+  if (!is.null(batch)) {
+    temp <- map(seq_along(files),
+                function(x) read_tsv(files[x]) %>% mutate(cell = str_c(batch[x], cell, sep = batch_sep)))
+  } else {
+    temp <- map(seq_along(files),
+                function(x) read_tsv(files[x]))
+  }
+  
   temp <- do.call(rbind, temp)
   
+  if (!is.null(ids)) {
+    temp <- temp %>% filter(cell %in% ids)
+  }
+  
   temp2 <- temp %>%
-    filter(cell %in% ids) %>%
     separate(gene, 
              sep = "_", 
              into = c("gene", NA,
@@ -328,4 +340,38 @@ bin_effectsize <- function(df,
               p = t.test(score, rep(0, length(score)))$p.value) %>% 
     ungroup()
   temp2 %>% mutate(p = ifelse(is.nan(p), 1, p))
+}
+
+#' calculation mean diff and effect size of utr3 priming
+#' 
+#' @param countlist countlist
+#' @param knn_matrix nearest neightbors in matrix format, can be calculated by enabling return.neighbor in Seurat::FindNeighbors
+#' @param cell_ids cell barcodes to use
+#' @return countlist after smoothing
+#' 
+knn_smoothing <- function(countlist,
+                          knn_matrix,
+                          cell_ids) {
+  countlist$utr5 <- countlist$utr5[,cell_ids]
+  for (cell1 in cell_ids) {
+    countlist$utr5[, cell1] <- countlist$utr5[, knn_matrix[cell1,]] %>% rowSums()
+  }
+  
+  countlist$utr3 <- countlist$utr3[,cell_ids]
+  for (cell1 in cell_ids) {
+    countlist$utr3[, cell1] <- countlist$utr3[, knn_matrix[cell1,]] %>% rowSums()
+  }
+  
+  message("intron...")
+  countlist$intron <- countlist$intron[,cell_ids]
+  for (cell1 in cell_ids) {
+    countlist$intron[, cell1] <- countlist$intron[, knn_matrix[cell1,]] %>% rowSums()
+  }
+  
+  countlist$cds <- countlist$cds[,cell_ids]
+  for (cell1 in cell_ids) {
+    countlist$cds[, cell1] <- countlist$cds[, knn_matrix[cell1,]] %>% rowSums()
+  }
+  
+  return(countlist)
 }
