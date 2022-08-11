@@ -69,8 +69,3 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
   
   write_tsv(full, save_file)
 }
-
-expand_region_saf("/Users/rf/scraps/ref/polyadb32.hg38.saf.gz", 
-                  "/Users/rf/gencode.v33.annotation.gtf", 
-                  "polyadb32.hg38.expand2.saf.gz", 
-                  slop = 2)

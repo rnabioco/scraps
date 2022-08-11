@@ -4,6 +4,7 @@
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
 #' @param batch batch prefix to use in order for list of files
 #' @return count list for regions
+#' @export
 #' 
 scraps_to_region_counts <- function(files,
                                     cell_ids = NULL,
@@ -80,6 +81,7 @@ scraps_to_region_counts <- function(files,
 #' @param vec target row(or column) names to ensure exists and in right order
 #' @param row if TRUE, target rows, if FALSE, columns
 #' @return 0 filled and ordered matrix
+#' @export
 #' 
 fill_mat <- function(x, vec, row = TRUE) {
   if (row) {
@@ -116,6 +118,7 @@ fill_mat <- function(x, vec, row = TRUE) {
 #' @param countlist output from scraps_to_region_counts
 #' @param n_min  minimum number of observations for a gene to be kept
 #' @return count list for regions
+#' @export
 #' 
 filter_countlist <- function(countlist,
                              n_min = 100) {
@@ -154,6 +157,7 @@ filter_countlist <- function(countlist,
 #' @param intron counts for region
 #' @param k number of bins
 #' @return percentage binned averages for specific region
+#' @export
 #' 
 dfnot_avg <- function(df, dfgene, vec, k,
                       utr5, utr3, cds, intron) {
@@ -215,6 +219,7 @@ dfnot_avg <- function(df, dfgene, vec, k,
 #' @param genes if provided, only calculates based on these genes
 #' @param k quantiles to use, binned by 2000 genes if not given
 #' @return data.frame with count bins
+#' @export
 #' 
 countlist_to_bins <- function(countlist,
                               vec,
@@ -290,6 +295,7 @@ countlist_to_bins <- function(countlist,
 #' @param x
 #' @param y
 #' @return cohens_d effect size
+#' @export
 #' 
 cohens_d <- function(x, y) {
   lx <- length(x)- 1
@@ -312,6 +318,7 @@ cohens_d <- function(x, y) {
 #' @param col2 column designating grouping, default to "id" from countlist_to_bins
 #' @param ctrl target control set in col
 #' @return data.frame with stats (mean diff and effecti size)
+#' @export
 #' 
 bin_effectsize <- function(df,
                            target_loc = "utr3",
@@ -348,6 +355,7 @@ bin_effectsize <- function(df,
 #' @param knn_matrix nearest neightbors in matrix format, can be calculated by enabling return.neighbor in Seurat::FindNeighbors
 #' @param cell_ids cell barcodes to use
 #' @return countlist after smoothing
+#' @export
 #' 
 knn_smoothing <- function(countlist,
                           knn_matrix,
