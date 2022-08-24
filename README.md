@@ -12,6 +12,8 @@ scraps (**S**ingle **C**ell **R**N**A** **P**olyA **S**ite Discovery) is current
 Microwell-seq, and BD Rhapsody). If long Read1 is available (estimated ~6% of SRA-deposited data, or now planning new experiments), positional information will be calculated from paired realignment; otherwise, the less optimal anchored Read2 approach is used. scraps will eventually be expanded for analyzing a range of RNA processing 
 changes in single-cell RNA-seq data.
 
+For additional discussions and usage cases, please see [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2022.08.22.504859v1).
+
 <img src="inst/flow.png" width="400" align="right">
 
 ---
