@@ -18,7 +18,7 @@ jobs:
         channels: bioconda,conda-forge,defaults
         channel-priority: true
         activate-environment: scraps_conda
-        environment-file: environment.yml
+        environment-file: scraps_conda.yml
 
     - shell: bash -el {0}
       run: |
