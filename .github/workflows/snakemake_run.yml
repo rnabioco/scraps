@@ -7,33 +7,23 @@ on:
 name: snakemake-run
 
 jobs:
-  snakemake-run:
-    name: run snakemake
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        include:
-        - os: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      
-      - uses: r-lib/actions/setup-r@master
-        if: runner.os == 'macOS'
+    - name: Checkout Project
+      uses: actions/checkout@v3
+  
+    - uses: conda-incubator/setup-miniconda@v2
         with:
-          r-version: ${{ matrix.rversion }}
-          
-      - name: setup conda
-        uses: s-weigand/setup-conda@v1.0.5
-        with:
-          activate-conda: true
-          update-conda: true
-          conda-channels: 'bioconda,conda-forge,defaults'
-      
-      - name: install snakemake and run workflow
+          python-version: 3.6
+          mamba-version: "*"
+          channels: bioconda,conda-forge,defaults
+          channel-priority: true
+          activate-environment: scraps_conda
+          environment-file: environment.yml
+
+    - shell: bash -el {0}
         run: |
-          conda env create -f scraps_conda.yml
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate scraps_conda
-          snakemake -np
+          snakemake -npr --configfile config.yaml 
+
