@@ -44,6 +44,8 @@ snakemake --snakefile Snakefile \
 
 [submit jobs in cluster mode](https://snakemake.readthedocs.io/en/stable/executing/cluster.html)
 
+Notes: `total_impact` is set to 5 for each sample, change this to control how many samples are processed in parallel
+
 ---
 
 ## Supported scRNA-seq platforms
@@ -120,6 +122,8 @@ scraps requires the following executables in your PATH:
   
 Alternatively, we recommend using [Conda](https://docs.conda.io/en/latest/) to manage these dependencies, simply with:
 `conda env create -f scraps_conda.yml` and then `conda activate scraps_conda`
+
+Docker image for automated deployment can also be found at https://hub.docker.com/r/rnabioco/scraps.
 
 Please also see the <a href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a> documentation
 for general information on executing and manipulating snakemake pipelines.
