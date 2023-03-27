@@ -1,0 +1,76 @@
+# internal priming %, reanalyzing GSE149224 (5-FU induction of apoptosis in 3 colon cancer cell lines)
+Based on Liu and Fu et al. 2018, we expect RNA degradation from the 3' end. However, this was reported in bulk RNA-seq, can we see similar effects in single cell data? If poly(A) tails shorten or are removed, we hypothesize observing a general increase in internal priming.
+
+```{r libraries}
+library(tidyverse)
+library(valr)
+
+# or library(scrapR)
+source("...path_to/inst/scripts/R/scraps_priming_region.R")
+source("...path_to/inst/scripts/R/expand_region_saf.R")
+source("...path_to/inst/scripts/R/scraps_to_seurat.R")
+```
+
+```{r saf_setup}
+# use this as scraps ref
+expand_region_saf(saf_file = "...path_to/scraps/ref/polyadb32.hg38.saf.gz", 
+                  gtf_file = "...path_to/gencode.v43.primary_assembly.basic.annotation.gtf.gz", 
+                  save_file = "polyadb32_withregions.hg38.saf.gz")
+```
+
+```{r readcounts}
+# metadata from GSE149224
+met <- data.table::fread("...path_to/GSE149224_meta.information.csv.gz")
+met <- met %>% column_to_rownames("V1") %>% mutate(type = str_c(df.gid, dose, sep = "_"))
+batch <- met$batch %>% unique() %>% sort()
+# scraps output files
+files <- list.files("...path_to/out", 
+                    "*counts.tsv.gz", 
+                    full.names = TRUE) %>% 
+  .[str_detect(., "SRR1159")]
+
+# read files, converting batch
+l <- scraps_to_region_counts(files, rownames(met), batch = batch)
+# filter to genes with minimum read cutoff
+l2 <- filter_countlist(l, n_min = 100)
+keep_ids <- l2$utr5 %>% colnames()
+v <- met[keep_ids, ]$type
+rm(l)
+gc()
+
+# summarize to 10 expression bins
+df <- countlist_to_bins(l2, v, k = 10)
+df2 <- df %>% mutate(cell = str_remove(id, "_.+")) %>% 
+  mutate(dose = as.numeric(str_remove(id, "^[a-zA-Z0-9]+_"))) %>% 
+  mutate(label = ifelse(quantile == max(quantile) | quantile == min(quantile), dose, NA)) %>% 
+  filter(dose %in% c(0, 10, 50, 200)) %>% 
+  mutate(dose = factor(dose)) %>%
+  mutate(quantile = factor(quantile))
+
+g <- ggplot(df2 %>% filter(loc %in% c("utr3", "intron"), dose != 10), 
+       aes(x = quantile, y = frac)) +
+  facet_grid((~loc)) +
+  geom_boxplot(outlier.shape = NA, aes(color = dose)) +
+  theme_classic() +
+  scale_color_grey(start = 0.8, end = 0.2) +
+  xlab("genes binned by low -> high detection") +
+  ylab("fraction priming") +
+  scale_y_continuous(expand = c(0, 0.0), limits = c(0,0.8))
+ggsave("utr_3cell_box_10.pdf", g, width = 9, height = 3)
+```
+
+```{r effectsize}
+res <- bin_effectsize(df2, col1 = "cell", col2 = "dose", ctrl = 0)
+ggplot(res %>% mutate(mean = mean * 100),
+       aes(x = mean, y = effectsize, color = cell)) +
+  geom_line(aes(group = cell), color = "pink") +
+  geom_text(size = 4, aes(label = dose)) +
+  theme_classic() +
+  scale_colour_manual(name = "cell line + 5FU dose", values = c("blue", "red", "black")) +
+  xlab("mean 3'UTR priming dropoff %") +
+  ylab("effect size") +
+  scale_x_continuous(expand = c(0, 0.0), limits = c(-1, max(res$mean) * 100 *1.1)) +
+  scale_y_continuous(expand = c(0, 0.0), limits = c(-1, max(res$effectsize) * 1.1))
+ggsave("5fu_scatter.pdf", height = 4, width = 6)
+```
+
