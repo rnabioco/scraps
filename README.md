@@ -137,8 +137,8 @@ for general information on executing and manipulating snakemake pipelines.
 **1) Measuring internal priming as indicator of apoptotic cytoplasmic poly(A) RNA decay**
 
 (Based on widespread RNA decay during apoptosis: [Liu and Fu et al.](https://www.sciencedirect.com/science/article/pii/S0092867418305105))
-
 Use SAF (hg38 version provided in [ref](https://github.com/rnabioco/scraps/tree/master/ref) subdirectory) file marking all gene regions (5'UTR, intron, CDS, 3'UTR), and helper [R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R/scraps_priming_region.R) to process output. Please see [Rmarkdown notebook](https://github.com/rnabioco/scraps/blob/master/inst/notebooks/scraps_internalpriming_5fu_2023.Rmd) for more.
+
 ---
 
 **2) Accurate intron/exon quantification for RNA velocity**
