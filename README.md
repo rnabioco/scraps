@@ -52,6 +52,7 @@ Notes: `total_impact` is set to 5 for each sample, change this to control how ma
 | Platform | Library (BC+UMI+A) | Setting | Test data |
 | :--------|:------------| :------------| :---------|
 | 10x Chromium V3 | [16 + 12 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV3 | ✓ |
+| 10x V3 - Ultima Genomics | [adapter + 16 + 9 + 3 ignored + 8](https://www.nature.com/articles/s41587-022-01452-6/figures/1) | chromiumV3UG | |
 | 10x Chromium V2 | [16 + 10 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | chromiumV2 | ✓ |
 | 10x Chromium Visium | [16 + 10 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium3.html) | visium | |
 | Drop-seq | [12 + 8 + 30](https://teichlab.github.io/scg_lib_structs/methods_html/Drop-seq.html) | dropseq | ✓ |
