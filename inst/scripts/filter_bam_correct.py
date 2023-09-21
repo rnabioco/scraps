@@ -11,7 +11,7 @@ from functools import reduce
 suitable for cellranger and starsolo output
 """
 
-def correct_bam_read1(bam, outbam, target_len, filter_cut):
+def correct_bam_read1(bam, outbam, target_len, filter_cut, single_end):
 
     samfile = pysam.AlignmentFile(bam, "rb")
     outfile = pysam.AlignmentFile(outbam, "wb", template = samfile)
@@ -28,14 +28,16 @@ def correct_bam_read1(bam, outbam, target_len, filter_cut):
         if read.is_unmapped:
             # not mapped, toss
             continue
-
-        if not read.is_proper_pair:
+        
+        if not single_end:
+            if not read.is_proper_pair:
             # not properly paired, toss
-            continue
+                continue
 
-        if not read.is_read1:
+        if not single_end:
+            if not read.is_read1:
             # not read1, toss
-            continue
+                continue
 
         j += 1
 
@@ -115,16 +117,20 @@ def main():
                         help ="""maximum nts off of target_len to keep""",
                         default = 10,
                         required = False)
-
+    parser.add_argument('-s',
+                        '--single',
+                        action="store_true",
+                        required = False)
     args=parser.parse_args()
 
     in_bam = args.inbam
     out_bam = args.outbam
     target_len = int(args.targetlen)
     filter_cut = float(args.filtercut)
-
+    single_end = args.single
+    print(single_end)
     print("settings- target_len: ", target_len, "; filter_cut: ", filter_cut)
-    k,i,j = correct_bam_read1(in_bam, out_bam, target_len = target_len, filter_cut = filter_cut)
+    k,i,j = correct_bam_read1(in_bam, out_bam, target_len = target_len, filter_cut = filter_cut, single_end = single_end)
     print("fraction of reads kept: ", i/j)
     print("fraction of reads corrected: ", k/i)
 
