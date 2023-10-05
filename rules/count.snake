@@ -1,5 +1,5 @@
 """ Extract correction length target"""
-def _get_chem_length_paired(wildcards):
+def _get_chem_length_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = chemistry[chem_version]["length"]
     return args
@@ -191,7 +191,7 @@ rule filter_paired:
     temp("{results}/temp/{sample}_paired.bam")
   params:
     job_name = "filter",
-    length = _get_chem_length_paired,
+    length = _get_chem_length_R1,
     temp = "{results}/temp/{sample}_paired_filter.bam",
     temp2 = "{results}/temp/{sample}_paired_filter2.bam",
     final = "{results}/counts/{sample}_paired_counts.tsv.gz",
