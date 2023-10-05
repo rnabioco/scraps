@@ -3,6 +3,8 @@ import json
 import pandas
 chromiumV3 = {"length" : "58", "bc_cut" : "", "R1" : '[WHITELIST_V3,"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]', "R2" : '[WHITELIST_V3,"--soloUMIlen 12"]'}
 
+chromiumV3UG = {"length": "58", "bc_cut": "", "R1": '[WHITELIST_V3,"--soloUMIlen 9 --clip5pNbases 58 --soloCBstart 23 --soloCBlen 16 --soloUMIstart 39"]', "R2": '[WHITELIST_V3,"--soloUMIlen 9"]'}
+
 chromiumV2 = {"length" : "56", "bc_cut" : "", "R1" : '[WHITELIST_V2,"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17"]', "R2" : '[WHITELIST_V2,"--soloUMIlen 10"]'}
 
 dropseq = {"length" : "50", "bc_cut" : "", "R1" : '["None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]', "R2" : '["None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"]'}

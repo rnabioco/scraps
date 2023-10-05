@@ -1,18 +1,58 @@
 """ Extract correction length target"""
-def _get_chem_length_R1(wildcards):
+def _get_chem_length_paired(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = chemistry[chem_version]["length"]
     return args
 
 """ rules for scraps counting """
 
-rule assign_sites_read2:
+rule assign_sites_R1:
+  input:
+    "{results}/temp/{sample}_R1.bam"
+  output:
+    bam = temp("{results}/temp/{sample}_R1_assigned.bam")
+  params:
+    job_name = "assign_sites_R1",
+    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
+    out = "{results}/temp/{sample}_R1_assigned",
+    out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
+  log:
+    "{results}/logs/assign_sites_{sample}_R1.txt"
+  threads:
+    12
+  shell:
+    """
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
+    featureCounts \
+    -s 2 -Q 10 -O \
+    --read2pos 5 \
+    -o {params.out} \
+    -F $polyaformat \
+    -a {POLYA_SITES} \
+    -R BAM \
+    -T {threads} \
+    {input} \
+    2> {log}
+
+    samtools sort \
+    {params.out_bam} \
+    -o {output.bam}
+
+    samtools index {output.bam}
+    rm -rf {params.out_bam}
+    """
+
+rule assign_sites_R2:
   input:
     "{results}/temp/{sample}_R2.bam"
   output:
     bam = temp("{results}/temp/{sample}_R2_assigned.bam")
   params:
-    job_name = "assign_sites_read2",
+    job_name = "assign_sites_R2",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/temp/{sample}_R2_assigned",
     out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
@@ -47,18 +87,18 @@ rule assign_sites_read2:
     rm -rf {params.out_bam}
     """
 
-rule assign_sites_read1:
+rule assign_sites_paired:
   input:
-    "{results}/temp/{sample}_R1.bam"
+    "{results}/temp/{sample}_paired.bam"
   output:
-    bam = temp("{results}/temp/{sample}_R1_assigned.bam")
+    bam = temp("{results}/temp/{sample}_paired_assigned.bam")
   params:
-    job_name = "assign_sites_read1",
+    job_name = "assign_sites_paired",
     memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
-    out = "{results}/temp/{sample}_R1_assigned",
-    out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
+    out = "{results}/temp/{sample}_paired_assigned",
+    out_bam = "{results}/temp/{sample}_paired.bam.featureCounts.bam"
   log:
-    "{results}/logs/assign_sites_{sample}_R1.txt"
+    "{results}/logs/assign_sites_{sample}_paired.txt"
   threads:
     12
   shell:
@@ -87,7 +127,40 @@ rule assign_sites_read1:
     rm -rf {params.out_bam}
     """
     
-rule filterR2:
+rule filter_R1:
+  input:
+    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+  output:
+    temp("{results}/temp/{sample}_R1.bam")
+  params:
+    job_name = "filter",
+    length = _get_chem_length_R1,
+    temp = "{results}/temp/{sample}_R1_filter.bam",
+    temp2 = "{results}/temp/{sample}_R1_filter2.bam",
+    final = "{results}/counts/{sample}_R1_counts.tsv.gz",
+    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+  log:
+    "{results}/logs/filter_{sample}_R1.txt"
+  threads:
+    4
+  shell:
+    """
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    set +e
+    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length} -s -c 20
+    exitcode=$?
+    if [ $exitcode -eq 1 ]
+    then
+      touch {params.final}
+    fi
+    samtools sort {params.temp2} -o {output}
+    # mv {params.temp} {output}
+    samtools index {output}
+    rm -rf {params.temp}
+    rm -rf {params.temp2}
+    """    
+
+rule filter_R2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
   output:
@@ -111,20 +184,20 @@ rule filterR2:
     rm -rf {params.tempbai}
     """
 
-rule filterR1:
+rule filter_paired:
   input:
-    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+    "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
   output:
-    temp("{results}/temp/{sample}_R1.bam")
+    temp("{results}/temp/{sample}_paired.bam")
   params:
     job_name = "filter",
-    length = _get_chem_length_R1,
-    temp = "{results}/temp/{sample}_R1_filter.bam",
-    temp2 = "{results}/temp/{sample}_R1_filter2.bam",
-    final = "{results}/counts/{sample}_R1_counts.tsv.gz",
+    length = _get_chem_length_paired,
+    temp = "{results}/temp/{sample}_paired_filter.bam",
+    temp2 = "{results}/temp/{sample}_paired_filter2.bam",
+    final = "{results}/counts/{sample}_paired_counts.tsv.gz",
     memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
   log:
-    "{results}/logs/filter_{sample}_R1.txt"
+    "{results}/logs/filter_{sample}_paired.txt"
   threads:
     4
   shell:
@@ -171,7 +244,7 @@ rule count:
       > {log}
     """
 
-rule bedR1:
+rule bed_R1:
   input:
     "{results}/temp/{sample}_R1.bam"
   output:
@@ -197,13 +270,13 @@ rule bedR1:
       -I {input} \
       -S {params.dedup} \
       > {log}
-    # 0x82 for R2
-    samtools view -f 0x42 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    samtools view -F 4 {params.dedup} -b > {params.r}
+    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | g
+zip > {output}
     rm -rf {params.r}
     """
 
-rule bedR2:
+rule bed_R2:
   input:
     "{results}/temp/{sample}_R2.bam"
   output:
@@ -229,4 +302,36 @@ rule bedR2:
       > {log}
 
     bedtools genomecov -ibam {params.dedup} -3 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    """
+
+rule bed_paired:
+  input:
+    "{results}/temp/{sample}_paired.bam"
+  output:
+    "{results}/bed/{sample}_paired.bed.gz"
+  params:
+    job_name = "bed",
+    dedup = "{results}/temp/{sample}_paired_dedup.bam",
+    r = "{results}/temp/{sample}_paired_r.bam",
+    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
+  log:
+    "{results}/logs/bed_{sample}_paired.txt"
+  threads:
+    4
+  shell:
+    """
+    umi_tools dedup \
+      --extract-umi-method=tag \
+      --umi-tag=UB \
+      --per-cell \
+      --cell-tag=CB \
+      --paired \
+      --method=unique \
+      -I {input} \
+      -S {params.dedup} \
+      > {log}
+    # 0x82 for R2
+    samtools view -f 0x42 {params.dedup} -b > {params.r}
+    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    rm -rf {params.r}
     """
