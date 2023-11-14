@@ -50,10 +50,11 @@ rule cutadapt_R1:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}_R1.info",
-      temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz",
-      memory = "select[mem>32] rusage[mem=32]"
+      temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz"
     log: "{results}/logs/{sample}_cutadapt.out"
     threads: 24
+    resources:
+      mem_mb = 32000
     shell:
       """
       cutadapt -j 24 \
@@ -61,7 +62,7 @@ rule cutadapt_R1:
         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
         -n 4 \
         -m 75 \
-	-l 300 \
+	    -l 300 \
         --nextseq-trim=20 \
         -o {output.R1} \
         <(zcat {input})
@@ -79,10 +80,11 @@ rule cutadapt_paired:
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}_paired.info",
       temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
-      temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz",
-      memory = "select[mem>32] rusage[mem=32]"
+      temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz"
     log: "{results}/logs/{sample}_cutadapt.out"
     threads: 24
+    resources:
+      mem_mb = 32000
     shell:
       """
       if [ -z "{params.bc_cut}" ] ; then
@@ -131,11 +133,11 @@ rule starsolo_R1:
       chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R1_",
-      job_name = "star_R1",
-      memory = "select[mem>48] rusage[mem=48]"
+      job_name = "star_R1"
     log: "{results}/logs/{sample}_star_R1.out"
     resources:
-      total_impact = 5
+      total_impact = 5,
+      mem_mb = 48000
     threads: 14
     shell:
       """
@@ -174,11 +176,11 @@ rule starsolo_R2:
       chemistry = _get_chem_version_R2,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R2_", 
-      job_name = "star_R2",
-      memory = "select[mem>48] rusage[mem=48]"
+      job_name = "star_R2"
     log: "{results}/logs/{sample}_star_R2.out"
     resources:
-      total_impact = 5
+      total_impact = 5,
+      mem_mb = 48000
     threads: 14
     shell:
       """
@@ -215,12 +217,11 @@ rule starsolo_paired:
       chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_paired_", 
-      job_name = "star_paired",
-      memory = 
-      "select[mem>48] rusage[mem=48]"
+      job_name = "star_paired"
     log: "{results}/logs/{sample}_star_paired.out"
     resources:
-      total_impact = 5
+      total_impact = 5,
+      mem_mb = 48000
     threads: 14
     shell:
       """

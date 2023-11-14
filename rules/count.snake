@@ -13,13 +13,14 @@ rule assign_sites_R1:
     bam = temp("{results}/temp/{sample}_R1_assigned.bam")
   params:
     job_name = "assign_sites_R1",
-    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/temp/{sample}_R1_assigned",
     out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
   log:
     "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
     12
+  resources:
+    mem_mb = 8000
   shell:
     """
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -53,13 +54,14 @@ rule assign_sites_R2:
     bam = temp("{results}/temp/{sample}_R2_assigned.bam")
   params:
     job_name = "assign_sites_R2",
-    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/temp/{sample}_R2_assigned",
     out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
   log:
     "{results}/logs/assign_sites_{sample}_R2.txt"
   threads:
     12
+  resources:
+    mem_mb = 8000
   shell:
     """
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -94,13 +96,14 @@ rule assign_sites_paired:
     bam = temp("{results}/temp/{sample}_paired_assigned.bam")
   params:
     job_name = "assign_sites_paired",
-    memory = "select[mem>8] rusage[mem=8]", # LSF format; change as needed
     out = "{results}/temp/{sample}_paired_assigned",
     out_bam = "{results}/temp/{sample}_paired.bam.featureCounts.bam"
   log:
     "{results}/logs/assign_sites_{sample}_paired.txt"
   threads:
     12
+  resources:
+    mem_mb = 8000
   shell:
     """
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -137,12 +140,13 @@ rule filter_R1:
     length = _get_chem_length_R1,
     temp = "{results}/temp/{sample}_R1_filter.bam",
     temp2 = "{results}/temp/{sample}_R1_filter2.bam",
-    final = "{results}/counts/{sample}_R1_counts.tsv.gz",
-    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+    final = "{results}/counts/{sample}_R1_counts.tsv.gz"
   log:
     "{results}/logs/filter_{sample}_R1.txt"
   threads:
     4
+  resources:
+    mem_mb = 8000
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
@@ -168,12 +172,13 @@ rule filter_R2:
   params:
     job_name = "filter",
     temp = "{results}/temp/{sample}_R2_filter.bam",
-    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai",
-    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai"
   log:
     "{results}/logs/filter_{sample}_R2.txt"
   threads:
     4
+  resources:
+    mem_mb = 8000
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
@@ -194,12 +199,13 @@ rule filter_paired:
     length = _get_chem_length_R1,
     temp = "{results}/temp/{sample}_paired_filter.bam",
     temp2 = "{results}/temp/{sample}_paired_filter2.bam",
-    final = "{results}/counts/{sample}_paired_counts.tsv.gz",
-    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+    final = "{results}/counts/{sample}_paired_counts.tsv.gz"
   log:
     "{results}/logs/filter_{sample}_paired.txt"
   threads:
     4
+  resources:
+    mem_mb = 8000
   shell:
     """
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
@@ -223,12 +229,13 @@ rule count:
   output:
     "{results}/counts/{sample}_{read}_counts.tsv.gz"
   params:
-    job_name = "count",
-    memory = "select[mem>8] rusage[mem=8]" # LSF format; change as needed
+    job_name = "count"
   log:
     "{results}/logs/count_{sample}_{read}.txt"
   threads:
     4
+  resources:
+    mem_mb = 8000
   shell:
     """
     umi_tools count \
@@ -252,12 +259,13 @@ rule bed_R1:
   params:
     job_name = "bed",
     dedup = "{results}/temp/{sample}_R1_dedup.bam",
-    r = "{results}/temp/{sample}_R1_r.bam",
-    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
+    r = "{results}/temp/{sample}_R1_r.bam"
   log:
     "{results}/logs/bed_{sample}_R1.txt"
   threads:
     4
+  resources:
+    mem_mb = 48000
   shell:
     """
     umi_tools dedup \
@@ -283,12 +291,13 @@ rule bed_R2:
     "{results}/bed/{sample}_R2.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/temp/{sample}_R2_dedup.bam",
-    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
+    dedup = "{results}/temp/{sample}_R2_dedup.bam"
   log:
     "{results}/logs/bed_{sample}_R2.txt"
   threads:
     4
+  resources:
+    mem_mb = 48000
   shell:
     """
     umi_tools dedup \
@@ -312,12 +321,13 @@ rule bed_paired:
   params:
     job_name = "bed",
     dedup = "{results}/temp/{sample}_paired_dedup.bam",
-    r = "{results}/temp/{sample}_paired_r.bam",
-    memory = "select[mem>48] rusage[mem=48]" # LSF format; change as needed
+    r = "{results}/temp/{sample}_paired_r.bam"
   log:
     "{results}/logs/bed_{sample}_paired.txt"
   threads:
     4
+  resources:
+    mem_mb = 48000
   shell:
     """
     umi_tools dedup \

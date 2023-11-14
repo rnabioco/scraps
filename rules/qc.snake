@@ -9,11 +9,12 @@ rule qc_check:
      job_name = "qc",
      target = "{results}",
      path = "{results}/report",
-     memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
      "{results}/logs/multiqc.txt"
    threads:
      1
+   resources:
+     mem_mb = 5000
    shell:
      """
      export LC_ALL=en_US.utf-8
