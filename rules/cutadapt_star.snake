@@ -132,9 +132,7 @@ rule starsolo_R1:
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R1_",
       job_name = "star_R1",
-      memory =
-      "select[mem>48] rusage[mem=4
-8]"
+      memory = "select[mem>48] rusage[mem=48]"
     log: "{results}/logs/{sample}_star_R1.out"
     resources:
       total_impact = 5
