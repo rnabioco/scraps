@@ -215,8 +215,8 @@ rule starsolo_R2:
 """ This rule aligns paired-end libraries """
 rule starsolo_paired:
     input:
-      R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
-      R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
+      R1 = "{results}/cutadapt/{sample}_paired_trimmed.R1.fastq.gz",
+      R2 = "{results}/cutadapt/{sample}_paired_trimmed.R2.fastq.gz"
     output:
       "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
     params:
