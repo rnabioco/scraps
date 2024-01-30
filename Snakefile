@@ -15,6 +15,7 @@ FASTQS = config["FASTQS"]
 WHITELIST_V2 = config["WHITELIST_V2"]
 WHITELIST_V3 = config["WHITELIST_V3"]
 STAR = config["STAR"]
+READS = ["paired", "R1", "R2"]
 
 import json
 with open('chemistry.json') as fp:
