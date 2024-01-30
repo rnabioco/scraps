@@ -239,7 +239,7 @@ rule starsolo_paired:
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
       --soloCBwhitelist {params.chemistry} \
-      {star_args_paired} \
+      {params.star_args_paired} \
       --soloBarcodeMate 1 \
       --outFilterMultimapNmax 1 \
       --outFilterMismatchNmax 999 \

@@ -4,7 +4,7 @@
         "bc_cut": "",
         "R1": "[WHITELIST_V3,\"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17\"]",
         "R2": "[WHITELIST_V3,\"--soloUMIlen 12\"]",
-        "paired": "--alignEndsProtrude 58 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 58 ConcordantPair\"]"
     },
     "chromiumV3UG": {
         "length": "58",
@@ -16,34 +16,34 @@
         "bc_cut": "",
         "R1": "[WHITELIST_V2,\"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17\"]",
         "R2": "[WHITELIST_V2,\"--soloUMIlen 10\"]",
-        "paired": "--alignEndsProtrude 56 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 56 ConcordantPair\"]"
     },
     "dropseq": {
         "length": "50",
         "bc_cut": "",
         "R1": "[\"None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13\"]",
         "R2": "[\"None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13\"]",
-        "paired": "--alignEndsProtrude 50 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 50 ConcordantPair\"]"
     },
     "microwellseq": {
         "length": "54",
         "bc_cut": "CGACTCACTACAGGG...TCGGTGACACGATCG",
         "R1": "[\"None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19\"]",
         "R2": "[\"None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19\"]",
-        "paired": "--alignEndsProtrude 54 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 54 ConcordantPair\"]"
     },
     "bd": {
         "length": "53",
         "bc_cut": "ACTGGCCTGCGA...GGTAGCGGTGACA",
         "R1": "[\"None --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28\"]",
         "R2": "[\"None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28\"]",
-        "paired": "--alignEndsProtrude 53 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 53 ConcordantPair\"]"
     },
     "indrop": {
         "length": "32",
         "bc_cut": "",
         "R1": "[\"None --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9\"]",
         "R2": "[\"None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9\"]",
-        "paired": "--alignEndsProtrude 32 ConcordantPair"
+        "paired": "[\"--alignEndsProtrude 32 ConcordantPair\"]"
     }
 }
