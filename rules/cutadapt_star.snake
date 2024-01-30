@@ -23,16 +23,22 @@ def _get_bc_cut(wildcards):
     args = chemistry[chem_version]["bc_cut"]
     return args
 
-""" Extract per-capture 10X chemistry versions from gex libs (R2)"""
+""" Extract per-capture chemistry from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = eval(chemistry[chem_version]["R2"])
     return args
 
-""" Extract per-capture 10X chemistry versions from gex libs (paired)"""
+""" Extract per-capture chemistry from gex libs (R1/paired)"""
 def _get_chem_version_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = eval(chemistry[chem_version]["R1"])
+    return args
+
+""" Extract per-capture extra arguments for gex paired alignments """
+def _get_chem_version_paired(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
+    args = eval(chemistry[chem_version]["paired"])
     return args
 
 """ Extract per-capture extra arguments for gex libs """
@@ -40,23 +46,51 @@ def _get_extra_args(wildcards):
     captures_filtered = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample]
     return list(captures_filtered.extra_args.unique())
 
-""" This rule is now only necessary for paired-end libraries """
-rule cutadapt_paired:
+""" This rule trims R1-only libraries """
+rule cutadapt_R1:
     input:
-      #expand("{data}/{sample}_R1.fastq.gz", data = DATA, sample = R1_SAMPLES)
       _get_fq_paths
     output:
-      R1 = temp("{results}/cutadapt/{sample}_trimmed.R1.fastq.gz"),
-      R2 = temp("{results}/cutadapt/{sample}_trimmed.R2.fastq.gz")
+      R1 = temp("{results}/cutadapt/{sample}_R1_trimmed.R1.fastq.gz")
     params:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
-      info = "{results}/cutadapt/temp_{sample}.info",
-      temp = "{results}/cutadapt/temp_{sample}_trimmed.R1.fastq.gz",
-      temp2 = "{results}/cutadapt/temp_{sample}_trimmed.R2.fastq.gz",
-      memory = "select[mem>32 && hname!=compute08] rusage[mem=32]"
+      info = "{results}/cutadapt/temp_{sample}_R1.info",
+      temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz"
     log: "{results}/logs/{sample}_cutadapt.out"
     threads: 24
+    resources:
+      mem_mb = 32000
+    shell:
+      """
+      cutadapt -j 24 \
+        -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
+        -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
+        -n 4 \
+        -m 75 \
+	    -l 300 \
+        --nextseq-trim=20 \
+        -o {output.R1} \
+        <(zcat {input})
+      """
+
+""" This rule trims paired-end libraries """
+rule cutadapt_paired:
+    input:
+      _get_fq_paths
+    output:
+      R1 = temp("{results}/cutadapt/{sample}_paired_trimmed.R1.fastq.gz"),
+      R2 = temp("{results}/cutadapt/{sample}_paired_trimmed.R2.fastq.gz")
+    params:
+      job_name = "cutadapt",
+      bc_cut = _get_bc_cut,
+      info = "{results}/cutadapt/temp_{sample}_paired.info",
+      temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
+      temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz"
+    log: "{results}/logs/{sample}_cutadapt.out"
+    threads: 24
+    resources:
+      mem_mb = 32000
     shell:
       """
       if [ -z "{params.bc_cut}" ] ; then
@@ -95,23 +129,21 @@ rule cutadapt_paired:
       fi
       """
 
-""" This rule processes chromium V2/V3 paired-end libraries """
+""" This rule aligns R1-only libraries """
 rule starsolo_R1:
     input:
-      R1 = "{results}/cutadapt/{sample}_trimmed.R1.fastq.gz",
-      R2 = "{results}/cutadapt/{sample}_trimmed.R2.fastq.gz"
+      R1 = "{results}/cutadapt/{sample}_R1_trimmed.R1.fastq.gz"
     output:
       "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
     params:
       chemistry = _get_chem_version_R1,
       extra_args = _get_extra_args,
-      out_dir = "{results}/{sample}/{sample}_R1_", 
-      job_name = "star_R1",
-      memory = 
-      "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
+      out_dir = "{results}/{sample}/{sample}_R1_",
+      job_name = "star_R1"
     log: "{results}/logs/{sample}_star_R1.out"
     resources:
-      total_impact = 5
+      total_impact = 5,
+      mem_mb = 48000
     threads: 14
     shell:
       """
@@ -135,12 +167,12 @@ rule starsolo_R1:
       --outSAMtype BAM SortedByCoordinate \
       --limitBAMsortRAM 48000000000 \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
-      --readFilesIn {input.R1} {input.R2}
-      
+      --readFilesIn {input.R1}
+
       rm -rf {params.out_dir}Solo.out
       """
 
-""" This rule processes chromium V2/V3 libraries (R2 only) """
+""" This rule aligns R2-only libraries """
 rule starsolo_R2:
     input:
       R1 = _get_fq_paths
@@ -150,11 +182,11 @@ rule starsolo_R2:
       chemistry = _get_chem_version_R2,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_R2_", 
-      job_name = "star_R2",
-      memory = "select[mem>48 && hname!=compute02 && hname!=compute08 && hname!=compute19 && hname!=compute20] rusage[mem=48]"
+      job_name = "star_R2"
     log: "{results}/logs/{sample}_star_R2.out"
     resources:
-      total_impact = 5
+      total_impact = 5,
+      mem_mb = 48000
     threads: 14
     shell:
       """
@@ -177,5 +209,51 @@ rule starsolo_R2:
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
 
+      rm -rf {params.out_dir}Solo.out
+      """
+
+""" This rule aligns paired-end libraries """
+rule starsolo_paired:
+    input:
+      R1 = "{results}/cutadapt/{sample}_paired_trimmed.R1.fastq.gz",
+      R2 = "{results}/cutadapt/{sample}_paired_trimmed.R2.fastq.gz"
+    output:
+      "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
+    params:
+      chemistry = _get_chem_version_R1,
+      star_args_paired = _get_chem_version_paired,
+      extra_args = _get_extra_args,
+      out_dir = "{results}/{sample}/{sample}_paired_", 
+      job_name = "star_paired"
+    log: "{results}/logs/{sample}_star_paired.out"
+    resources:
+      total_impact = 5,
+      mem_mb = 48000
+    threads: 14
+    shell:
+      """
+      {STAR} --soloType CB_UMI_Simple \
+      --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
+      --soloUMIfiltering MultiGeneUMI \
+      --soloUMIdedup 1MM_Directional \
+      --readFilesCommand gunzip -c \
+      --runThreadN 12 \
+      --soloCBwhitelist {params.chemistry} \
+      {params.star_args_paired} \
+      --soloBarcodeMate 1 \
+      --outFilterMultimapNmax 1 \
+      --outFilterMismatchNmax 999 \
+      --outFilterMismatchNoverReadLmax 0.2 \
+      --genomeDir {STAR_INDEX} \
+      --soloFeatures Gene \
+      --alignMatesGapMax 100000 \
+      --alignIntronMax 100000 \
+      --soloCellFilter None {params.extra_args} \
+      --outFileNamePrefix {params.out_dir} \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 48000000000 \
+      --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
+      --readFilesIn {input.R1} {input.R2}
+      
       rm -rf {params.out_dir}Solo.out
       """

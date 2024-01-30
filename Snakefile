@@ -6,6 +6,7 @@ configfile: "config.yaml"
 
 DATA = config["DATA"]
 RESULTS = config["RESULTS"]
+PAIRED_SAMPLES = config["PAIRED_SAMPLES"]
 R1_SAMPLES = config["R1_SAMPLES"]
 R2_SAMPLES = config["R2_SAMPLES"]
 STAR_INDEX = config["STAR_INDEX"]
@@ -14,12 +15,18 @@ FASTQS = config["FASTQS"]
 WHITELIST_V2 = config["WHITELIST_V2"]
 WHITELIST_V3 = config["WHITELIST_V3"]
 STAR = config["STAR"]
-READS = ["R1", "R2"]
+READS = ["paired", "R1", "R2"]
 
 import json
 with open('chemistry.json') as fp:
    chemistry = json.load(fp)
 
+# paired positional approach
+PAIRs = []
+if PAIRED_SAMPLES:
+  PAIRs.extend(expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = PAIRED_SAMPLES, read = "paired"))
+  PAIRs.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = PAIRED_SAMPLES, read = "paired"))
+  PAIRs.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = PAIRED_SAMPLES, read = "paired"))  
 # read 1 positional approach
 R1s = []
 if R1_SAMPLES:
@@ -33,16 +40,14 @@ if R2_SAMPLES:
   R2s.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
   R2s.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
 # combine
-R12s = R1s + R2s # +expand("{results}/report/multiqc_report.html", results = RESULTS)
-R12s = R12s + expand("{data}/{sample}_R1.fastq.gz", data = DATA, sample = R1_SAMPLES) + expand("{data}/{sample}_R2.fastq.gz", data = DATA, sample = R1_SAMPLES)
-print(R12s)
+all_outputs = PAIRs + R1s + R2s #+ expand("{results}/report/multiqc_report.html", results = RESULTS)
+print(all_outputs)
 
 rule all:
   input:
-    R12s = R12s
+    all_outputs = all_outputs
 
 include: "rules/check_versions.snake"
-include: "rules/download.snake"
 include: "rules/cutadapt_star.snake"
 include: "rules/count.snake"
 include: "rules/qc.snake"

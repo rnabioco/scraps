@@ -7,9 +7,10 @@ rule check:
      checked = "{data}/check_versions.txt"
    params:
      job_name = "check",
-     memory = "select[mem>5] rusage[mem=5]", # LSF format; change as needed
    log:
      "{data}/logs/check_versions.txt"
+   resources:
+     mem_mb = 5000
    threads:
      1
    shell:
