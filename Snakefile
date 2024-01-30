@@ -15,7 +15,6 @@ FASTQS = config["FASTQS"]
 WHITELIST_V2 = config["WHITELIST_V2"]
 WHITELIST_V3 = config["WHITELIST_V3"]
 STAR = config["STAR"]
-READS = ["paired", "R1", "R2"]
 
 import json
 with open('chemistry.json') as fp:
@@ -40,12 +39,12 @@ if R2_SAMPLES:
   R2s.extend(expand("{results}/{sample}/{sample}_{read}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
   R2s.extend(expand("{results}/bed/{sample}_{read}.bed.gz", results = RESULTS, sample = R2_SAMPLES, read = "R2"))
 # combine
-R12Ps = PAIREDs + R1s + R2s #+ expand("{results}/report/multiqc_report.html", results = RESULTS)
-print(R12Ps)
+all_outputs = PAIREDs + R1s + R2s #+ expand("{results}/report/multiqc_report.html", results = RESULTS)
+print(all_outputs)
 
 rule all:
   input:
-    R12s = R12s
+    all_outputs = all_outputs
 
 include: "rules/check_versions.snake"
 include: "rules/cutadapt_star.snake"
