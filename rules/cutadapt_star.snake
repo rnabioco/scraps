@@ -29,10 +29,16 @@ def _get_chem_version_R2(wildcards):
     args = eval(chemistry[chem_version]["R2"])
     return args
 
-""" Extract per-capture chemistry from gex libs (paired)"""
+""" Extract per-capture chemistry from gex libs (R1/paired)"""
 def _get_chem_version_R1(wildcards):
     chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
     args = eval(chemistry[chem_version]["R1"])
+    return args
+
+""" Extract per-capture extra arguments for gex paired alignments """
+def _get_chem_version_paired(wildcards):
+    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
+    args = eval(chemistry[chem_version]["paired"])
     return args
 
 """ Extract per-capture extra arguments for gex libs """
@@ -215,6 +221,7 @@ rule starsolo_paired:
       "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
     params:
       chemistry = _get_chem_version_R1,
+      star_args_paired = _get_chem_version_paired,
       extra_args = _get_extra_args,
       out_dir = "{results}/{sample}/{sample}_paired_", 
       job_name = "star_paired"
@@ -232,6 +239,7 @@ rule starsolo_paired:
       --readFilesCommand gunzip -c \
       --runThreadN 12 \
       --soloCBwhitelist {params.chemistry} \
+      {star_args_paired} \
       --soloBarcodeMate 1 \
       --outFilterMultimapNmax 1 \
       --outFilterMismatchNmax 999 \

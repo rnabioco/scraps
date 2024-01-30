@@ -36,11 +36,14 @@ POLYA_SITES:
 FASTQS:
   "sample_fastqs.tsv"
 
-R1_SAMPLES:
+PAIRED_SAMPLES:
 # Sample basenames
   - test
   - test2
   - test3
+
+R1_SAMPLES:
+# Sample basenames
 
 R2_SAMPLES:
   - test
