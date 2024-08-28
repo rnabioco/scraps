@@ -15,23 +15,29 @@ def _get_fq_paths(wildcards):
 
 """ Process complex barcodes into simple, if needed"""
 def _get_bc_cut(wildcards):
-    args = chemistry[_get_config(wildcards.sample, "chemistry")]["bc_cut"]
+    args = CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["bc_cut"]
     return args
 
 """ Extract per-capture chemistry from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
-    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["R2"])
-    return args
+    try:
+      return eval(CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_R2"])
+    except SyntaxError:
+      return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_R2"]
 
 """ Extract per-capture chemistry from gex libs (R1/paired)"""
 def _get_chem_version_R1(wildcards):
-    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["R1"])
-    return args
+    try:
+      return eval(CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_R1"])
+    except SyntaxError:
+      return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_R1"]
 
 """ Extract per-capture extra arguments for gex paired alignments """
 def _get_chem_version_paired(wildcards):
-    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["paired"])
-    return args
+    try:
+      return eval(CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_paired"])
+    except SyntaxError:
+      return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["STAR_paired"]
 
 """ Extract per-capture extra arguments for gex libs """
 def _get_extra_args(wildcards):

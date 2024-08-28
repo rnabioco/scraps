@@ -1,6 +1,6 @@
 """ Extract correction length target"""
 def _get_chem_length_R1(wildcards):
-    return chemistry[_get_config(wildcards.sample, "chemistry")]["length"]
+    return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["filter_R1_length"]
 
 """ rules for scraps counting """
 
@@ -147,19 +147,23 @@ rule filter_R1:
     mem_mb = 8000
   shell:
     """
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    set +e
-    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length} -s -c 20
-    exitcode=$?
-    if [ $exitcode -eq 1 ]
-    then
-      touch {params.final}
+    if [[ {params.length} == 'False') ]]; then
+      ln -s {input} {output}
+    else
+      samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+      set +e
+      python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length} -s -c 20
+      exitcode=$?
+      if [ $exitcode -eq 1 ]
+      then
+        touch {params.final}
+      fi
+      samtools sort {params.temp2} -o {output}
+      # mv {params.temp} {output}
+      rm -rf {params.temp}
+      rm -rf {params.temp2}
     fi
-    samtools sort {params.temp2} -o {output}
-    # mv {params.temp} {output}
     samtools index {output}
-    rm -rf {params.temp}
-    rm -rf {params.temp2}
     """    
 
 rule filter_R2:
@@ -206,19 +210,23 @@ rule filter_paired:
     mem_mb = 8000
   shell:
     """
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    set +e
-    python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
-    exitcode=$?
-    if [ $exitcode -eq 1 ]
-    then
-      touch {params.final}
+    if [[ {params.length} == 'False') ]]; then
+      ln -s {input} {output}
+    else
+      samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+      set +e
+      python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
+      exitcode=$?
+      if [ $exitcode -eq 1 ]
+      then
+        touch {params.final}
+      fi
+      samtools sort {params.temp2} -o {output}
+      # mv {params.temp} {output}
+      rm -rf {params.temp}
+      rm -rf {params.temp2}
     fi
-    samtools sort {params.temp2} -o {output}
-    # mv {params.temp} {output}
     samtools index {output}
-    rm -rf {params.temp}
-    rm -rf {params.temp2}
     """
     
 rule count:

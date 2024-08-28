@@ -15,18 +15,18 @@ DEFAULTS = config["DEFAULTS"]
 SAMPLES = config["SAMPLES"]
 READS = ["R1", "R2", "paired"]
 
-import json
-with open('chemistry.json') as fp:
-   chemistry = json.load(fp)
-   
-# with open('platform.json') as fp:
-#    platform = json.load(fp)
+import yaml
+with open('chemistry.yaml') as fp:
+   CHEMISTRY = yaml.safe_load(fp)
 
 def _get_config(sample, item):
   try:
     return SAMPLES[sample][item]
   except KeyError:
-    return DEFAULTS[item]
+    try:
+      return CHEMISTRY[item]
+    except KeyError:
+      return DEFAULTS[item]
   
 # assemble outputs for rule all
 SAMPLE_OUTS = []
