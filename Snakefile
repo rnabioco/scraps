@@ -24,7 +24,7 @@ def _get_config(sample, item):
     return SAMPLES[sample][item]
   except KeyError:
     try:
-      return CHEMISTRY[item]
+      return CHEMISTRY[SAMPLES[sample]["chemistry"]][item]
     except KeyError:
       return DEFAULTS[item]
   

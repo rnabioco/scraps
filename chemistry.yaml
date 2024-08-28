@@ -1,47 +1,38 @@
 chromiumV3_illumina:
   filter_R1_length: 58
-  bc_cut: ""
-  STAR_R1: "[WHITELIST_V3,\"--soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2\"]"
-  STAR_R2: "[WHITELIST_V3,\"--soloUMIlen 12\"]"
-  STAR_paired: "--alignEndsProtrude 58 ConcordantPair"
+  bc_whitelist: WHITELIST_V3
+  STAR_R1: --soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2: --soloUMIlen 12
 chromiumV3_element:
   filter_R1_length: False
-  bc_cut: ""
-  STAR_R1: "[WHITELIST_V3,\"--soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17\"]"
-  STAR_R2: "[WHITELIST_V3,\"--soloUMIlen 12\"]"
-  STAR_paired: "--alignEndsProtrude 58 ConcordantPair"
+  bc_whitelist: WHITELIST_V3
+  STAR_R1: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
+  STAR_R2: --soloUMIlen 12
 chromiumV3_ultima:
   filter_R1_length: 58
-  bc_cut: ""
-  STAR_R1: "[WHITELIST_V3,\"--soloUMIlen 9 --clip5pNbases 58 --soloCBstart 23 --soloCBlen 16 --soloUMIstart 39\"]"
+  bc_whitelist: WHITELIST_V3
+  STAR_R1: --soloUMIlen 9 --clip5pNbases 58 --soloCBstart 23 --soloCBlen 16 --soloUMIstart 39
 chromiumV2_illumina:
   filter_R1_length: 56
-  bc_cut: ""
-  STAR_R1: "[WHITELIST_V2,\"--soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2\"]"
-  STAR_R2: "[WHITELIST_V2,\"--soloUMIlen 10\"]"
-  STAR_paired: "--alignEndsProtrude 56 ConcordantPair"
+  bc_whitelist: WHITELIST_V2
+  STAR_R1: --soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2: --soloUMIlen 10
 dropseq_illumina:
   filter_R1_length: 50
-  bc_cut: ""
-  STAR_R1: "None --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2"
-  STAR_R2: "None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13"
-  STAR_paired: "--alignEndsProtrude 50 ConcordantPair"
+  STAR_R1: --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2: --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13
 microwellseq_illumina:
   filter_R1_length: 54
-  bc_cut: "CGACTCACTACAGGG...TCGGTGACACGATCG"
-  STAR_R1: "None --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2"
-  STAR_R2: "None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19"
-  STAR_paired: "--alignEndsProtrude 54 ConcordantPair"
+  bc_cut: CGACTCACTACAGGG...TCGGTGACACGATCG
+  STAR_R1: --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2:  --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19
 bd_illumina:
   filter_R1_length: 53
-  bc_cut: "ACTGGCCTGCGA...GGTAGCGGTGACA"
-  STAR_R1: "None --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2"
-  STAR_R2: "None --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28"
-  STAR_paired: "--alignEndsProtrude 53 ConcordantPair"
+  bc_cut: ACTGGCCTGCGA...GGTAGCGGTGACA
+  STAR_R1: --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2: --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28
 indrop_illumina:
   filter_R1_length: 32
-  bc_cut: ""
-  STAR_R1: "None --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2"
-  STAR_R2: "None --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9"
-  STAR_paired: "--alignEndsProtrude 32 ConcordantPair"
+  STAR_R1: --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+  STAR_R2: --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9
     

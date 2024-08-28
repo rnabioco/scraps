@@ -34,12 +34,12 @@ POLYA_SITES:
 #   "SAF"
   
 DEFAULTS:
-# default config options, overridden by SAMPLES
+# default config options, overridden by SAMPLES and CHEMISTRY definitions
   chemistry: chromiumV3_illumina
   alignments:
     - R2
     - paired
-  extra_args: ""
+  STAR_paired: --alignEndsProtrude 58 ConcordantPair
 
 SAMPLES:
 # per-sample labels, FASTQ basenames, and config options
@@ -47,10 +47,10 @@ SAMPLES:
 #   basename
 # optional:
 #   chemisty
-#   platform
 #   alignments
 #   cutadapt_args
-#   star_args
+#   star_args (STAR_R1, STAR_R2, STAR_paired)
+#   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
   test:
     basename: sample
     chemistry: chromiumV2_illumina
