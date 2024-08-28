@@ -1,6 +1,6 @@
 """ Extract correction length target"""
 def _get_chem_length_R1(wildcards):
-    return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["filter_R1_length"]
+    return _get_config(wildcards.sample, "filter_R1_length")
 
 """ rules for scraps counting """
 

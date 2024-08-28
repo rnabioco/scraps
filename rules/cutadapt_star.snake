@@ -30,6 +30,8 @@ def _get_chem_version(sample, alignment):
       extra_args = _get_config(sample, alignment+"_extra_args")
     except KeyError:
       extra_args = ""
+    if alignment == "STAR_paired":
+      alignment = "STAR_R1"
     return [whitelist, _get_config(sample, alignment), extra_args]
 
 """ Extract per-capture chemistry from gex libs (R2)"""
@@ -42,7 +44,7 @@ def _get_chem_version_R1(wildcards):
 
 """ Extract per-capture extra arguments for gex paired alignments """
 def _get_chem_version_paired(wildcards):
-    return _get_chem_version(wildcards.sample, "STAR_R1") + [_get_config(wildcards.sample, "STAR_paired")]
+    return _get_chem_version(wildcards.sample, "STAR_paired") + [_get_config(wildcards.sample, "STAR_paired")]
 
 """ This rule trims R1-only libraries """
 rule cutadapt_R1:
