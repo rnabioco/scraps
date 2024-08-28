@@ -5,13 +5,9 @@ import pandas as pd
 
 """ Snakemake rules for scraps cutadapt and STARsolo processing """
 
-SAMPLES_DF = pd.read_csv(FASTQS, sep = "\t")
-
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
-    samples_filtered = SAMPLES_DF[(SAMPLES_DF.capture == wildcards.sample)]
-
-    fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), samples_filtered.fastqs)
+    fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), SAMPLES[wildcards.sample]["basename"])
     fqs = map(lambda x: glob.glob(x), fqs)
     fqs = list(chain.from_iterable(fqs))
     
@@ -19,32 +15,27 @@ def _get_fq_paths(wildcards):
 
 """ Process complex barcodes into simple, if needed"""
 def _get_bc_cut(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
-    args = chemistry[chem_version]["bc_cut"]
+    args = chemistry[_get_config(wildcards.sample, "chemistry")]["bc_cut"]
     return args
 
 """ Extract per-capture chemistry from gex libs (R2)"""
 def _get_chem_version_R2(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
-    args = eval(chemistry[chem_version]["R2"])
+    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["R2"])
     return args
 
 """ Extract per-capture chemistry from gex libs (R1/paired)"""
 def _get_chem_version_R1(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
-    args = eval(chemistry[chem_version]["R1"])
+    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["R1"])
     return args
 
 """ Extract per-capture extra arguments for gex paired alignments """
 def _get_chem_version_paired(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
-    args = eval(chemistry[chem_version]["paired"])
+    args = eval(chemistry[_get_config(wildcards.sample, "chemistry")]["paired"])
     return args
 
 """ Extract per-capture extra arguments for gex libs """
 def _get_extra_args(wildcards):
-    captures_filtered = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample]
-    return list(captures_filtered.extra_args.unique())
+    return _get_config(wildcards.sample, "extra_args")
 
 """ This rule trims R1-only libraries """
 rule cutadapt_R1:

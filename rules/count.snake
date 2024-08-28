@@ -1,8 +1,6 @@
 """ Extract correction length target"""
 def _get_chem_length_R1(wildcards):
-    chem_version = SAMPLES_DF[SAMPLES_DF.capture == wildcards.sample].chemistry.unique()[0]
-    args = chemistry[chem_version]["length"]
-    return args
+    return chemistry[_get_config(wildcards.sample, "chemistry")]["length"]
 
 """ rules for scraps counting """
 
