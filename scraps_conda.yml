@@ -12,7 +12,7 @@ dependencies:
   - multiqc >= 1.6
   - samtools >= 1.15
   - pysam >= 0.16.0
-  - snakemake >= 6.1.2
-  - subread >=2.0.1
-  - umi_tools >=1.1.2
+  - snakemake < 8
+  - subread >= 2.0.1
+  - umi_tools >= 1.1.2
   - star = 2.7.9a
