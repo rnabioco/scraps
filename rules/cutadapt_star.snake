@@ -16,7 +16,7 @@ def _get_fq_paths(wildcards):
 """ Process complex barcodes into simple, if needed"""
 def _get_bc_cut(wildcards):
     try:
-      return CHEMISTRY[_get_config(wildcards.sample, "chemistry")]["bc_cut"]
+      return _get_config(wildcards.sample, "bc_cut")
     except KeyError:
       return ""
 
