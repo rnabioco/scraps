@@ -23,10 +23,31 @@ def _get_config(sample, item):
   try:
     return SAMPLES[sample][item]
   except KeyError:
-    try:
-      return CHEMISTRY[SAMPLES[sample]["chemistry"]][item]
-    except KeyError:
-      return DEFAULTS[item]
+    pass
+  try:
+    return CHEMISTRY[SAMPLES[sample]["chemistry"]][SAMPLES[sample]["platform"]][item]
+  except KeyError:
+    pass
+  try:
+    return CHEMISTRY[SAMPLES[sample]["chemistry"]][DEFAULTS["platform"]][item]
+  except KeyError:
+    pass
+  try:
+    return CHEMISTRY[SAMPLES[sample]["chemistry"]][item]
+  except KeyError:
+    pass
+  try:
+    return CHEMISTRY[DEFAULTS["chemistry"]][SAMPLES[sample]["platform"]][item]
+  except KeyError:
+    pass
+  try:
+    return CHEMISTRY[DEFAULTS["chemistry"]][DEFAULTS["platform"]][item]
+  except KeyError:
+    pass
+  try:
+    return CHEMISTRY[DEFAULTS["chemistry"]][item]
+  except KeyError:
+    return DEFAULTS[item]
   
 # assemble outputs for rule all
 SAMPLE_OUTS = []

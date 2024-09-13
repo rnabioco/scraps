@@ -35,7 +35,8 @@ POLYA_SITES:
   
 DEFAULTS:
 # default config options, overridden by SAMPLES and CHEMISTRY definitions
-  chemistry: chromiumV3_illumina
+  platform: illumina
+  chemistry: chromiumV3
   alignments:
     - R2
     - paired
@@ -53,13 +54,16 @@ SAMPLES:
 #   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
   test:
     basename: sample
-    chemistry: chromiumV2_illumina
+    platform: illumina
+    chemistry: chromiumV2
   test2:
     basename: dropseq
-    chemistry: dropseq_illumina
+    platform: illumina
+    chemistry: dropseq
   test3:
     basename: microwellseq
-    chemistry: microwellseq_illumina
+    platform: illumina
+    chemistry: microwellseq
 
 
 # for multiqc report
