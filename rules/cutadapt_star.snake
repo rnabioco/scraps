@@ -7,7 +7,7 @@ import pandas as pd
 
 """ Extract per-sample fastq paths """
 def _get_fq_paths(wildcards):
-    fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), SAMPLES[wildcards.sample]["basename"])
+    fqs = map(lambda x: os.path.join(DATA, x + "*R1*"), [SAMPLES[wildcards.sample]["basename"]])
     fqs = map(lambda x: glob.glob(x), fqs)
     fqs = list(chain.from_iterable(fqs))
     
