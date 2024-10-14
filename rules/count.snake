@@ -150,8 +150,8 @@ rule filter_R1:
     if [[ {params.length} == 'False' ]]; then
       ln -s {input} {output}
     else
-      samtools index {input}
       samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+      samtools index {params.temp}
       set +e
       python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length} -s -c 20
       exitcode=$?
@@ -184,7 +184,6 @@ rule filter_R2:
     mem_mb = 8000
   shell:
     """
-    samtools index {input}
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
     samtools index {params.temp}
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
@@ -215,8 +214,8 @@ rule filter_paired:
     if [[ {params.length} == 'False' ]]; then
       ln -s {input} {output}
     else
-      samtools index {input}
       samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+      samtools index {params.temp}
       set +e
       python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
       exitcode=$?
