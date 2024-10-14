@@ -60,6 +60,8 @@ SAMPLES:
     basename: dropseq
     platform: illumina
     chemistry: dropseq
+    alignments:
+      - R2
   test3:
     basename: microwellseq
     platform: illumina
