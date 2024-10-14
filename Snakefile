@@ -48,7 +48,7 @@ def _get_config(sample, item):
     return CHEMISTRY[DEFAULTS["chemistry"]][item]
   except KeyError:
     return DEFAULTS[item]
-  
+
 # assemble outputs for rule all
 SAMPLE_OUTS = []
 for x in SAMPLES:

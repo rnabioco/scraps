@@ -14,15 +14,15 @@ STAR:
 
 STAR_INDEX:
 # path to STAR genome index
-  "index/cr2020A_star"
+  "/pl/active/amc_heme/ref/cr2020A_star"
 
 WHITELIST_V3:  
 # path to Chromium V3 whitelist
-  "whitelist/3M-february-2018.txt"
+  "/pl/active/amc_heme/ref/3M-february-2018.txt"
 
 WHITELIST_V2:
 # path to Chromium V2 whitelist
-  "whitelist/737K-august-2016.txt"
+  "/pl/active/amc_heme/ref/737K-august-2016.txt"
 
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
@@ -53,7 +53,7 @@ SAMPLES:
 #   star_args (STAR_R1, STAR_R2, STAR_paired)
 #   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
   test:
-    basename: sample
+    basename: sample-
     platform: illumina
     chemistry: chromiumV2
   test2:
