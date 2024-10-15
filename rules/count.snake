@@ -148,7 +148,7 @@ rule filter_R1:
   shell:
     """
     if [[ {params.length} == 'False' ]]; then
-      ln -s {input} {output}
+      ln -s $(readlink -f {input}) $(readlink -f {output})
     else
       samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
       samtools index {params.temp}
@@ -212,7 +212,7 @@ rule filter_paired:
   shell:
     """
     if [[ {params.length} == 'False' ]]; then
-      ln -s {input} {output}
+      ln -s $(readlink -f {input}) $(readlink -f {output})
     else
       samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
       samtools index {params.temp}
