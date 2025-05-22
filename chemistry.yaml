@@ -6,52 +6,43 @@
 #   platform_agnostic_option1: ...
 #   platform_agnostic_option2: ...
 #   name_of_platform1:
-#     filter_R1_length: ...
 #     STAR_R1: ...
 #     STAR_R2: ...
 
 chromiumV3:
   bc_whitelist: WHITELIST_V3
   illumina:
-    filter_R1_length: 58
     STAR_R1: --soloUMIlen 12 --clip5pNbases 58 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 12
   element:
-    filter_R1_length: False
     STAR_R1: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
     STAR_R2: --soloUMIlen 12
   ultima:
-    filter_R1_length: 58
     STAR_R1: --soloUMIlen 9 --clip5pNbases 58 --soloCBstart 23 --soloCBlen 16 --soloUMIstart 39
 chromiumV2:
   bc_whitelist: WHITELIST_V2
   illumina:
-    filter_R1_length: 56
     STAR_R1: --soloUMIlen 10 --clip5pNbases 56 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 10
 dropseq:
   bc_whitelist: None
   illumina:
-    filter_R1_length: 50
     STAR_R1: --soloUMIlen 8 --clip5pNbases 50 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 8 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13
 microwellseq:
   bc_whitelist: None
   bc_cut: CGACTCACTACAGGG...TCGGTGACACGATCG
   illumina:
-    filter_R1_length: 54
     STAR_R1: --soloUMIlen 6 --clip5pNbases 54 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2:  --soloUMIlen 6 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19
 bd:
   bc_whitelist: None
   bc_cut: ACTGGCCTGCGA...GGTAGCGGTGACA
   illumina:
-    filter_R1_length: 53
     STAR_R1: --soloUMIlen 8 --clip5pNbases 53 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 8 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28
 indrop:
   bc_whitelist: None
   illumina:
-    filter_R1_length: 32
     STAR_R1: --soloUMIlen 6 --clip5pNbases 32 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 6 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9

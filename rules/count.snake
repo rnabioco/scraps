@@ -1,12 +1,8 @@
-""" Extract correction length target"""
-def _get_chem_length_R1(wildcards):
-    return _get_config(wildcards.sample, "filter_R1_length")
-
 """ rules for scraps counting """
 
 rule assign_sites_R1:
   input:
-    "{results}/temp/{sample}_R1.bam"
+    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
     bam = temp("{results}/temp/{sample}_R1_assigned.bam")
   params:
@@ -89,7 +85,7 @@ rule assign_sites_R2:
 
 rule assign_sites_paired:
   input:
-    "{results}/temp/{sample}_paired.bam"
+    "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
   output:
     bam = temp("{results}/temp/{sample}_paired_assigned.bam")
   params:
@@ -128,45 +124,6 @@ rule assign_sites_paired:
     rm -rf {params.out_bam}
     """
     
-rule filter_R1:
-  input:
-    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
-  output:
-    temp("{results}/temp/{sample}_R1.bam")
-  params:
-    job_name = "filter",
-    length = _get_chem_length_R1,
-    temp = "{results}/temp/{sample}_R1_filter.bam",
-    temp2 = "{results}/temp/{sample}_R1_filter2.bam",
-    final = "{results}/counts/{sample}_R1_counts.tsv.gz"
-  log:
-    "{results}/logs/filter_{sample}_R1.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 8000
-  shell:
-    """
-    if [[ {params.length} == 'False' ]]; then
-      ln -s $(readlink -f {input}) $(readlink -f {output})
-    else
-      samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-      samtools index {params.temp}
-      set +e
-      python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length} -s -c 20
-      exitcode=$?
-      if [ $exitcode -eq 1 ]
-      then
-        touch {params.final}
-      fi
-      samtools sort {params.temp2} -o {output}
-      # mv {params.temp} {output}
-      rm -rf {params.temp}
-      rm -rf {params.temp2}
-    fi
-    samtools index {output}
-    """    
-
 rule filter_R2:
   input:
     "{results}/{sample}/{sample}_R2_Aligned.sortedByCoord.out.bam"
@@ -192,45 +149,6 @@ rule filter_R2:
     rm -rf {params.tempbai}
     """
 
-rule filter_paired:
-  input:
-    "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
-  output:
-    temp("{results}/temp/{sample}_paired.bam")
-  params:
-    job_name = "filter",
-    length = _get_chem_length_R1,
-    temp = "{results}/temp/{sample}_paired_filter.bam",
-    temp2 = "{results}/temp/{sample}_paired_filter2.bam",
-    final = "{results}/counts/{sample}_paired_counts.tsv.gz"
-  log:
-    "{results}/logs/filter_{sample}_paired.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 8000
-  shell:
-    """
-    if [[ {params.length} == 'False' ]]; then
-      ln -s $(readlink -f {input}) $(readlink -f {output})
-    else
-      samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-      samtools index {params.temp}
-      set +e
-      python3 inst/scripts/filter_bam_correct.py -i {params.temp} -o {params.temp2} -l {params.length}
-      exitcode=$?
-      if [ $exitcode -eq 1 ]
-      then
-        touch {params.final}
-      fi
-      samtools sort {params.temp2} -o {output}
-      # mv {params.temp} {output}
-      rm -rf {params.temp}
-      rm -rf {params.temp2}
-    fi
-    samtools index {output}
-    """
-    
 rule count:
   input:
     "{results}/temp/{sample}_{read}_assigned.bam"
