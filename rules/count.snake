@@ -16,7 +16,7 @@ rule assign_sites_R1:
   resources:
     mem_mb = 8000
   shell:
-    """
+    r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -57,7 +57,7 @@ rule assign_sites_R2:
   resources:
     mem_mb = 8000
   shell:
-    """
+    r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -99,7 +99,7 @@ rule assign_sites_paired:
   resources:
     mem_mb = 8000
   shell:
-    """
+    r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -140,7 +140,7 @@ rule filter_R2:
   resources:
     mem_mb = 8000
   shell:
-    """
+    r"""
     samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
     samtools index {params.temp}
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
@@ -163,7 +163,7 @@ rule count:
   resources:
     mem_mb = 8000
   shell:
-    """
+    r"""
     umi_tools count \
       --per-gene \
       --gene-tag=XT \
@@ -179,7 +179,7 @@ rule count:
 
 rule bed_R1:
   input:
-    "{results}/temp/{sample}_R1.bam"
+    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
   output:
     "{results}/bed/{sample}_R1.bed.gz"
   params:
@@ -193,7 +193,7 @@ rule bed_R1:
   resources:
     mem_mb = 48000
   shell:
-    """
+    r"""
     umi_tools dedup \
       --extract-umi-method=tag \
       --umi-tag=UB \
@@ -225,7 +225,7 @@ rule bed_R2:
   resources:
     mem_mb = 48000
   shell:
-    """
+    r"""
     umi_tools dedup \
       --extract-umi-method=tag \
       --umi-tag=UB \
@@ -241,7 +241,7 @@ rule bed_R2:
 
 rule bed_paired:
   input:
-    "{results}/temp/{sample}_paired.bam"
+    "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
   output:
     "{results}/bed/{sample}_paired.bed.gz"
   params:
@@ -255,7 +255,7 @@ rule bed_paired:
   resources:
     mem_mb = 48000
   shell:
-    """
+    r"""
     umi_tools dedup \
       --extract-umi-method=tag \
       --umi-tag=UB \

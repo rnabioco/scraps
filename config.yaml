@@ -52,21 +52,26 @@ SAMPLES:
 #   cutadapt_args
 #   star_args (STAR_R1, STAR_R2, STAR_paired)
 #   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
-  test:
+  chromiumv2_test:
     basename: sample-
     platform: illumina
     chemistry: chromiumV2
-  test2:
+  dropseq_test:
     basename: dropseq
     platform: illumina
     chemistry: dropseq
     alignments:
       - R2
-  test3:
+  microwell_test3:
     basename: microwellseq
     platform: illumina
     chemistry: microwellseq
-
+  chromiumv3_ultima_test:
+    basename: ultima
+    platform: ultima
+    chemistry: chromiumV3
+    alignments:
+      - R1
 
 # for multiqc report
 report_section_order:
