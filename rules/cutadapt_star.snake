@@ -16,14 +16,14 @@ def _get_fq_paths(wildcards):
     
     return fqs
 
-""" Process complex barcodes into simple, if needed"""
+""" Process complex barcodes into simple, if needed """
 def _get_bc_cut(wildcards):
     try:
       return _get_config(wildcards.sample, "bc_cut")
     except KeyError:
       return ""
 
-""" Extract per-capture chemistry from gex libs (base function)"""
+""" Extract per-capture chemistry from gex libs (base function) """
 def _get_chem_version(sample, alignment):
     try:
       whitelist = eval(_get_config(sample, "bc_whitelist"))
@@ -37,17 +37,25 @@ def _get_chem_version(sample, alignment):
       alignment = "STAR_R1"
     return [whitelist, _get_config(sample, alignment), extra_args]
 
-""" Extract per-capture chemistry from gex libs (R2)"""
+""" Extract per-capture chemistry (R2) """
 def _get_chem_version_R2(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_R2")
 
-""" Extract per-capture chemistry from gex libs (R1/paired)"""
+""" Extract per-capture chemistry (R1/paired) """
 def _get_chem_version_R1(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_R1")
 
-""" Extract per-capture extra arguments for gex paired alignments """
+""" Extract per-capture extra arguments for paired alignments """
 def _get_chem_version_paired(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_paired") + [_get_config(wildcards.sample, "STAR_paired")]
+    
+""" Extract per-capture cutadapt args (paired) """
+def _get_cutadapt_paired(wildcards):
+    return _get_chem_version(wildcards.sample, "cutadapt_paired")
+
+""" Extract per-capture cutadapt args (R1) """
+def _get_cutadapt_R1(wildcards):
+    return _get_chem_version(wildcards.sample, "cutadapt_R1")
 
 """ This rule trims R1-only libraries """
 rule cutadapt_R1:
@@ -57,6 +65,7 @@ rule cutadapt_R1:
       R1 = temp("{results}/cutadapt/{sample}_R1_trimmed.R1.fastq.gz")
     params:
       job_name = "cutadapt",
+      cut_params = _get_cutadapt_R1,
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}_R1.info",
       temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz"
@@ -66,15 +75,15 @@ rule cutadapt_R1:
       mem_mb = 32000
     shell:
       """
-      cutadapt -j 24 \
-        -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
-        -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
-        -n 4 \
-        -m 75 \
-	    -l 300 \
-        --nextseq-trim=20 \
-        -o {output.R1} \
-        <(zcat {input})
+      if [ -z "{params.cut_params}" ] ; then
+        echo "no trimming"
+        ln -s {input} {output.R1}
+      else
+        cutadapt -j 24 \
+          {params.cut_params} \
+          -o {output.R1} \
+          <(zcat {input})
+      fi
       """
 
 """ This rule trims paired-end libraries """
@@ -87,6 +96,7 @@ rule cutadapt_paired:
     params:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
+      cut_params = _get_cutadapt_paired,
       info = "{results}/cutadapt/temp_{sample}_paired.info",
       temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz"
@@ -96,39 +106,33 @@ rule cutadapt_paired:
       mem_mb = 32000
     shell:
       """
-      if [ -z "{params.bc_cut}" ] ; then
-        echo "no additional trimming"
-        cutadapt -j 24 \
-         -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
-         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
-         -A polya_R2=A{{30}} \
-         -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
-         -n 4 \
-         -m 75:17 \
-         --nextseq-trim=20 \
-         -o {output.R1} \
-         -p {output.R2} \
-         <(zcat {input}) \
-         <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+      if [ -z "{params.cut_params}" ] ; then
+        echo "no trimming"
+        ln -s {input} {output.R1}
+        ln -s $(echo {input} | sed 's/_R1/_R2/g') {output.R2}
       else
-        echo "removing internal seq..."
-        cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
-        echo "stitching R1 FASTQ back together..."
-        python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
-        echo "2nd round of trimming..."
-        cutadapt -j 24 \
-         -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT \
-         -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA \
-         -A polya_R2=A{{30}} \
-         -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG \
-         -n 4 \
-         -m 75:17 \
-         --nextseq-trim=20 \
-         -o {output.R1} \
-         -p {output.R2} \
-         <(zcat {params.temp}) \
-         <(zcat {params.temp2})
-        rm {params.info}
+        if [ -z "{params.bc_cut}" ] ; then
+          echo "no additional trimming"
+          cutadapt -j 24 \
+           {params.cut_params} \
+           -o {output.R1} \
+           -p {output.R2} \
+           <(zcat {input}) \
+           <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+        else
+          echo "removing internal seq..."
+          cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+          echo "stitching R1 FASTQ back together..."
+          python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
+          echo "2nd round of trimming..."
+          cutadapt -j 24 \
+           {params.cut_params} \
+           -o {output.R1} \
+           -p {output.R2} \
+           <(zcat {params.temp}) \
+           <(zcat {params.temp2})
+          rm {params.info}
+        fi
       fi
       """
 
