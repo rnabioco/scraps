@@ -1,4 +1,4 @@
-shell.executable("/bin/bash")
+shell.executable("/bin/zsh")
 
 """ Snakemake pipeline for single-cell RNA-seq 3' end counting """
 

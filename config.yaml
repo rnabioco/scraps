@@ -14,15 +14,15 @@ STAR:
 
 STAR_INDEX:
 # path to STAR genome index
-  "/pl/active/amc_heme/ref/cr2020A_star"
+  "ref/cr2020A_star/"
 
 WHITELIST_V3:  
 # path to Chromium V3 whitelist
-  "/pl/active/amc_heme/ref/3M-february-2018.txt"
+  "ref/3M-february-2018.txt"
 
 WHITELIST_V2:
 # path to Chromium V2 whitelist
-  "/pl/active/amc_heme/ref/737K-august-2016.txt"
+  "ref/737K-august-2016.txt"
 
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases

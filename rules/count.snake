@@ -8,7 +8,8 @@ rule assign_sites_R1:
   params:
     job_name = "assign_sites_R1",
     out = "{results}/temp/{sample}_R1_assigned",
-    out_bam = "{results}/temp/{sample}_R1.bam.featureCounts.bam"
+    out_bam = "{results}/temp/{sample}_R1_filter.bam.featureCounts.bam",
+    temp = "{results}/temp/{sample}_R1_filter.bam"
   log:
     "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
@@ -21,6 +22,8 @@ rule assign_sites_R1:
       polyaformat='SAF'; else
       polyaformat='GTF';
     fi
+    
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
 
     featureCounts \
     -s 2 -Q 10 -O \
@@ -30,7 +33,7 @@ rule assign_sites_R1:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {input} \
+    {params.temp} \
     2> {log}
 
     samtools sort \
@@ -91,7 +94,8 @@ rule assign_sites_paired:
   params:
     job_name = "assign_sites_paired",
     out = "{results}/temp/{sample}_paired_assigned",
-    out_bam = "{results}/temp/{sample}_paired.bam.featureCounts.bam"
+    out_bam = "{results}/temp/{sample}_paired_filter.bam.featureCounts.bam",
+    temp = "{results}/temp/{sample}_paired_filter.bam"
   log:
     "{results}/logs/assign_sites_{sample}_paired.txt"
   threads:
@@ -105,6 +109,8 @@ rule assign_sites_paired:
       polyaformat='GTF';
     fi
 
+    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    
     featureCounts \
     -s 2 -Q 10 -O -p \
     --read2pos 5 \
@@ -113,7 +119,7 @@ rule assign_sites_paired:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {input} \
+    {params.temp} \
     2> {log}
 
     samtools sort \
@@ -122,6 +128,7 @@ rule assign_sites_paired:
 
     samtools index {output.bam}
     rm -rf {params.out_bam}
+    rm -rf {params.temp}
     """
     
 rule filter_R2:
@@ -179,7 +186,7 @@ rule count:
 
 rule bed_R1:
   input:
-    "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
+    "{results}/temp/{sample}_R1_assigned.bam"
   output:
     "{results}/bed/{sample}_R1.bed.gz"
   params:
@@ -205,14 +212,13 @@ rule bed_R1:
       -S {params.dedup} \
       > {log}
     samtools view -F 4 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | g
-zip > {output}
+    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
     rm -rf {params.r}
     """
 
 rule bed_R2:
   input:
-    "{results}/temp/{sample}_R2.bam"
+    "{results}/temp/{sample}_R2_assigned.bam"
   output:
     "{results}/bed/{sample}_R2.bed.gz"
   params:
@@ -236,12 +242,12 @@ rule bed_R2:
       -S {params.dedup} \
       > {log}
 
-    bedtools genomecov -ibam {params.dedup} -3 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    bedtools genomecov -ibam {params.dedup} -3 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
     """
 
 rule bed_paired:
   input:
-    "{results}/{sample}/{sample}_paired_Aligned.sortedByCoord.out.bam"
+    "{results}/temp/{sample}_paired_assigned.bam"
   output:
     "{results}/bed/{sample}_paired.bed.gz"
   params:
@@ -268,6 +274,6 @@ rule bed_paired:
       > {log}
     # 0x82 for R2
     samtools view -f 0x42 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip > {output}
+    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
     rm -rf {params.r}
     """

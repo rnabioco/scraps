@@ -51,11 +51,11 @@ def _get_chem_version_paired(wildcards):
     
 """ Extract per-capture cutadapt args (paired) """
 def _get_cutadapt_paired(wildcards):
-    return _get_chem_version(wildcards.sample, "cutadapt_paired")
+    return _get_config(wildcards.sample, "cutadapt_paired")
 
 """ Extract per-capture cutadapt args (R1) """
 def _get_cutadapt_R1(wildcards):
-    return _get_chem_version(wildcards.sample, "cutadapt_R1")
+    return _get_config(wildcards.sample, "cutadapt_R1")
 
 """ This rule trims R1-only libraries """
 rule cutadapt_R1:
@@ -77,12 +77,12 @@ rule cutadapt_R1:
       """
       if [ -z "{params.cut_params}" ] ; then
         echo "no trimming"
-        ln -s {input} {output.R1}
+        cat {input} > {output.R1}
       else
         cutadapt -j 24 \
           {params.cut_params} \
           -o {output.R1} \
-          <(zcat {input})
+          =(cat {input})
       fi
       """
 
@@ -108,8 +108,8 @@ rule cutadapt_paired:
       """
       if [ -z "{params.cut_params}" ] ; then
         echo "no trimming"
-        ln -s {input} {output.R1}
-        ln -s $(echo {input} | sed 's/_R1/_R2/g') {output.R2}
+        cat {input} > {output.R1}
+        cat $(echo {input} | sed 's/_R1/_R2/g') > {output.R2}
       else
         if [ -z "{params.bc_cut}" ] ; then
           echo "no additional trimming"
@@ -117,11 +117,11 @@ rule cutadapt_paired:
            {params.cut_params} \
            -o {output.R1} \
            -p {output.R2} \
-           <(zcat {input}) \
-           <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+           =(cat {input}) \
+           =(cat $(echo {input} | sed 's/_R1/_R2/g'))
         else
           echo "removing internal seq..."
-          cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} <(zcat $(echo {input} | sed 's/_R1/_R2/g'))
+          cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} =(cat $(echo {input} | sed 's/_R1/_R2/g'))
           echo "stitching R1 FASTQ back together..."
           python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
           echo "2nd round of trimming..."
@@ -129,8 +129,8 @@ rule cutadapt_paired:
            {params.cut_params} \
            -o {output.R1} \
            -p {output.R2} \
-           <(zcat {params.temp}) \
-           <(zcat {params.temp2})
+           {params.temp} \
+           {params.temp2}
           rm {params.info}
         fi
       fi
