@@ -16,14 +16,6 @@ STAR_INDEX:
 # path to STAR genome index
   "ref/cr2020A_star/"
 
-WHITELIST_V3:  
-# path to Chromium V3 whitelist
-  "ref/3M-february-2018.txt"
-
-WHITELIST_V2:
-# path to Chromium V2 whitelist
-  "ref/737K-august-2016.txt"
-
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
 # downstream slop relative to annotated cleavage site

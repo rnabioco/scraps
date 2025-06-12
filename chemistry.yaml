@@ -10,7 +10,7 @@
 #     STAR_R2: ...
 
 chromiumV3:
-  bc_whitelist: WHITELIST_V3
+  bc_whitelist: "ref/3M-february-2018.txt"
   illumina:
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     cutadapt_R1: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -n 2 -m 75 -l 300 --nextseq-trim=20
@@ -25,7 +25,7 @@ chromiumV3:
     cutadapt_R1: -a 'CTACACGACGCTCTTCCGATCT;max_error_rate=0.2;min_overlap=10;required...AGATCGGAAGAGCACACGTCTG;max_error_rate=0.2;min_overlap=6' -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -n 2 -m 68 -q 20
     STAR_R1: --soloUMIlen 9 --clip5pNbases 38 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
 chromiumV2:
-  bc_whitelist: WHITELIST_V2
+  bc_whitelist: "ref/737K-august-2016.txt"
   illumina:
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 10 --clip5pNbases 46 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
