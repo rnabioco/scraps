@@ -26,7 +26,7 @@ def _get_bc_cut(wildcards):
 """ Extract per-capture chemistry from gex libs (base function) """
 def _get_chem_version(sample, alignment):
     try:
-      whitelist = eval(_get_config(sample, "bc_whitelist"))
+      whitelist = _get_config(sample, "bc_whitelist")
     except KeyError:
       whitelist = "None"
     try:

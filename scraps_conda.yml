@@ -15,3 +15,4 @@ dependencies:
   - subread >= 2.0.1
   - umi_tools >= 1.1.2
   - star >= 2.7.9a
+  - zsh
