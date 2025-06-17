@@ -22,6 +22,11 @@ def _get_bc_cut(wildcards):
       return _get_config(wildcards.sample, "bc_cut")
     except KeyError:
       return ""
+def _get_bc_length1(wildcards):
+    try:
+      return _get_config(wildcards.sample, "bc_length1")
+    except KeyError:
+      return ""
 
 """ Extract per-capture chemistry from gex libs (base function) """
 def _get_chem_version(sample, alignment):
@@ -96,6 +101,7 @@ rule cutadapt_paired:
     params:
       job_name = "cutadapt",
       bc_cut = _get_bc_cut,
+      bc_length1 = _get_bc_length1,
       cut_params = _get_cutadapt_paired,
       info = "{results}/cutadapt/temp_{sample}_paired.info",
       temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
@@ -111,7 +117,7 @@ rule cutadapt_paired:
         cat {input} > {output.R1}
         cat $(echo {input} | sed 's/_R1/_R2/g') > {output.R2}
       else
-        if [ -z "{params.bc_cut}" ] ; then
+        if [ -z {params.bc_cut} ] ; then
           echo "no additional trimming"
           cutadapt -j 24 \
            {params.cut_params} \
@@ -123,7 +129,12 @@ rule cutadapt_paired:
           echo "removing internal seq..."
           cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} =(cat $(echo {input} | sed 's/_R1/_R2/g'))
           echo "stitching R1 FASTQ back together..."
-          python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
+          if [ -z {params.bc_length1} ];
+          then
+            python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
+          else
+            python3 inst/scripts/cut_paste_fastq.py -l {params.bc_length1} -i {params.info} -o {params.temp}
+          fi
           echo "2nd round of trimming..."
           cutadapt -j 24 \
            {params.cut_params} \

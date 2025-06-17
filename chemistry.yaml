@@ -30,6 +30,14 @@ chromiumV2:
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 10 --clip5pNbases 46 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_R2: --soloUMIlen 10
+ddseq:
+  bc_whitelist: None
+  bc_cut: TATGCATGAC...CAGTCAGTCA
+  bc_length1: 15
+  illumina:
+    cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
+    STAR_R1: --soloUMIlen 8 --clip5pNbases 29 0 --soloCBstart 9 --soloCBlen 21 --soloUMIstart 1 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+    STAR_R2: --soloUMIlen 8 --soloCBstart 9 --soloCBlen 21 --soloUMIstart 1
 dropseq:
   bc_whitelist: None
   illumina:
