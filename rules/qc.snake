@@ -2,7 +2,7 @@
 
 rule qc_check:
    input:
-     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = R1_SAMPLES, read = READS)
+     expand("{results}/counts/{sample}_{read}_counts.tsv.gz", results = RESULTS, sample = SAMPLES.keys(), read = READS)
    output:
      "{results}/report/multiqc_report.html"
    params:

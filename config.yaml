@@ -1,27 +1,20 @@
 # config for scraps snakemake pipeline #
+
 DATA: 
 # Data folder containing FASTQs
   "sample_data/raw_data"
 
-# results directory
 RESULTS:
+# results directory
   "results"
 
-# path to STAR executable, if not in PATH
 STAR:
+# path to STAR executable, if not in PATH
   "STAR"
 
-# path to STAR genome index
 STAR_INDEX:
-  "index/cr2020A_star"
-  
-# path to Chromium V3 whitelist
-WHITELIST_V3:
-  "whitelist/3M-february-2018.txt"
-
-# path to Chromium V2 whitelist
-WHITELIST_V2:
-  "whitelist/737K-august-2016.txt"
+# path to STAR genome index
+  "ref/cr2020A_star/"
 
 POLYA_SITES:
 # polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
@@ -31,24 +24,46 @@ POLYA_SITES:
 #POLYA_FORMAT:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
+  
+DEFAULTS:
+# default config options, overridden by SAMPLES and CHEMISTRY definitions
+  platform: illumina
+  chemistry: chromiumV3
+  alignments:
+    - R2
+    - paired
+  STAR_paired: --alignEndsProtrude 58 ConcordantPair
 
-# TSV relating all sequenced libraries to sane capture names and other metadata
-FASTQS:
-  "sample_fastqs.tsv"
-
-PAIRED_SAMPLES:
-# Sample basenames
-  - test
-  - test2
-  - test3
-
-R1_SAMPLES:
-# Sample basenames
-
-R2_SAMPLES:
-  - test
-  - test2
-  - test3
+SAMPLES:
+# per-sample labels, FASTQ basenames, and config options
+# required:
+#   basename
+# optional:
+#   chemistry
+#   alignments
+#   cutadapt_args
+#   star_args (STAR_R1, STAR_R2, STAR_paired)
+#   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
+  chromiumv2_test:
+    basename: sample-
+    platform: illumina
+    chemistry: chromiumV2
+  dropseq_test:
+    basename: dropseq
+    platform: illumina
+    chemistry: dropseq
+    alignments:
+      - R2
+  microwell_test3:
+    basename: microwellseq
+    platform: illumina
+    chemistry: microwellseq
+  chromiumv3_ultima_test:
+    basename: ultima
+    platform: ultima
+    chemistry: chromiumV3
+    alignments:
+      - R1
 
 # for multiqc report
 report_section_order:

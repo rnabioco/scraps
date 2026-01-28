@@ -1,8 +1,7 @@
 name: scraps_conda
 channels:
-  - bioconda
   - conda-forge
-  - defaults
+  - bioconda
 dependencies:
   - python >= 3.7
   - snakemake >= 5.3.0
@@ -15,4 +14,5 @@ dependencies:
   - snakemake < 8
   - subread >= 2.0.1
   - umi_tools >= 1.1.2
-  - star = 2.7.9a
+  - star >= 2.7.9a
+  - zsh
