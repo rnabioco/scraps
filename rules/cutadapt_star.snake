@@ -117,7 +117,7 @@ rule cutadapt_paired:
         cat {input} > {output.R1}
         cat $(echo {input} | sed 's/_R1/_R2/g') > {output.R2}
       else
-        if [ -z {params.bc_cut} ] ; then
+        if [ -z "{params.bc_cut}" ] ; then
           echo "no additional trimming"
           cutadapt -j 24 \
            {params.cut_params} \
