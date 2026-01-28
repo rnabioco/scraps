@@ -20,10 +20,7 @@ jobs:
         activate-environment: scraps_conda
         environment-file: scraps_conda.yml
         auto-activate-base: false
-
-    - name: Create Conda Environment
-      shell: bash -el {0}
-      run: mamba env create -f scraps_conda.yml
+        use-mamba: true
 
     - name: Run Snakemake
       shell: bash -el {0}
