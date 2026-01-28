@@ -39,7 +39,7 @@ SAMPLES:
 # required:
 #   basename
 # optional:
-#   chemisty
+#   chemistry
 #   alignments
 #   cutadapt_args
 #   star_args (STAR_R1, STAR_R2, STAR_paired)
