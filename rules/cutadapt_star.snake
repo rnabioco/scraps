@@ -117,7 +117,7 @@ rule cutadapt_paired:
         cat {input} > {output.R1}
         cat $(echo {input} | sed 's/_R1/_R2/g') > {output.R2}
       else
-        if [ -z {params.bc_cut} ] ; then
+        if [ -z "{params.bc_cut}" ] ; then
           echo "no additional trimming"
           cutadapt -j 24 \
            {params.cut_params} \
@@ -129,7 +129,7 @@ rule cutadapt_paired:
           echo "removing internal seq..."
           cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} =(cat {input}) =(cat $(echo {input} | sed 's/_R1/_R2/g'))
           echo "stitching R1 FASTQ back together..."
-          if [ -z {params.bc_length1} ];
+          if [ -z "{params.bc_length1}" ];
           then
             python3 inst/scripts/cut_paste_fastq.py -i {params.info} -o {params.temp}
           else
