@@ -127,7 +127,7 @@ rule cutadapt_paired:
            =(cat $(echo {input} | sed 's/_R1/_R2/g'))
         else
           echo "removing internal seq..."
-          cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} {input} =(cat $(echo {input} | sed 's/_R1/_R2/g'))
+          cutadapt --discard-untrimmed --info-file {params.info} -o /dev/null -p {params.temp2} -g {params.bc_cut} =(cat {input}) =(cat $(echo {input} | sed 's/_R1/_R2/g'))
           echo "stitching R1 FASTQ back together..."
           if [ -z {params.bc_length1} ];
           then
