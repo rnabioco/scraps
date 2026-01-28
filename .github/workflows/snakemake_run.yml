@@ -21,5 +21,6 @@ jobs:
 
     - shell: bash -el {0}
       run: |
+        conda activate scraps_conda
         snakemake -npr --configfile config.yaml 
 
