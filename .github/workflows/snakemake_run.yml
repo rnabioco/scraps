@@ -17,12 +17,17 @@ jobs:
         mamba-version: "*"
         channels: bioconda,conda-forge,defaults
         channel-priority: true
-        environment-file: scraps_conda.yml
         auto-activate-base: false
         use-mamba: true
+
+    - name: Create conda environment
+      shell: bash -el {0}
+      run: |
+        mamba env create -f scraps_conda.yml
 
     - name: Run Snakemake
       shell: bash -el {0}
       run: |
         conda activate scraps_conda
+        conda info
         snakemake -npr --configfile config.yaml
