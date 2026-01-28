@@ -19,8 +19,10 @@ jobs:
         channel-priority: true
         activate-environment: scraps_conda
         environment-file: scraps_conda.yml
+        auto-activate-base: false
 
-    - shell: bash -el {0}
+    - name: Run Snakemake
+      shell: bash -el {0}
       run: |
-        snakemake -npr --configfile config.yaml 
-
+        conda info
+        snakemake -npr --configfile config.yaml
