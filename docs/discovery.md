@@ -67,15 +67,14 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
   the polyAdb point (negative = upstream, positive = downstream). Summits that
   fall outside the window proceed to the novel-vs-internal-priming branch below.
 
-  > **Dependent on the scraps polyAdb SAF format.** Known-site annotation reads
-  > the single-base cleavage position from **field 5** of the `;`- (hg38) or
-  > `_`- (mm10) delimited `GeneID`
-  > (`gene;genbank;id;chrom;pos;strand;class`). A SAF that does not follow this
-  > encoding (or stores the position in a different field) will silently fail to
-  > annotate any known sites — every summit would be treated as novel. The
-  > bundled `ref/polyadb32.{hg38,mm10}.saf.gz` already conform. Conversion
-  > helpers for polyAdb 3.2 and 4.0 are planned in future commits; until then,
-  > custom references must match this encoding.
+  > **Dependent on the scraps polyAdb SAF format** (see the spec below).
+  > Known-site annotation reads the single-base cleavage position from
+  > **field 5** of the `GeneID`. A SAF that does not follow this encoding will
+  > fail to annotate known sites — every summit is treated as novel.
+  > `annotate_sites.py` validates the GeneID field count and warns/errors if no
+  > rows parse, so this failure mode is surfaced rather than silent. The bundled
+  > `ref/polyadb32.{hg38,mm10}.saf.gz` already conform; converters for polyAdb
+  > 3.2 and 4 are in `inst/scripts/polyadb/`.
 
 - **Internal-priming signature (novel sites):** the genomic sequence
   *downstream* of the summit on the sense strand (window `a_content_window`,
@@ -93,6 +92,51 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
   `potential_novel_pas`. A novel site with neither a PAS nor a strong
   internal-priming signature is conservatively labeled
   `likely_internal_priming`.
+
+## Reference SAF format
+
+The polyAdb reference supplied as `POLYA_SITES` (and the de novo SAF emitted by
+discovery) is a tab-separated table with header `GeneID  Chr  Start  End
+Strand`. The **GeneID encodes seven fields**:
+
+```
+gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
+```
+
+| Field | Index | Meaning |
+|:--|:--|:--|
+| `gene_symbol` | 1 | gene symbol (or `NA`) |
+| `refseq_gene_id` | 2 | RefSeq/Entrez gene id (or `NA`) |
+| `ensembl_id` | 3 | Ensembl gene id (or `NA`) |
+| `chrom` | 4 | chromosome |
+| `pos` | **5** | **1-based single-base cleavage position** (used for matching) |
+| `strand` | 6 | `+` / `-` |
+| `pas_type` | **7** | **site class** (used as the discovery `class`) |
+
+- Delimiter `{D}` is **`;` for human** and **`_` for mouse** references (matching
+  the bundled `ref/polyadb32.{hg38,mm10}.saf.gz`).
+- `Start`/`End` form a strand-specific 15 bp window around `pos`
+  (transcript-oriented -10 / +5 slop): `+` → `[pos-10, pos+5]`,
+  `-` → `[pos-5, pos+10]`.
+
+**Mouse `_` delimiter caveat:** RefSeq IDs (e.g. `NR_152944`) and scaffold
+chromosome names (e.g. `chrUn_GL456...`) contain underscores, so a naive split
+of a mouse GeneID over-counts fields. scraps parses these robustly by anchoring
+on the SAF `Chr`/`Strand` columns and reading the trailing
+`chrom/pos/strand/class` fields from the right; the leading gene/refseq/ensembl
+group is passthrough metadata only.
+
+**PAS type vocabulary differs by release** (labels are passed through verbatim
+by the converters): polyAdb 3.2 uses values like `3'UTR(M)`, `3'UTR(L)`,
+`Intron`, `intergenic`, `Pseudogene`, `LncRNA(FANTOM5)`; polyAdb 4 `main` uses
+`3'UTR`, `Intron`, `Intergenic`, `5'UTR`, `Downstream`, `Upstream`,
+`3'-most exon`, `Single exon`; polyAdb 4 `max` has no PAS type (`NA`). Code that
+filters by class (e.g. `parse_saf(types=...)`) must account for this when mixing
+releases.
+
+**Generating references:** converters for polyAdb 3.2 (`*.PAS.txt`, with
+liftOver) and polyAdb 4 (`*.PAS.{main,max}.tsv`) live in
+[`inst/scripts/polyadb/`](../inst/scripts/polyadb/); see its README for usage.
 
 ### Caveats and limitations
 

@@ -230,10 +230,16 @@ parse_saf_pf <- function(file,
 }
 
 #' Read SAF annotation file
-#' 
+#'
+#' The SAF GeneID must use the scraps 7-field encoding
+#' (gene;genbank;id;chrom;pos;strand;class), where the cleavage position is
+#' field 5 and the site class is field 7. Use ';' for human references and '_'
+#' for mouse references (set via \code{sep}). Converters that produce conforming
+#' SAFs from polyAdb releases are in inst/scripts/polyadb/.
+#'
 #' @param file SAF file used with Scraps
 #' @param types filter to only these types of PA sites, set to NULL to use all
-#' @param sep separator between fields for full name
+#' @param sep separator between fields for full name (';' human, '_' mouse)
 #' @import readr dplyr stringr tidyr
 #' @return data.frame
 #' @export

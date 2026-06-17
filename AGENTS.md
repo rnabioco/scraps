@@ -76,6 +76,7 @@ scraps/
 │   └── check_versions.snake  # Dependency version checks
 ├── inst/scripts/          # Helper scripts
 │   ├── *.py               # Python utilities (BAM filtering, KDE, annotation)
+│   ├── polyadb/           # polyAdb -> scraps SAF converters (3.2 + v4)
 │   └── R/                 # R analysis functions
 ├── docs/                  # Long-form docs (discovery.md, etc.)
 ├── ref/                   # Reference files (polyA_DB, etc.)
@@ -198,7 +199,7 @@ def _get_config(sample, item):
 - `DATA`: Directory containing input FASTQs
 - `RESULTS`: Output directory path
 - `STAR_INDEX`: Path to STAR genome index
-- `POLYA_SITES`: PolyA database reference file (SAF format)
+- `POLYA_SITES`: PolyA database reference file (SAF format; see SAF spec below)
 - `GENOME_FASTA`: Genome FASTA (with `.fai`); required only when `DISCOVERY.enabled` is true
 - `DISCOVERY`: Optional de novo RT priming site discovery block (see `docs/discovery.md`)
 - `DEFAULTS`: Default chemistry and platform settings
@@ -214,6 +215,26 @@ chemistry_name:
     STAR_R1: "alignment parameters"
     STAR_R2: "alignment parameters"
 ```
+
+### SAF format (POLYA_SITES)
+
+Tab-separated, header `GeneID  Chr  Start  End  Strand`. The **GeneID has 7
+fields**:
+
+```
+gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
+```
+
+- Delimiter `{D}`: `;` human, `_` mouse (matches `ref/polyadb32.{hg38,mm10}.saf.gz`).
+- `pos` = field 5 (1-based cleavage position); `pas_type` = field 7 (class).
+  Missing values are `NA`.
+- `Start`/`End` = strand-specific 15 bp window (transcript -10/+5):
+  `+` → `[pos-10, pos+5]`, `-` → `[pos-5, pos+10]`.
+- The `_` (mouse) delimiter appears inside RefSeq IDs and scaffold chrom names;
+  parse by anchoring on the SAF `Chr`/`Strand` columns and reading trailing
+  fields from the right (see `annotate_sites.py` `_split_geneid`).
+- PAS type vocab is release-specific and passed through verbatim (3.2 vs v4
+  differ, e.g. `intergenic` vs `Intergenic`).
 
 ---
 
@@ -258,6 +279,23 @@ Optional module (off by default); see `docs/discovery.md` for full details.
 - Outputs under `{results}/discovery/`: `<unit>_sites.tsv.gz`,
   `<unit>_sites.bed.gz`, `<unit>_denovo.saf.gz` (unit = group name or sample).
 - Validate with `snakemake -npr` after setting `DISCOVERY.enabled: true`.
+
+### Generating/converting polyAdb references
+
+Standalone converters in `inst/scripts/polyadb/` (stdlib only + UCSC liftOver,
+auto-downloaded). Not part of the Snakemake DAG.
+
+- `pas32_to_saf.py`: polyAdb 3.2 `*.PAS.txt` (human hg19→hg38 via liftOver;
+  mouse mm10 no liftOver). Resolves columns by header name.
+- `pasv4_to_saf.py`: polyAdb 4 `*.PAS.{main,max}.tsv` (human/mouse; main/max
+  auto-detected; optional liftOver for future builds).
+- `saf_common.py`: shared 7-field GeneID encoding, window, dedup/sort, liftOver.
+- `validate_saf.py`: format checks + optional content comparison to a reference.
+- `--species` sets the delimiter (`;` human / `_` mouse). Output `.gz` writes
+  gzipped, droppable straight into `ref/`.
+- PAS type passed through verbatim (3.2 vs v4 class vocab differs).
+- Verify: run on a head-slice, then `validate_saf.py generated.saf ref/...saf.gz`
+  (human 3.2 should match the bundled reference 100% at shared positions).
 
 ---
 

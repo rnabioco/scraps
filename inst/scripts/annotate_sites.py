@@ -84,40 +84,115 @@ def revcomp(seq):
     return seq.translate(COMPLEMENT)[::-1]
 
 
+def _split_geneid(geneid, sep, chrom, strand):
+    """Split a GeneID into its 7 fields, robust to delimiters inside fields.
+
+    The GeneID encodes gene;genbank;id;chrom;pos;strand;class. The ';' (human)
+    delimiter never appears inside a field, so a plain split works. The '_'
+    (mouse) delimiter DOES occur inside fields - RefSeq IDs like 'NR_152944'
+    and scaffold chromosome names like 'chrUn_GL456...' contain underscores -
+    so a naive split is unreliable.
+
+    The trailing fields chrom/pos/strand/class are recovered unambiguously by
+    anchoring on the SAF-column ``chrom``/``strand`` and reading from the right
+    (class = last token, strand = next, pos = next, chrom = the SAF-column
+    value). The leading gene/genbank/id metadata cannot be split reliably when
+    it contains the delimiter, so it is returned as a single best-effort group
+    in the gene field (genbank/id set to 'NA'); these fields are passthrough
+    metadata only and do not affect matching, which uses pos/chrom/strand.
+
+    Returns [gene, genbank, id, chrom, pos, strand, class] or None.
+    """
+    parts = geneid.split(sep)
+    if sep == ';':
+        return parts if len(parts) == 7 else None
+
+    # exact 7-field with consistent chrom/strand: trust it
+    if len(parts) == 7 and parts[3] == chrom and parts[5] == strand:
+        return parts
+
+    # '_' delimiter with embedded underscores: anchor from the right
+    if len(parts) < 7:
+        return None
+    klass = parts[-1]
+    strand_tok = parts[-2]
+    pos_tok = parts[-3]
+    if strand_tok != strand:
+        return None
+    chrom_tokens = chrom.split(sep)
+    nct = len(chrom_tokens)
+    chrom_start = len(parts) - 3 - nct
+    if chrom_start < 1:
+        return None
+    if parts[chrom_start:chrom_start + nct] != chrom_tokens:
+        return None
+    head = parts[:chrom_start]  # gene/genbank/id group (delimiter-ambiguous)
+    gene = sep.join(head) if head else 'NA'
+    return [gene, 'NA', 'NA', chrom, pos_tok, strand, klass]
+
+
 def load_polya(path):
     """Load polyAdb sites: {(chrom, strand): sorted [(pos1based, geneid)]}.
 
-    The single-base cleavage position is field 5 (0-based index 4) of the
-    ';'- or '_'-delimited GeneID. Also returns lookup metadata per geneid.
+    The polyAdb SAF GeneID must use the scraps 7-field encoding
+    (gene;genbank;id;chrom;pos;strand;class for human, '_'-delimited for mouse),
+    where the single-base cleavage position is field 5 (0-based index 4) and the
+    site class is field 7 (index 6). Rows whose GeneID is not 7-field are skipped
+    with a warning; if no rows parse, the SAF format is almost certainly wrong
+    and the user is alerted (every discovered site would otherwise be labeled
+    novel). Helper converters in inst/scripts/polyadb/ produce conforming SAFs.
     """
     opener = gzip.open if path.endswith('.gz') else open
     sites = {}
+    n_total = 0
+    n_skipped = 0
+    bad_examples = []
     with opener(path, 'rt') as fh:
         header = fh.readline()  # GeneID Chr Start End Strand
         for line in fh:
             if not line.strip():
                 continue
+            n_total += 1
             cols = line.rstrip('\n').split('\t')
             geneid = cols[0]
             chrom = cols[1]
             strand = cols[4]
             sep = ';' if ';' in geneid else '_'
-            parts = geneid.split(sep)
-            if len(parts) < 5:
+            parts = _split_geneid(geneid, sep, chrom, strand)
+            if parts is None:
+                n_skipped += 1
+                if len(bad_examples) < 3:
+                    bad_examples.append(geneid)
                 continue
             try:
                 pos = int(parts[4])
             except (ValueError, IndexError):
+                n_skipped += 1
+                if len(bad_examples) < 3:
+                    bad_examples.append(geneid)
                 continue
             meta = {
                 'gene': parts[0],
                 'genbank': parts[1],
                 'id': parts[2],
-                'class': parts[6] if len(parts) > 6 else 'NA',
+                'class': parts[6],
             }
             sites.setdefault((chrom, strand), []).append((pos, meta))
     for key in sites:
         sites[key].sort(key=lambda t: t[0])
+
+    n_parsed = n_total - n_skipped
+    if n_skipped:
+        sys.stderr.write(
+            "annotate_sites: WARNING - skipped {}/{} polyAdb rows with a "
+            "non-7-field GeneID. Examples: {}\n".format(
+                n_skipped, n_total, "; ".join(bad_examples)))
+    if n_total and n_parsed == 0:
+        sys.stderr.write(
+            "annotate_sites: ERROR - no polyAdb rows parsed. The SAF GeneID "
+            "must use the scraps 7-field encoding "
+            "(gene;genbank;id;chrom;pos;strand;class). See "
+            "inst/scripts/polyadb/ for converters. All sites will be novel.\n")
     return sites
 
 

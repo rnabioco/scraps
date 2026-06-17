@@ -34,7 +34,7 @@ scraps requires the following as input (defined in config.yaml):
   - 10X Genomics 3' v2/3 single-cell FASTQs or other platforms (with names "_R1.fastq.gz"" and "_R2.fastq.gz"")
   - A STAR genome index (must be generated with STAR 2.7.4a and above)
   - Whitelist for cell barcodes (optional but recommended to speed up run time)
-  - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a>, hg38 and mm10 files are included in [ref](https://github.com/rnabioco/scraps/tree/master/ref) subdirectory)
+  - A featureCounts reference (SAF-formatted <a href="http://exon.umdnj.edu/polya_db/">polya_db</a>, hg38 and mm10 files are included in [ref](https://github.com/rnabioco/scraps/tree/master/ref) subdirectory; converters for polyAdb 3.2 and 4 are in [inst/scripts/polyadb/](inst/scripts/polyadb/))
 
 ### Quick Start
 
