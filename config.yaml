@@ -17,14 +17,69 @@ STAR_INDEX:
   "ref/cr2020A_star/"
 
 POLYA_SITES:
-# polya_db 3 on GRCh38 with 5 bases upstream and 3 bases
-# downstream slop relative to annotated cleavage site
+# polya_db 3 on GRCh38. The provided SAF references carry -10/+5 transcript
+# slop around the annotated cleavage site (genomic Start = pos - 5,
+# End = pos + 10 on the minus strand, mirrored on the plus strand), i.e. 10 bp
+# upstream and 5 bp downstream of the cleavage site in the direction of
+# transcription. The single-base cleavage position is encoded in field 5 of the
+# ';'- (hg38) or '_'- (mm10) delimited GeneID.
   "ref/polyadb32.hg38.saf.gz"
    
 #POLYA_FORMAT:
 # SAF or GTF, currently auto detecting filename .saf or .saf.gz, case-insensitive
 #   "SAF"
-  
+
+GENOME_FASTA:
+# Genome FASTA (with .fai index) matching the alignment reference.
+# Required ONLY when DISCOVERY.enabled is true; used for sequence-context
+# annotation (PAS motif scan, downstream A-content) of RT priming sites.
+# Chromosome names must match those in the bedgraph / BAM outputs.
+#   "ref/genome.fa"
+
+DISCOVERY:
+# De novo RT priming site discovery (optional, off by default).
+# Identifies RT priming sites via kernel density estimation (KDE) on
+# pseudobulked, UMI-deduplicated, strand-aware single-base priming positions,
+# then annotates each site as one of:
+#   known_pas               - matches a validated polyAdb cleavage/polyA site
+#   likely_internal_priming - downstream genomic A-content/A-run (artifact)
+#   potential_novel_pas     - no internal-priming signature + upstream PAS motif
+# NOTE: validated poly(A) sites (POLYA_SITES / polyAdb) remain the recommended
+# reference for downstream QUANTITATIVE analyses. Discovered sites are
+# candidates for hypothesis generation and require orthogonal validation;
+# likely_internal_priming sites should be excluded, not quantified.
+# See docs/discovery.md for full details.
+  enabled: false
+  # which alignment mode's priming beds feed KDE (R1, R2, or paired)
+  read: R2
+  # optional named pools of samples aggregated into one KDE track before
+  # discovery; samples not listed are processed individually (per-sample).
+  groups: {}
+  #  example:
+  #  groups:
+  #    groupA: [chromiumv2_test, dropseq_test]
+  # KDE Gaussian bandwidth in bp (smoothing scale of priming signal)
+  kde_bandwidth: 10
+  # minimum KDE density (per-base, UMI-weighted) for a peak to be called
+  min_density: 0.0
+  # collapse called maxima within this distance (bp) into one summit
+  peak_merge_dist: 24
+  # strand-aware [upstream, downstream] bp window for calling a discovered
+  # summit a known polyAdb site. Asymmetric (read distributions are skewed);
+  # offsets are transcript-oriented. Default [10, 5] matches the slop of the
+  # provided polyAdb SAF references.
+  match_window: [10, 5]
+  # transcript-oriented [upstream, downstream] slop applied to each summit when
+  # writing the de novo SAF (output feature window). Default [10, 5] reproduces
+  # the -10/+5 footprint of the provided polyAdb SAF references.
+  saf_slop: [10, 5]
+  # upstream window [start, end] (bp, relative to summit) scanned for PAS motif
+  pas_window: [-40, 0]
+  # downstream window [start, end] (bp, relative to summit) for A-content
+  a_content_window: [1, 20]
+  # downstream A fraction at/above which a site is flagged internal priming
+  a_content_max: 0.7
+
 DEFAULTS:
 # default config options, overridden by SAMPLES and CHEMISTRY definitions
   platform: illumina

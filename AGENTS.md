@@ -72,10 +72,12 @@ scraps/
 │   ├── cutadapt_star.snake   # Read trimming and alignment
 │   ├── count.snake           # Feature counting and quantification
 │   ├── qc.snake              # Quality control reports
+│   ├── discovery.snake       # De novo RT priming site discovery (optional)
 │   └── check_versions.snake  # Dependency version checks
 ├── inst/scripts/          # Helper scripts
-│   ├── *.py               # Python utilities (BAM filtering, etc.)
+│   ├── *.py               # Python utilities (BAM filtering, KDE, annotation)
 │   └── R/                 # R analysis functions
+├── docs/                  # Long-form docs (discovery.md, etc.)
 ├── ref/                   # Reference files (polyA_DB, etc.)
 ├── sample_data/           # Test data location
 └── results/               # Pipeline outputs (generated)
@@ -197,6 +199,8 @@ def _get_config(sample, item):
 - `RESULTS`: Output directory path
 - `STAR_INDEX`: Path to STAR genome index
 - `POLYA_SITES`: PolyA database reference file (SAF format)
+- `GENOME_FASTA`: Genome FASTA (with `.fai`); required only when `DISCOVERY.enabled` is true
+- `DISCOVERY`: Optional de novo RT priming site discovery block (see `docs/discovery.md`)
 - `DEFAULTS`: Default chemistry and platform settings
 - `SAMPLES`: Per-sample configuration (basename, chemistry, alignments)
 
@@ -236,6 +240,24 @@ chemistry_name:
 3. Include docstring explaining purpose
 4. Make executable: `chmod +x script.py`
 5. Call from Snakemake rule with `python3 inst/scripts/script.py`
+
+### De novo RT Priming Site Discovery
+
+Optional module (off by default); see `docs/discovery.md` for full details.
+
+- Rules: `rules/discovery.snake` (`stranded_bed`, `pool_beds`, `kde_peaks`,
+  `annotate_sites`). Wired into `all_outputs` in `Snakefile` only when
+  `DISCOVERY.enabled` is true; requires `GENOME_FASTA`.
+- Scripts: `inst/scripts/kde_peaks.py` (KDE peak calling),
+  `inst/scripts/annotate_sites.py` (polyAdb match + sequence-context
+  classification + de novo SAF).
+- Annotation classes/SAF `class` values: `known_pas`,
+  `likely_internal_priming`, `potential_novel_pas`. The de novo SAF reuses the
+  standard `gene;genbank;id;chrom;pos;strand;class` GeneID encoding so it can be
+  set as `POLYA_SITES` to re-quantify (filter artifacts first).
+- Outputs under `{results}/discovery/`: `<unit>_sites.tsv.gz`,
+  `<unit>_sites.bed.gz`, `<unit>_denovo.saf.gz` (unit = group name or sample).
+- Validate with `snakemake -npr` after setting `DISCOVERY.enabled: true`.
 
 ---
 
@@ -278,6 +300,7 @@ snakemake --forcerun rulename
 - subread >= 2.0.1 (featureCounts)
 - MultiQC >= 1.6 (report generation)
 - pysam >= 0.16.0 (Python BAM interface)
+- numpy, pandas, scipy, scikit-learn (de novo discovery: KDE + annotation)
 
 **Version checking**: Run `snakemake --configfile config.yaml` to trigger version checks
 

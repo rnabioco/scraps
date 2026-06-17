@@ -16,3 +16,8 @@ dependencies:
   - umi_tools >= 1.1.2
   - star >= 2.7.9a
   - zsh
+  # for de novo RT priming site discovery (rules/discovery.snake)
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn

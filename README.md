@@ -21,6 +21,7 @@ For additional discussions and usage cases, please see [bioRxiv preprint](https:
 -   [Configuration](#configuration)
 -   [Supported scRNA-seq platforms](#supported-scrna-seq-platforms)
 -   [Output](#output)
+-   [De novo priming site discovery](#de-novo-priming-site-discovery)
 -   [Setup](#setup)
 -   [Dependencies](#dependencies)
 -   [For Developers](#for-developers)
@@ -79,6 +80,8 @@ Main pipeline configuration file containing:
 - **RESULTS**: Output directory for pipeline results
 - **STAR_INDEX**: Path to STAR genome index directory
 - **POLYA_SITES**: PolyA database reference file (SAF format, provided in `ref/`)
+- **GENOME_FASTA**: Genome FASTA (with `.fai`), required only for de novo priming site discovery
+- **DISCOVERY**: Optional de novo RT priming site discovery settings (see [docs/discovery.md](docs/discovery.md))
 - **DEFAULTS**: Default chemistry and platform settings
   - `platform`: Default sequencing platform (e.g., illumina, element, ultima)
   - `chemistry`: Default chemistry type (e.g., chromiumV3, chromiumV2, dropseq)
@@ -179,6 +182,35 @@ ADRM1_11047_ENSG00000130706_chr20_62308862_+_3'UTR(M)   CAGCGACTCTGCCCTA        
   <img src="man/figures/example.png" height="300"/>
   <img src="man/figures/pa_setx.png" height="300"/>
 </p>
+
+___
+
+## De novo priming site discovery
+
+By default scraps quantifies poly(A) usage against **validated** poly(A) sites
+(polyAdb), which is the recommended reference for downstream quantitative
+analyses. Optionally, scraps can also use its single-base resolution to
+**discover RT priming sites de novo** and annotate them.
+
+The discovery module (off by default) applies kernel density estimation to
+pseudobulked, UMI-deduplicated, strand-aware single-base priming positions
+(per sample, or per a defined group of samples), calls priming-site summits,
+and classifies each as:
+
+- **`known_pas`** — matches a validated polyAdb cleavage/polyA site
+- **`likely_internal_priming`** — downstream genomic A-content/A-run indicates
+  an artifact (should be excluded)
+- **`potential_novel_pas`** — no internal-priming signature plus a canonical
+  poly(A) signal (PAS) motif upstream (a *candidate* requiring validation)
+
+> **Note:** discovered sites are for hypothesis generation. For quantitative
+> analyses, use validated poly(A) sites; `potential_novel_pas` sites require
+> orthogonal validation and `likely_internal_priming` sites should be excluded.
+
+Enable it by setting `GENOME_FASTA` and `DISCOVERY.enabled: true` in
+`config.yaml`. Outputs are written to `results/discovery/` (annotated TSV, BED,
+and a reusable de novo SAF). See **[docs/discovery.md](docs/discovery.md)** for
+the full method, configuration, caveats, and re-quantitation workflow.
 
 ___
 

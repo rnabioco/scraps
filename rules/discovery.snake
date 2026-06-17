@@ -1,0 +1,186 @@
+""" De novo RT priming site discovery.
+
+Identifies RT priming sites from single-cell data via kernel density estimation
+(KDE) on pseudobulked, UMI-deduplicated, strand-aware single-base priming
+positions, then annotates each site as a known polyA site, likely internal
+priming, or a potential novel polyA site. See docs/discovery.md.
+"""
+
+# discovery configuration (with defaults)
+DISC_READ = DISCOVERY.get("read", "R2")
+DISC_GROUPS = DISCOVERY.get("groups", {}) or {}
+DISC_BANDWIDTH = DISCOVERY.get("kde_bandwidth", 10)
+DISC_MIN_DENSITY = DISCOVERY.get("min_density", 0.0)
+DISC_MERGE_DIST = DISCOVERY.get("peak_merge_dist", 24)
+DISC_SAF_SLOP = DISCOVERY.get("saf_slop", [10, 5])
+DISC_MATCH_WINDOW = DISCOVERY.get("match_window", [10, 5])
+DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
+DISC_A_WINDOW = DISCOVERY.get("a_content_window", [1, 20])
+DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
+
+# bedtools genomecov end-selection flag per alignment mode
+# R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end
+_DISC_END_FLAG = {"R1": "-5", "R2": "-3", "paired": "-5"}
+
+
+def _disc_unit_members(unit):
+  """Map a discovery unit (group name or sample name) to its member samples."""
+  if unit in DISC_GROUPS:
+    return list(DISC_GROUPS[unit])
+  return [unit]
+
+
+def _disc_pool_inputs(wildcards):
+  """Stranded per-sample beds that feed pooling for a discovery unit."""
+  members = _disc_unit_members(wildcards.unit)
+  return expand(
+    "{results}/discovery/beds/{sample}_{read}.stranded.bed.gz",
+    results=RESULTS, sample=members, read=DISC_READ,
+  )
+
+
+rule stranded_bed:
+  # single-base, UMI-deduplicated, strand-aware priming pileup per sample
+  input:
+    "{results}/temp/{sample}_" + DISC_READ + "_assigned.bam"
+  output:
+    "{results}/discovery/beds/{sample}_" + DISC_READ + ".stranded.bed.gz"
+  params:
+    job_name = "stranded_bed",
+    dedup = "{results}/temp/{sample}_" + DISC_READ + "_disc_dedup.bam",
+    paired_flag = "--paired" if DISC_READ in ("R1", "paired") else "",
+    mate_filter = "samtools view -f 0x42 -b" if DISC_READ == "paired" else (
+                  "samtools view -F 4 -b" if DISC_READ == "R1" else "cat"),
+    matebam = "{results}/discovery/beds/{sample}_" + DISC_READ + "_disc_mate.bam",
+    end_flag = _DISC_END_FLAG[DISC_READ]
+  log:
+    "{results}/logs/stranded_bed_{sample}_" + DISC_READ + ".txt"
+  threads:
+    4
+  resources:
+    mem_mb = 48000
+  shell:
+    r"""
+    umi_tools dedup \
+      --extract-umi-method=tag \
+      --umi-tag=UB \
+      --per-cell \
+      --cell-tag=CB \
+      {params.paired_flag} \
+      --method=unique \
+      -I {input} \
+      -S {params.dedup} \
+      > {log} 2>&1
+
+    {params.mate_filter} {params.dedup} > {params.matebam}
+
+    # emit 5-col stranded bed: chrom start end count strand
+    bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand + \
+      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "+" }}' - > {params.matebam}.bed
+    bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
+      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "-" }}' - >> {params.matebam}.bed
+
+    sort -k1,1 -k2,2n {params.matebam}.bed | gzip -c > {output}
+    rm -rf {params.matebam} {params.matebam}.bed {params.dedup}
+    """
+
+
+rule pool_beds:
+  # sum priming counts per (chrom, pos, strand) across a unit's member samples
+  input:
+    _disc_pool_inputs
+  output:
+    temp("{results}/discovery/beds/{unit}_" + DISC_READ + ".pooled.bed.gz")
+  params:
+    job_name = "pool_beds"
+  log:
+    "{results}/logs/pool_beds_{unit}.txt"
+  threads:
+    1
+  resources:
+    mem_mb = 16000
+  shell:
+    r"""
+    gunzip -c {input} \
+      | awk 'BEGIN {{ OFS = "\t" }} {{ c[$1"\t"$2"\t"$3"\t"$5] += $4 }} END {{ for (k in c) {{ split(k, a, "\t"); print a[1], a[2], a[3], c[k], a[4] }} }}' - \
+      | sort -k1,1 -k2,2n \
+      | gzip -c > {output} 2> {log}
+    """
+
+
+rule kde_peaks:
+  # call RT priming site summits via kernel density estimation
+  input:
+    "{results}/discovery/beds/{unit}_" + DISC_READ + ".pooled.bed.gz"
+  output:
+    temp("{results}/discovery/{unit}_peaks.tsv.gz")
+  params:
+    job_name = "kde_peaks",
+    bandwidth = DISC_BANDWIDTH,
+    min_density = DISC_MIN_DENSITY,
+    merge_dist = DISC_MERGE_DIST
+  log:
+    "{results}/logs/kde_peaks_{unit}.txt"
+  threads:
+    4
+  resources:
+    mem_mb = 32000
+  shell:
+    r"""
+    python3 inst/scripts/kde_peaks.py \
+      -i {input} \
+      -o {output} \
+      --bandwidth {params.bandwidth} \
+      --min-density {params.min_density} \
+      --merge-dist {params.merge_dist} \
+      > {log} 2>&1
+    """
+
+
+rule annotate_sites:
+  # annotate RT priming sites: known_pas / likely_internal_priming / potential_novel_pas
+  input:
+    peaks = "{results}/discovery/{unit}_peaks.tsv.gz",
+    polya = POLYA_SITES,
+    fasta = GENOME_FASTA if GENOME_FASTA else "ref/genome.fa"
+  output:
+    tsv = "{results}/discovery/{unit}_sites.tsv.gz",
+    bed = "{results}/discovery/{unit}_sites.bed.gz",
+    saf = "{results}/discovery/{unit}_denovo.saf.gz"
+  params:
+    job_name = "annotate_sites",
+    saf_slop_up = DISC_SAF_SLOP[0],
+    saf_slop_down = DISC_SAF_SLOP[1],
+    match_up = DISC_MATCH_WINDOW[0],
+    match_down = DISC_MATCH_WINDOW[1],
+    pas_start = DISC_PAS_WINDOW[0],
+    pas_end = DISC_PAS_WINDOW[1],
+    a_start = DISC_A_WINDOW[0],
+    a_end = DISC_A_WINDOW[1],
+    a_max = DISC_A_MAX
+  log:
+    "{results}/logs/annotate_sites_{unit}.txt"
+  threads:
+    2
+  resources:
+    mem_mb = 16000
+  shell:
+    r"""
+    python3 inst/scripts/annotate_sites.py \
+      --peaks {input.peaks} \
+      --polya {input.polya} \
+      --fasta {input.fasta} \
+      --out-tsv {output.tsv} \
+      --out-bed {output.bed} \
+      --out-saf {output.saf} \
+      --saf-slop-up {params.saf_slop_up} \
+      --saf-slop-down {params.saf_slop_down} \
+      --match-up {params.match_up} \
+      --match-down {params.match_down} \
+      --pas-start {params.pas_start} \
+      --pas-end {params.pas_end} \
+      --a-start {params.a_start} \
+      --a-end {params.a_end} \
+      --a-content-max {params.a_max} \
+      > {log} 2>&1
+    """
