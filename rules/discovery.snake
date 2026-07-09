@@ -45,15 +45,15 @@ def _disc_pool_inputs(wildcards):
 
 
 rule stranded_bed:
-  # single-base, UMI-deduplicated, strand-aware priming pileup per sample
+  # single-base, UMI-deduplicated, strand-aware priming pileup per sample.
+  # Consumes the shared dedup_bam output (count.snake) so umi_tools dedup runs
+  # once per (sample, read) even when the same read mode is also counted.
   input:
-    "{results}/temp/{sample}_" + DISC_READ + "_assigned.bam"
+    "{results}/temp/{sample}_" + DISC_READ + "_dedup.bam"
   output:
     "{results}/discovery/beds/{sample}_" + DISC_READ + ".stranded.bed.gz"
   params:
     job_name = "stranded_bed",
-    dedup = "{results}/temp/{sample}_" + DISC_READ + "_disc_dedup.bam",
-    paired_flag = "--paired" if DISC_READ in ("R1", "paired") else "",
     mate_filter = "samtools view -@ 4 -f 0x42 -b" if DISC_READ == "paired" else (
                   "samtools view -@ 4 -F 4 -b" if DISC_READ == "R1" else "cat"),
     matebam = "{results}/discovery/beds/{sample}_" + DISC_READ + "_disc_mate.bam",
@@ -63,21 +63,10 @@ rule stranded_bed:
   threads:
     4
   resources:
-    mem_mb = 48000
+    mem_mb = 4000
   shell:
     r"""
-    umi_tools dedup \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --per-cell \
-      --cell-tag=CB \
-      {params.paired_flag} \
-      --method=unique \
-      -I {input} \
-      -S {params.dedup} \
-      > {log} 2>&1
-
-    {params.mate_filter} {params.dedup} > {params.matebam}
+    {params.mate_filter} {input} > {params.matebam}
 
     # emit 5-col stranded bed: chrom start end count strand
     # bedtools genomecov emits per-contig in BAM-header order, so each strand
@@ -90,7 +79,7 @@ rule stranded_bed:
       bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
         | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "-" }}' -
     ) | gzip -c > {output}
-    rm -rf {params.matebam} {params.dedup}
+    rm -rf {params.matebam}
     """
 
 
