@@ -54,8 +54,8 @@ rule stranded_bed:
     job_name = "stranded_bed",
     dedup = "{results}/temp/{sample}_" + DISC_READ + "_disc_dedup.bam",
     paired_flag = "--paired" if DISC_READ in ("R1", "paired") else "",
-    mate_filter = "samtools view -f 0x42 -b" if DISC_READ == "paired" else (
-                  "samtools view -F 4 -b" if DISC_READ == "R1" else "cat"),
+    mate_filter = "samtools view -@ 4 -f 0x42 -b" if DISC_READ == "paired" else (
+                  "samtools view -@ 4 -F 4 -b" if DISC_READ == "R1" else "cat"),
     matebam = "{results}/discovery/beds/{sample}_" + DISC_READ + "_disc_mate.bam",
     end_flag = _DISC_END_FLAG[DISC_READ]
   log:
@@ -80,13 +80,17 @@ rule stranded_bed:
     {params.mate_filter} {params.dedup} > {params.matebam}
 
     # emit 5-col stranded bed: chrom start end count strand
-    bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand + \
-      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "+" }}' - > {params.matebam}.bed
-    bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
-      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "-" }}' - >> {params.matebam}.bed
-
-    sort -k1,1 -k2,2n {params.matebam}.bed | gzip -c > {output}
-    rm -rf {params.matebam} {params.matebam}.bed {params.dedup}
+    # bedtools genomecov emits per-contig in BAM-header order, so each strand
+    # block is already contig-grouped and position-sorted within contig. The
+    # only consumers (pool_beds, kde_peaks) re-sort, so we skip the expensive
+    # full external sort of the combined genome-scale bedgraph.
+    (
+      bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand + \
+        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "+" }}' -
+      bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
+        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "-" }}' -
+    ) | gzip -c > {output}
+    rm -rf {params.matebam} {params.dedup}
     """
 
 

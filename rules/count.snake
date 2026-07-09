@@ -191,8 +191,7 @@ rule bed_R1:
     "{results}/bed/{sample}_R1.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/temp/{sample}_R1_dedup.bam",
-    r = "{results}/temp/{sample}_R1_r.bam"
+    dedup = "{results}/temp/{sample}_R1_dedup.bam"
   log:
     "{results}/logs/bed_{sample}_R1.txt"
   threads:
@@ -211,9 +210,10 @@ rule bed_R1:
       -I {input} \
       -S {params.dedup} \
       > {log}
-    samtools view -F 4 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
-    rm -rf {params.r}
+    # stream mapped reads straight into genomecov (uncompressed BAM, no temp file)
+    samtools view -@ {threads} -F 4 -b -u {params.dedup} \
+      | bedtools genomecov -ibam - -5 -dz \
+      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
     """
 
 rule bed_R2:
@@ -252,8 +252,7 @@ rule bed_paired:
     "{results}/bed/{sample}_paired.bed.gz"
   params:
     job_name = "bed",
-    dedup = "{results}/temp/{sample}_paired_dedup.bam",
-    r = "{results}/temp/{sample}_paired_r.bam"
+    dedup = "{results}/temp/{sample}_paired_dedup.bam"
   log:
     "{results}/logs/bed_{sample}_paired.txt"
   threads:
@@ -272,8 +271,9 @@ rule bed_paired:
       -I {input} \
       -S {params.dedup} \
       > {log}
-    # 0x82 for R2
-    samtools view -f 0x42 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
-    rm -rf {params.r}
+    # 0x42 = read paired + first in pair (R1 of the mate-1 record); stream R2-of-pair
+    # 5' ends straight into genomecov (uncompressed BAM, no temp file)
+    samtools view -@ {threads} -f 0x42 -b -u {params.dedup} \
+      | bedtools genomecov -ibam - -5 -dz \
+      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
     """
