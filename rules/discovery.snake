@@ -10,8 +10,13 @@ priming, or a potential novel polyA site. See docs/discovery.md.
 DISC_READ = DISCOVERY.get("read", "R2")
 DISC_GROUPS = DISCOVERY.get("groups", {}) or {}
 DISC_BANDWIDTH = DISCOVERY.get("kde_bandwidth", 10)
-DISC_MIN_DENSITY = DISCOVERY.get("min_density", 0.0)
+# min_density: omitted / <=0 -> kde_peaks.py derives it from the bandwidth
+# (float() coerces CLI --config string overrides, not just YAML numbers)
+DISC_MIN_DENSITY = float(DISCOVERY.get("min_density", 0.0))
 DISC_MERGE_DIST = DISCOVERY.get("peak_merge_dist", 24)
+# depth-relative UMI support floor: max(min_umi, min_umi_frac * total_UMIs)
+DISC_MIN_UMI = int(DISCOVERY.get("min_umi", 10))
+DISC_MIN_UMI_FRAC = float(DISCOVERY.get("min_umi_frac", 1e-6))
 DISC_SAF_SLOP = DISCOVERY.get("saf_slop", [10, 5])
 DISC_MATCH_WINDOW = DISCOVERY.get("match_window", [10, 5])
 DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
@@ -117,8 +122,13 @@ rule kde_peaks:
   params:
     job_name = "kde_peaks",
     bandwidth = DISC_BANDWIDTH,
-    min_density = DISC_MIN_DENSITY,
-    merge_dist = DISC_MERGE_DIST
+    # pass --min-density only when configured > 0; otherwise the script derives
+    # it from the bandwidth
+    min_density = ("--min-density " + str(DISC_MIN_DENSITY)
+                   if DISC_MIN_DENSITY > 0 else ""),
+    merge_dist = DISC_MERGE_DIST,
+    min_umi = DISC_MIN_UMI,
+    min_umi_frac = DISC_MIN_UMI_FRAC
   log:
     "{results}/logs/kde_peaks_{unit}.txt"
   threads:
@@ -131,8 +141,10 @@ rule kde_peaks:
       -i {input} \
       -o {output} \
       --bandwidth {params.bandwidth} \
-      --min-density {params.min_density} \
+      {params.min_density} \
       --merge-dist {params.merge_dist} \
+      --min-umi {params.min_umi} \
+      --min-umi-frac {params.min_umi_frac} \
       > {log} 2>&1
     """
 

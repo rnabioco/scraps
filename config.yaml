@@ -60,7 +60,17 @@ DISCOVERY:
   #    groupA: [chromiumv2_test, dropseq_test]
   # KDE Gaussian bandwidth in bp (smoothing scale of priming signal)
   kde_bandwidth: 10
-  # minimum KDE density (per-base, UMI-weighted) for a peak to be called
+  # minimum summed UMI support per called peak. Discovery is pseudobulk (summed
+  # over all cells, and over pooled samples), so support is judged on a
+  # DEPTH-RELATIVE floor: max(min_umi, min_umi_frac * total_pooled_UMIs). This
+  # is the primary control on peak count and removes calls with little/no UMI
+  # support; the bar scales up automatically when pooling more samples (groups).
+  min_umi: 10
+  min_umi_frac: 1.0e-6
+  # minimum KDE density (per-base, UMI-weighted) for a peak to be called. This
+  # is a secondary shape gate; 0 / omitted -> derived from kde_bandwidth
+  # (~2 UMIs concentrated within one bandwidth) so isolated single-UMI bumps
+  # cannot form a called maximum. Set a positive value to override.
   min_density: 0.0
   # collapse called maxima within this distance (bp) into one summit
   peak_merge_dist: 24
