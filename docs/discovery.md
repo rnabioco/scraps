@@ -31,6 +31,18 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
    strand (`bedtools genomecov`). Cell identity is intentionally collapsed —
    discovery operates on pseudobulk.
 
+   The emitted strand is the **transcript strand**, not the read's own aligned
+   strand. `bedtools genomecov` reports each position on the strand the read
+   aligned to, so the strand is converted per alignment mode to match the
+   validated `featureCounts` strandedness used for quantitation
+   (`rules/count.snake`): **R2** is same-strand (`-s 1`), so the read-aligned
+   strand already equals the transcript strand; **R1** and **paired** are
+   reverse-stranded (`-s 2`), so the read-aligned strand is the *opposite* of
+   the transcript strand and is flipped when the stranded bed is written
+   (`rules/discovery.snake`, `stranded_bed`). All downstream steps (KDE per
+   `(chrom, strand)`, polyAdb matching, sequence-context scanning, SAF slop)
+   are strand-aware and consume this transcript strand.
+
 2. **Optional sample pooling.** Samples can be pooled into named groups
    (`DISCOVERY.groups`) so that priming counts are summed across a set of
    samples before site calling. Ungrouped samples are processed individually.
@@ -44,22 +56,24 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
 
    Because discovery is **pseudobulk** — UMIs are deduplicated per cell, then
    summed across *all* cells and (with `groups`) across pooled samples — a raw
-   UMI count of 1–2 at a base is background, not signal. The **primary control**
-   on peak count is therefore a **depth-relative UMI support floor**: a merged
-   peak is kept only if its summed support clears
+   UMI count of 1–2 at a base is background, not signal. A merged peak is kept
+   only if its summed support clears
 
    ```
    umi_support >= max(min_umi, min_umi_frac * T)
    ```
 
-   where `T` is the total UMI count across the whole (pooled) input. Because the
-   bar is a fraction of total depth, it scales automatically with sequencing
-   depth and with sample pooling — a fixed absolute count would be too permissive
-   on deep or pooled data. `min_umi` is a small absolute safety floor for shallow
-   datasets. `min_density` is a **secondary shape gate**: by default it is derived
-   from `kde_bandwidth` (≈ 2 UMIs concentrated within one bandwidth) so that
-   isolated single-UMI bumps cannot form a called maximum; set a positive value
-   to override. (Density is evaluated sparsely, only at occupied bases.)
+   where `T` is the total UMI count across the whole (pooled) input. The
+   **primary control** on peak count is the **absolute floor `min_umi`**. The
+   depth-relative term `min_umi_frac * T` is **off by default** (`min_umi_frac:
+   0`): because it scales *linearly* with total depth, on deep or pooled data it
+   imposes a very high absolute bar (e.g. `1e-6 * 1e8 = 100` UMIs/peak) that
+   silently drops usable mid-abundance peaks. Set a small positive
+   `min_umi_frac` only if you deliberately want the bar to scale with depth.
+   `min_density` is the **shape gate**: by default it is derived from
+   `kde_bandwidth` (≈ 2 UMIs concentrated within one bandwidth) so that isolated
+   single-UMI bumps cannot form a called maximum; set a positive value to
+   override. (Density is evaluated sparsely, only at occupied bases.)
 
 4. **Annotation into three categories.** Each summit is classified
    (`inst/scripts/annotate_sites.py`):
@@ -171,10 +185,12 @@ liftOver) and polyAdb 4 (`*.PAS.{main,max}.tsv`) live in
 - Discovery is **pseudobulk**: it does not provide per-cell single-base
   resolution. Per-cell quantitation still goes through the SAF-window counting
   path (`results/counts/`).
-- **Peak count is controlled primarily by `min_umi_frac` / `min_umi`.** The
-  default `min_umi_frac: 1e-6` is a permissive nomination bar; raise it (e.g.
-  `5e-6`) for a smaller, higher-confidence set. `min_density` has little effect
-  on the count and mainly suppresses single-UMI artifacts.
+- **Peak count is controlled primarily by the absolute `min_umi`.** Raise
+  `min_umi` for a smaller, higher-confidence set; lower it to nominate more
+  candidates. The depth-relative `min_umi_frac` is **off by default** (`0`)
+  because its linear-in-depth bar over-filters usable peaks on deep/pooled data;
+  enable it (e.g. `1e-7`) only if you specifically want the floor to scale with
+  sequencing depth. `min_density` mainly suppresses single-UMI artifacts.
 
 ## Enabling discovery
 
@@ -189,8 +205,9 @@ DISCOVERY:
   groups:                         # optional; omit/empty for per-sample
     groupA: [chromiumv2_test, dropseq_test]
   kde_bandwidth: 10
-  min_umi: 10                     # absolute support floor (safety for shallow data)
-  min_umi_frac: 1.0e-6            # support >= max(min_umi, min_umi_frac * total_UMIs)
+  min_umi: 10                     # primary absolute support floor
+  min_umi_frac: 0.0               # optional depth-relative term, off by default
+                                  # (support >= max(min_umi, min_umi_frac * total_UMIs))
   min_density: 0.0                # 0 / omit -> derived from kde_bandwidth
   peak_merge_dist: 24
   match_window: [10, 5]           # [upstream, downstream] bp, transcript-oriented

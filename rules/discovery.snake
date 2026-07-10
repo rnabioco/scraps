@@ -14,9 +14,11 @@ DISC_BANDWIDTH = DISCOVERY.get("kde_bandwidth", 10)
 # (float() coerces CLI --config string overrides, not just YAML numbers)
 DISC_MIN_DENSITY = float(DISCOVERY.get("min_density", 0.0))
 DISC_MERGE_DIST = DISCOVERY.get("peak_merge_dist", 24)
-# depth-relative UMI support floor: max(min_umi, min_umi_frac * total_UMIs)
+# UMI support floor: max(min_umi, min_umi_frac * total_UMIs). min_umi is the
+# primary absolute floor; the depth-relative min_umi_frac term is off by default
+# (0) because it scales linearly with depth and over-filters usable peaks.
 DISC_MIN_UMI = int(DISCOVERY.get("min_umi", 10))
-DISC_MIN_UMI_FRAC = float(DISCOVERY.get("min_umi_frac", 1e-6))
+DISC_MIN_UMI_FRAC = float(DISCOVERY.get("min_umi_frac", 0.0))
 DISC_SAF_SLOP = DISCOVERY.get("saf_slop", [10, 5])
 DISC_MATCH_WINDOW = DISCOVERY.get("match_window", [10, 5])
 DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
@@ -26,6 +28,21 @@ DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
 # bedtools genomecov end-selection flag per alignment mode
 # R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end
 _DISC_END_FLAG = {"R1": "-5", "R2": "-3", "paired": "-5"}
+
+# read-alignment strand -> TRANSCRIPT strand, per alignment mode. The emitted
+# bed must carry the transcript strand (as consumed strand-aware by kde_peaks /
+# annotate_sites), NOT the read's own aligned strand. This mirrors the validated
+# featureCounts strandedness in count.snake:
+#   R2     -> featureCounts -s 1 (same strand): read strand == transcript strand
+#   R1     -> featureCounts -s 2 (reverse):     read strand == opposite strand
+#   paired -> featureCounts -s 2 (reverse, R1-of-pair keyed): opposite strand
+# So R2 is identity; R1 and paired flip. (label_plus, label_minus) is the
+# transcript strand to print for reads on the + and - aligned strands.
+_DISC_STRAND_LABEL = {
+  "R2": ("+", "-"),
+  "R1": ("-", "+"),
+  "paired": ("-", "+"),
+}
 
 
 def _disc_unit_members(unit):
@@ -57,7 +74,10 @@ rule stranded_bed:
     mate_filter = "samtools view -@ 4 -f 0x42 -b" if DISC_READ == "paired" else (
                   "samtools view -@ 4 -F 4 -b" if DISC_READ == "R1" else "cat"),
     matebam = "{results}/discovery/beds/{sample}_" + DISC_READ + "_disc_mate.bam",
-    end_flag = _DISC_END_FLAG[DISC_READ]
+    end_flag = _DISC_END_FLAG[DISC_READ],
+    # transcript strand to label reads on the +/- aligned strand (see above)
+    label_plus = _DISC_STRAND_LABEL[DISC_READ][0],
+    label_minus = _DISC_STRAND_LABEL[DISC_READ][1]
   log:
     "{results}/logs/stranded_bed_{sample}_" + DISC_READ + ".txt"
   threads:
@@ -68,16 +88,19 @@ rule stranded_bed:
     r"""
     {params.mate_filter} {input} > {params.matebam}
 
-    # emit 5-col stranded bed: chrom start end count strand
+    # emit 5-col stranded bed: chrom start end count strand, where strand is the
+    # TRANSCRIPT strand (read-align strand converted per mode; see comment above
+    # the rule). genomecov -strand selects reads by their aligned strand; the
+    # awk label is the corresponding transcript strand.
     # bedtools genomecov emits per-contig in BAM-header order, so each strand
     # block is already contig-grouped and position-sorted within contig. The
     # only consumers (pool_beds, kde_peaks) re-sort, so we skip the expensive
     # full external sort of the combined genome-scale bedgraph.
     (
       bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand + \
-        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "+" }}' -
+        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "{params.label_plus}" }}' -
       bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
-        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "-" }}' -
+        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "{params.label_minus}" }}' -
     ) | gzip -c > {output}
     rm -rf {params.matebam}
     """

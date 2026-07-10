@@ -9,14 +9,18 @@ reported summit is the highest-count base within the merged region.
 
 Because discovery operates on pseudobulk (UMI-deduplicated per cell, then summed
 across all cells and, optionally, across pooled samples), a called peak is only
-retained if its summed UMI support clears a *depth-relative* floor:
+retained if its summed UMI support clears a floor:
 
     umi_support >= max(--min-umi, --min-umi-frac * T)
 
-where T is the total UMI count across the whole input. This scales the bar with
-sequencing depth and with sample pooling, so a fixed absolute count is not
-required. The smoothed-density floor (--min-density) is a secondary shape gate;
-by default it is derived from the bandwidth (~2 UMIs concentrated within one
+where T is the total UMI count across the whole input. The primary control is
+the ABSOLUTE floor --min-umi. The depth-relative term --min-umi-frac * T is
+DISABLED by default (--min-umi-frac 0): it scales linearly with sequencing depth
+and pooling, so on deep or pooled data it imposes a punishing absolute bar (e.g.
+1e-6 * 1e8 = 100 UMIs/peak) that silently drops usable mid-abundance peaks. Set
+a small positive --min-umi-frac only if you deliberately want the bar to scale
+with depth. The smoothed-density floor (--min-density) is the shape gate; by
+default it is derived from the bandwidth (~2 UMIs concentrated within one
 bandwidth) so that isolated single-UMI bumps cannot form a called maximum.
 
 Density is evaluated only at occupied bases (sparse), which is equivalent to the
@@ -61,12 +65,15 @@ def parse_args():
                              "(default 24)")
     parser.add_argument('--min-umi', type=int, default=10,
                         help="absolute minimum summed UMI support per peak "
-                             "(default 10); safety floor for shallow datasets")
-    parser.add_argument('--min-umi-frac', type=float, default=1e-6,
-                        help="minimum UMI support as a fraction of total UMIs T; "
-                             "the effective floor is max(--min-umi, "
-                             "--min-umi-frac * T) (default 1e-6). Depth-relative, "
-                             "so the bar scales with pooling.")
+                             "(default 10); this is the PRIMARY support floor")
+    parser.add_argument('--min-umi-frac', type=float, default=0.0,
+                        help="optional depth-relative UMI support floor as a "
+                             "fraction of total UMIs T; effective floor is "
+                             "max(--min-umi, --min-umi-frac * T). DISABLED by "
+                             "default (0): the linear-in-depth term over-filters "
+                             "usable peaks on deep/pooled data. Set a small "
+                             "positive value only to make the bar scale with "
+                             "depth.")
     return parser.parse_args()
 
 

@@ -61,12 +61,17 @@ DISCOVERY:
   # KDE Gaussian bandwidth in bp (smoothing scale of priming signal)
   kde_bandwidth: 10
   # minimum summed UMI support per called peak. Discovery is pseudobulk (summed
-  # over all cells, and over pooled samples), so support is judged on a
-  # DEPTH-RELATIVE floor: max(min_umi, min_umi_frac * total_pooled_UMIs). This
-  # is the primary control on peak count and removes calls with little/no UMI
-  # support; the bar scales up automatically when pooling more samples (groups).
+  # over all cells, and over pooled samples). The support floor is
+  # max(min_umi, min_umi_frac * total_pooled_UMIs). min_umi is the PRIMARY,
+  # absolute floor and the main control on peak count. min_umi_frac is an
+  # OPTIONAL depth-relative term, OFF by default (0): it scales linearly with
+  # sequencing depth/pooling, so on deep or pooled data it imposes a very high
+  # absolute bar (e.g. 1e-6 * 1e8 = 100 UMIs/peak) that silently drops usable
+  # mid-abundance peaks. Set a small positive value only if you deliberately
+  # want the bar to scale with depth; the min_density shape gate (below) already
+  # suppresses isolated single-UMI bumps.
   min_umi: 10
-  min_umi_frac: 1.0e-6
+  min_umi_frac: 0.0
   # minimum KDE density (per-base, UMI-weighted) for a peak to be called. This
   # is a secondary shape gate; 0 / omitted -> derived from kde_bandwidth
   # (~2 UMIs concentrated within one bandwidth) so isolated single-UMI bumps
