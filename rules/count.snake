@@ -157,6 +157,9 @@ rule filter_R2:
     """
 
 rule count:
+  # directional UMI count per (cell, site), replacing `umi_tools count`. Groups
+  # reads by (CB, featureCounts XT) and collapses distinct UMIs with umi_tools'
+  # own directional network algorithm, per-site; parallel over contigs.
   input:
     "{results}/temp/{sample}_{read}_assigned.bam"
   output:
@@ -171,56 +174,18 @@ rule count:
     mem_mb = 8000
   shell:
     r"""
-    umi_tools count \
-      --per-gene \
-      --gene-tag=XT \
-      --assigned-status-tag=XS \
-      --per-cell \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --cell-tag=CB \
-      -I {input} \
-      -S {output} \
-      > {log}
-    """
-
-rule dedup_bam:
-  # UMI-deduplicated BAM per (sample, read), shared by bed_* and (discovery)
-  # stranded_bed so the single-threaded umi_tools dedup runs once, not once per
-  # consumer. temp(): retained until the last consumer finishes, then removed.
-  input:
-    "{results}/temp/{sample}_{read}_assigned.bam"
-  output:
-    temp("{results}/temp/{sample}_{read}_dedup.bam")
-  params:
-    job_name = "dedup_bam",
-    # R1 and paired inputs are paired-end BAMs; R2 is single-end
-    paired_flag = lambda wc: "--paired" if wc.read in ("R1", "paired") else ""
-  wildcard_constraints:
-    read = "R1|R2|paired"
-  log:
-    "{results}/logs/dedup_{sample}_{read}.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 48000
-  shell:
-    r"""
-    umi_tools dedup \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --per-cell \
-      --cell-tag=CB \
-      {params.paired_flag} \
-      --method=unique \
-      -I {input} \
-      -S {output} \
-      > {log}
+    python3 inst/scripts/count_sites.py \
+      -i {input} \
+      -o {output} \
+      -t {threads} \
+      2> {log}
     """
 
 rule bed_R1:
+  # unique-UMI 5' priming pileup direct from the assigned BAM (mapped reads),
+  # replacing umi_tools dedup + genomecov (see inst/scripts/pileup_sites.py)
   input:
-    "{results}/temp/{sample}_R1_dedup.bam"
+    "{results}/temp/{sample}_R1_assigned.bam"
   output:
     "{results}/bed/{sample}_R1.bed.gz"
   params:
@@ -233,15 +198,13 @@ rule bed_R1:
     mem_mb = 4000
   shell:
     r"""
-    # stream mapped reads straight into genomecov (uncompressed BAM, no temp file)
-    samtools view -@ {threads} -F 4 -b -u {input} \
-      | bedtools genomecov -ibam - -5 -dz \
-      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
+    python3 inst/scripts/pileup_sites.py \
+      -i {input} -o {output} --end 5 --mode R1 2> {log}
     """
 
 rule bed_R2:
   input:
-    "{results}/temp/{sample}_R2_dedup.bam"
+    "{results}/temp/{sample}_R2_assigned.bam"
   output:
     "{results}/bed/{sample}_R2.bed.gz"
   params:
@@ -254,12 +217,13 @@ rule bed_R2:
     mem_mb = 4000
   shell:
     r"""
-    bedtools genomecov -ibam {input} -3 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
+    python3 inst/scripts/pileup_sites.py \
+      -i {input} -o {output} --end 3 --mode R2 2> {log}
     """
 
 rule bed_paired:
   input:
-    "{results}/temp/{sample}_paired_dedup.bam"
+    "{results}/temp/{sample}_paired_assigned.bam"
   output:
     "{results}/bed/{sample}_paired.bed.gz"
   params:
@@ -272,9 +236,6 @@ rule bed_paired:
     mem_mb = 4000
   shell:
     r"""
-    # 0x42 = read paired + first in pair (R1 of the mate-1 record); stream R2-of-pair
-    # 5' ends straight into genomecov (uncompressed BAM, no temp file)
-    samtools view -@ {threads} -f 0x42 -b -u {input} \
-      | bedtools genomecov -ibam - -5 -dz \
-      | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
+    python3 inst/scripts/pileup_sites.py \
+      -i {input} -o {output} --end 5 --mode paired 2> {log}
     """

@@ -25,9 +25,9 @@ DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
 DISC_A_WINDOW = DISCOVERY.get("a_content_window", [1, 20])
 DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
 
-# bedtools genomecov end-selection flag per alignment mode
-# R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end
-_DISC_END_FLAG = {"R1": "-5", "R2": "-3", "paired": "-5"}
+# priming-site end per alignment mode (passed to pileup_sites.py --end):
+# R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end.
+# (Selection is inlined in the stranded_bed rule params.)
 
 # read-alignment strand -> TRANSCRIPT strand, per alignment mode. The emitted
 # bed must carry the transcript strand (as consumed strand-aware by kde_peaks /
@@ -63,18 +63,18 @@ def _disc_pool_inputs(wildcards):
 
 rule stranded_bed:
   # single-base, UMI-deduplicated, strand-aware priming pileup per sample.
-  # Consumes the shared dedup_bam output (count.snake) so umi_tools dedup runs
-  # once per (sample, read) even when the same read mode is also counted.
+  # Consumes the featureCounts assigned BAM directly and does unique-UMI dedup +
+  # single-base pileup in one pass (inst/scripts/pileup_sites.py), replacing
+  # umi_tools dedup + bedtools genomecov.
   input:
-    "{results}/temp/{sample}_" + DISC_READ + "_dedup.bam"
+    "{results}/temp/{sample}_" + DISC_READ + "_assigned.bam"
   output:
     "{results}/discovery/beds/{sample}_" + DISC_READ + ".stranded.bed.gz"
   params:
     job_name = "stranded_bed",
-    mate_filter = "samtools view -@ 4 -f 0x42 -b" if DISC_READ == "paired" else (
-                  "samtools view -@ 4 -F 4 -b" if DISC_READ == "R1" else "cat"),
-    matebam = "{results}/discovery/beds/{sample}_" + DISC_READ + "_disc_mate.bam",
-    end_flag = _DISC_END_FLAG[DISC_READ],
+    # end to pile up per mode: R1/paired -> 5' end, R2 -> 3' end
+    end = "3" if DISC_READ == "R2" else "5",
+    mode = DISC_READ,
     # transcript strand to label reads on the +/- aligned strand (see above)
     label_plus = _DISC_STRAND_LABEL[DISC_READ][0],
     label_minus = _DISC_STRAND_LABEL[DISC_READ][1]
@@ -86,23 +86,16 @@ rule stranded_bed:
     mem_mb = 4000
   shell:
     r"""
-    {params.mate_filter} {input} > {params.matebam}
-
-    # emit 5-col stranded bed: chrom start end count strand, where strand is the
+    # 5-col stranded bed: chrom start end count strand, where strand is the
     # TRANSCRIPT strand (read-align strand converted per mode; see comment above
-    # the rule). genomecov -strand selects reads by their aligned strand; the
-    # awk label is the corresponding transcript strand.
-    # bedtools genomecov emits per-contig in BAM-header order, so each strand
-    # block is already contig-grouped and position-sorted within contig. The
-    # only consumers (pool_beds, kde_peaks) re-sort, so we skip the expensive
-    # full external sort of the combined genome-scale bedgraph.
-    (
-      bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand + \
-        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "{params.label_plus}" }}' -
-      bedtools genomecov -ibam {params.matebam} {params.end_flag} -dz -strand - \
-        | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2, $2 + 1, $3, "{params.label_minus}" }}' -
-    ) | gzip -c > {output}
-    rm -rf {params.matebam}
+    # the rule). The only consumers (pool_beds, kde_peaks) re-sort, so line order
+    # need not match the previous genomecov per-strand block layout.
+    python3 inst/scripts/pileup_sites.py \
+      -i {input} -o {output} \
+      --end {params.end} --mode {params.mode} \
+      --strand-split \
+      --label-plus {params.label_plus} --label-minus {params.label_minus} \
+      2> {log}
     """
 
 

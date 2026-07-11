@@ -13,6 +13,9 @@ dependencies:
   - pysam >= 0.16.0
   - snakemake < 8
   - subread >= 2.0.1
+  # umi_tools is used as a LIBRARY (network.UMIClusterer) by
+  # inst/scripts/count_sites.py to reproduce directional UMI collapsing; it is
+  # no longer invoked as the (single-threaded) count/dedup CLI bottleneck.
   - umi_tools >= 1.1.2
   - star >= 2.7.9a
   - zsh
