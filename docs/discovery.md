@@ -43,16 +43,34 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
    `(chrom, strand)`, polyAdb matching, sequence-context scanning, SAF slop)
    are strand-aware and consume this transcript strand.
 
-2. **Optional sample pooling.** Samples can be pooled into named groups
-   (`DISCOVERY.groups`) so that priming counts are summed across a set of
-   samples before site calling. Ungrouped samples are processed individually.
+2. **Discovery modes.** `DISCOVERY.read` selects which alignment mode(s) feed
+   discovery and accepts a single mode **or a list** (e.g. `[R2, paired]`). A
+   sample runs only the modes it was actually aligned in (its `alignments`), and
+   an individual sample can override the global list via
+   `SAMPLES.<name>.discovery_read`. If `read` is unset, the sample's own
+   `alignments` are used. Each `(sample, mode)` produces an independent
+   discovery track named `<sample>_<mode>` (e.g. `AEG1_R2_sites.tsv.gz`).
 
-3. **Kernel density estimation (KDE).** Per `(chromosome, strand)` track, the
+3. **Optional pooling.** Samples can be pooled into named `groups` (summed
+   across member samples *per shared mode* -> `<group>_<mode>` tracks).
+   Ungrouped samples are processed individually. For arbitrary aggregation,
+   `DISCOVERY.units` pools an explicit list of `(sample, mode)` beds into one
+   named track — across samples and/or modes. Because stranded beds share a
+   common transcript-oriented coordinate system, any set can be summed.
+   **Caveat:** pooling multiple modes derived from the *same* underlying reads
+   double-counts UMI support (one molecule counted under each mode); only pool
+   modes that are independent measurements.
+
+4. **Kernel density estimation (KDE).** Per `(chromosome, strand)` track, the
    UMI-weighted per-base signal is smoothed with a Gaussian kernel
    (`kde_bandwidth`, in bp). Local maxima of the density are called as RT
-   priming sites; maxima within `peak_merge_dist` are merged, and the reported
-   summit is the highest-UMI base within the merged region.
-   (`inst/scripts/kde_peaks.py`)
+   priming sites; maxima within `peak_merge_dist` are merged. Summit placement
+   within a merged cluster is controlled by `summit_method` (default
+   `downstream`): 3'-end pileups have a hard cleavage boundary and tail upstream,
+   so the summit is the most-downstream (transcript-3') base whose depth is
+   `>= summit_frac * cluster peak depth`, snapping it onto the cleavage site
+   rather than the smoothed centre of mass (`kde` reproduces the legacy
+   density-maximum summit). (`inst/scripts/kde_peaks.py`)
 
    Because discovery is **pseudobulk** — UMIs are deduplicated per cell, then
    summed across *all* cells and (with `groups`) across pooled samples — a raw
@@ -75,7 +93,7 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
    single-UMI bumps cannot form a called maximum; set a positive value to
    override. (Density is evaluated sparsely, only at occupied bases.)
 
-4. **Annotation into three categories.** Each summit is classified
+5. **Annotation into three categories.** Each summit is classified
    (`inst/scripts/annotate_sites.py`):
 
    | Status | Meaning | Use |
@@ -201,9 +219,16 @@ GENOME_FASTA: "ref/genome.fa"     # must match the alignment reference; needs .f
 
 DISCOVERY:
   enabled: true
-  read: R2                        # R1, R2, or paired
-  groups:                         # optional; omit/empty for per-sample
-    groupA: [chromiumv2_test, dropseq_test]
+  read: R2                        # single mode OR a list, e.g. [R2, paired];
+                                  # per-sample override: SAMPLES.<name>.discovery_read
+                                  # unset -> use each sample's own `alignments`.
+                                  # Each (sample, mode) -> track "<sample>_<mode>".
+  groups:                         # optional; pool member samples PER shared mode
+    groupA: [chromiumv2_test, dropseq_test]   # -> groupA_<mode> tracks
+  units:                          # optional; aggregate arbitrary (sample, mode)
+    cv2_allmodes:                 # beds (cross-sample and/or cross-mode)
+      - [chromiumv2_test, R2]
+      - [chromiumv2_test, paired]
   kde_bandwidth: 10
   min_umi: 10                     # primary absolute support floor
   min_umi_frac: 0.0               # optional depth-relative term, off by default

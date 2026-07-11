@@ -50,14 +50,30 @@ DISCOVERY:
 # likely_internal_priming sites should be excluded, not quantified.
 # See docs/discovery.md for full details.
   enabled: false
-  # which alignment mode's priming beds feed KDE (R1, R2, or paired)
+  # Which alignment mode(s)' priming beds feed discovery. Accepts a single mode
+  # (R1, R2, or paired) OR a list; each sample runs only the modes it was
+  # actually aligned in (intersected with its `alignments`). Per-sample override
+  # via SAMPLES.<name>.discovery_read. If `read` is unset, a sample's own
+  # `alignments` are used. Each (sample, mode) yields a separate discovery track
+  # named "<sample>_<mode>" (e.g. AEG1_R2_sites.tsv.gz).
   read: R2
-  # optional named pools of samples aggregated into one KDE track before
-  # discovery; samples not listed are processed individually (per-sample).
+  #  example (multi-mode): read: [R2, paired]
+  # optional named pools of samples aggregated into one track PER shared mode;
+  # each yields "<group>_<mode>". Samples not listed are processed individually.
   groups: {}
   #  example:
   #  groups:
   #    groupA: [chromiumv2_test, dropseq_test]
+  # optional explicit units: aggregate ARBITRARY (sample, mode) stranded beds
+  # into one named track (cross-sample and/or cross-mode). Once stranded beds
+  # exist they share a common transcript-oriented coordinate system, so any set
+  # can be summed. CAVEAT: pooling multiple modes that derive from the SAME
+  # underlying reads double-counts UMI support (the same molecule counted under
+  # each mode) - only pool modes that are independent measurements.
+  units: {}
+  #  example:
+  #  units:
+  #    cv2_allmodes: [[chromiumv2_test, R2], [chromiumv2_test, paired]]
   # KDE Gaussian bandwidth in bp (smoothing scale of priming signal)
   kde_bandwidth: 10
   # minimum summed UMI support per called peak. Discovery is pseudobulk (summed

@@ -7,8 +7,10 @@ priming, or a potential novel polyA site. See docs/discovery.md.
 """
 
 # discovery configuration (with defaults)
-DISC_READ = DISCOVERY.get("read", "R2")
-DISC_GROUPS = DISCOVERY.get("groups", {}) or {}
+# DISC_UNITS ({unit_id: [(sample, mode), ...]}) is computed in the Snakefile
+# (shared global) from the scalar-or-list DISCOVERY.read, per-sample
+# discovery_read overrides, DISCOVERY.groups, and DISCOVERY.units. A unit may
+# aggregate stranded beds across samples AND/OR modes.
 DISC_BANDWIDTH = DISCOVERY.get("kde_bandwidth", 10)
 # min_density: omitted / <=0 -> kde_peaks.py derives it from the bandwidth
 # (float() coerces CLI --config string overrides, not just YAML numbers)
@@ -33,7 +35,7 @@ DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
 
 # priming-site end per alignment mode (passed to pileup_sites.py --end):
 # R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end.
-# (Selection is inlined in the stranded_bed rule params.)
+_DISC_END = {"R1": "5", "R2": "3", "paired": "5"}
 
 # read-alignment strand -> TRANSCRIPT strand, per alignment mode. The emitted
 # bed must carry the transcript strand (as consumed strand-aware by kde_peaks /
@@ -51,43 +53,39 @@ _DISC_STRAND_LABEL = {
 }
 
 
-def _disc_unit_members(unit):
-  """Map a discovery unit (group name or sample name) to its member samples."""
-  if unit in DISC_GROUPS:
-    return list(DISC_GROUPS[unit])
-  return [unit]
-
-
 def _disc_pool_inputs(wildcards):
-  """Stranded per-sample beds that feed pooling for a discovery unit."""
-  members = _disc_unit_members(wildcards.unit)
-  return expand(
-    "{results}/discovery/beds/{sample}_{read}.stranded.bed.gz",
-    results=RESULTS, sample=members, read=DISC_READ,
-  )
+  """Stranded (sample, mode) beds that feed pooling for a discovery unit."""
+  return [
+    "{}/discovery/beds/{}_{}.stranded.bed.gz".format(RESULTS, sample, mode)
+    for (sample, mode) in DISC_UNITS[wildcards.unit]
+  ]
 
 
 rule stranded_bed:
-  # single-base, UMI-deduplicated, strand-aware priming pileup per sample.
+  # single-base, UMI-deduplicated, strand-aware priming pileup per (sample, mode).
   # Consumes the featureCounts assigned BAM directly and does unique-UMI dedup +
   # single-base pileup in one pass (inst/scripts/pileup_sites.py), replacing
   # umi_tools dedup + bedtools genomecov. Dedup is keyed on (cell, UMI, priming
   # position); the opposite-end/fragmentation coordinate is ignored (see the
   # bed_* note in count.snake), so counts collapse PCR duplicates by molecule.
+  # {read} is the alignment mode (R1|R2|paired); a discovery unit may aggregate
+  # several of these beds across samples and/or modes (see pool_beds).
   input:
-    "{results}/temp/{sample}_" + DISC_READ + "_assigned.bam"
+    "{results}/temp/{sample}_{read}_assigned.bam"
   output:
-    "{results}/discovery/beds/{sample}_" + DISC_READ + ".stranded.bed.gz"
+    "{results}/discovery/beds/{sample}_{read}.stranded.bed.gz"
+  wildcard_constraints:
+    read = "R1|R2|paired"
   params:
     job_name = "stranded_bed",
     # end to pile up per mode: R1/paired -> 5' end, R2 -> 3' end
-    end = "3" if DISC_READ == "R2" else "5",
-    mode = DISC_READ,
+    end = lambda wc: _DISC_END[wc.read],
+    mode = lambda wc: wc.read,
     # transcript strand to label reads on the +/- aligned strand (see above)
-    label_plus = _DISC_STRAND_LABEL[DISC_READ][0],
-    label_minus = _DISC_STRAND_LABEL[DISC_READ][1]
+    label_plus = lambda wc: _DISC_STRAND_LABEL[wc.read][0],
+    label_minus = lambda wc: _DISC_STRAND_LABEL[wc.read][1]
   log:
-    "{results}/logs/stranded_bed_{sample}_" + DISC_READ + ".txt"
+    "{results}/logs/stranded_bed_{sample}_{read}.txt"
   threads:
     4
   resources:
@@ -108,11 +106,15 @@ rule stranded_bed:
 
 
 rule pool_beds:
-  # sum priming counts per (chrom, pos, strand) across a unit's member samples
+  # sum priming counts per (chrom, pos, strand) across a unit's member
+  # (sample, mode) beds. The unit id fully identifies the track (it already
+  # encodes the mode for per-(sample|group, mode) units), so no read suffix.
   input:
     _disc_pool_inputs
   output:
-    temp("{results}/discovery/beds/{unit}_" + DISC_READ + ".pooled.bed.gz")
+    temp("{results}/discovery/beds/{unit}.pooled.bed.gz")
+  wildcard_constraints:
+    unit = r"[^/]+"
   params:
     job_name = "pool_beds"
   log:
@@ -134,7 +136,7 @@ rule kde_peaks:
   # call RT priming site summits: Gaussian KDE for cluster detection, then
   # orientation-aware summit placement (see kde_peaks.py --summit-method)
   input:
-    "{results}/discovery/beds/{unit}_" + DISC_READ + ".pooled.bed.gz"
+    "{results}/discovery/beds/{unit}.pooled.bed.gz"
   output:
     temp("{results}/discovery/{unit}_peaks.tsv.gz")
   params:
