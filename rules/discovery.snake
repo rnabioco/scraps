@@ -19,6 +19,12 @@ DISC_MERGE_DIST = DISCOVERY.get("peak_merge_dist", 24)
 # (0) because it scales linearly with depth and over-filters usable peaks.
 DISC_MIN_UMI = int(DISCOVERY.get("min_umi", 10))
 DISC_MIN_UMI_FRAC = float(DISCOVERY.get("min_umi_frac", 0.0))
+# summit placement within a called cluster (kde_peaks.py --summit-method):
+# 'downstream' (default) snaps the summit to the transcript-3' cleavage boundary
+# via the most-downstream base >= summit_frac * cluster peak depth; 'kde' is the
+# legacy smoothed-density-maximum (biased ~1-2 bp upstream). See kde_peaks.py.
+DISC_SUMMIT_METHOD = DISCOVERY.get("summit_method", "downstream")
+DISC_SUMMIT_FRAC = float(DISCOVERY.get("summit_frac", 0.75))
 DISC_SAF_SLOP = DISCOVERY.get("saf_slop", [10, 5])
 DISC_MATCH_WINDOW = DISCOVERY.get("match_window", [10, 5])
 DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
@@ -125,7 +131,8 @@ rule pool_beds:
 
 
 rule kde_peaks:
-  # call RT priming site summits via kernel density estimation
+  # call RT priming site summits: Gaussian KDE for cluster detection, then
+  # orientation-aware summit placement (see kde_peaks.py --summit-method)
   input:
     "{results}/discovery/beds/{unit}_" + DISC_READ + ".pooled.bed.gz"
   output:
@@ -139,7 +146,9 @@ rule kde_peaks:
                    if DISC_MIN_DENSITY > 0 else ""),
     merge_dist = DISC_MERGE_DIST,
     min_umi = DISC_MIN_UMI,
-    min_umi_frac = DISC_MIN_UMI_FRAC
+    min_umi_frac = DISC_MIN_UMI_FRAC,
+    summit_method = DISC_SUMMIT_METHOD,
+    summit_frac = DISC_SUMMIT_FRAC
   log:
     "{results}/logs/kde_peaks_{unit}.txt"
   threads:
@@ -156,6 +165,8 @@ rule kde_peaks:
       --merge-dist {params.merge_dist} \
       --min-umi {params.min_umi} \
       --min-umi-frac {params.min_umi_frac} \
+      --summit-method {params.summit_method} \
+      --summit-frac {params.summit_frac} \
       > {log} 2>&1
     """
 

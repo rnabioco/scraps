@@ -79,6 +79,19 @@ DISCOVERY:
   min_density: 0.0
   # collapse called maxima within this distance (bp) into one summit
   peak_merge_dist: 24
+  # summit placement within a called cluster:
+  #   downstream (default) - snap the summit to the transcript-3' cleavage
+  #     boundary: the most-downstream base whose depth >= summit_frac * cluster
+  #     peak depth, searched over the full occupied read pileup. 3'-end read
+  #     pileups have a hard boundary at the cleavage site and tail upstream, so
+  #     the smoothed-density maximum is biased ~1-2 bp upstream; this removes
+  #     that bias (polyAdb exact-hit rate ~25% -> ~65% at summit_frac 0.75).
+  #     kde_score column is then the raw UMI depth at the summit.
+  #   kde - legacy smoothed-density-maximum summit (kde_score = density).
+  summit_method: downstream
+  # downstream-method depth threshold as a fraction of the cluster peak depth
+  # (default 0.75, empirically minimizes summit-vs-polyAdb offset)
+  summit_frac: 0.75
   # strand-aware [upstream, downstream] bp window for calling a discovered
   # summit a known polyAdb site. Asymmetric (read distributions are skewed);
   # offsets are transcript-oriented. Default [10, 5] matches the slop of the

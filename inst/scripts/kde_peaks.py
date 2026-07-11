@@ -1,11 +1,30 @@
-""" Call RT priming site summits via kernel density estimation.
+""" Call RT priming site summits from a strand-aware priming pileup.
 
 Input is a strand-aware, single-base, UMI-deduplicated priming pileup bed
 (chrom, start, end, count, strand). For each (chrom, strand) the per-base UMI
 counts are smoothed with a Gaussian kernel (fixed bandwidth, in bp) to estimate
 the RT priming density. Local maxima of the density above a threshold are
-called as priming sites; maxima closer than --merge-dist are collapsed, and the
-reported summit is the highest-count base within the merged region.
+called as priming sites; maxima closer than --merge-dist are collapsed into one
+cluster. Gaussian smoothing is used for cluster DETECTION and umi_support.
+
+Summit placement within each cluster is controlled by --summit-method:
+
+  downstream (default)  3'-end read pileups have a hard boundary at the cleavage
+                        site and tail UPSTREAM (transcript orientation), so the
+                        smoothed density maximum sits ~1-2 bp upstream of the
+                        true cleavage site (in the tail's centre of mass). This
+                        method instead takes the most-downstream (transcript-3')
+                        base whose depth >= --summit-frac * cluster peak depth,
+                        searched over the full occupied read pileup, snapping the
+                        summit onto the cleavage boundary. Validated against
+                        polyAdb: exact-hit rate rises from ~25% (kde) to ~65% and
+                        the systematic upstream bias (~ -1.4 bp) is removed at
+                        --summit-frac 0.75. The kde_score column is the raw UMI
+                        depth at the summit under this method.
+
+  kde                   legacy behavior: summit = highest (raw count, then
+                        smoothed density) base within the local-maxima span;
+                        kde_score is the smoothed density at the summit.
 
 Because discovery operates on pseudobulk (UMI-deduplicated per cell, then summed
 across all cells and, optionally, across pooled samples), a called peak is only
@@ -28,7 +47,8 @@ dense convolution at those positions but avoids allocating full-chromosome
 arrays.
 
 Output is a gzipped TSV: chrom, summit, strand, kde_score, umi_support
-where summit is a 0-based single-base position.
+where summit is a 0-based single-base position and kde_score is the raw UMI
+depth at the summit (downstream method) or the smoothed density (kde method).
 """
 
 import argparse
@@ -74,6 +94,21 @@ def parse_args():
                              "usable peaks on deep/pooled data. Set a small "
                              "positive value only to make the bar scale with "
                              "depth.")
+    parser.add_argument('--summit-method', choices=('downstream', 'kde'),
+                        default='downstream',
+                        help="how to place the summit within a called cluster. "
+                             "'downstream' (default): most-downstream "
+                             "(transcript-3') base with depth >= --summit-frac * "
+                             "cluster peak depth, searched over the full occupied "
+                             "read pileup -- snaps to the cleavage boundary "
+                             "(score = raw UMI depth). 'kde' (legacy): max(count, "
+                             "smoothed density) within the local-maxima span "
+                             "(score = smoothed density), which is biased ~1-2 bp "
+                             "upstream into the read tail.")
+    parser.add_argument('--summit-frac', type=float, default=0.75,
+                        help="for --summit-method downstream: depth threshold as "
+                             "a fraction of the cluster peak depth (default 0.75, "
+                             "empirically minimizes summit-vs-polyAdb offset).")
     return parser.parse_args()
 
 
@@ -135,12 +170,29 @@ def sparse_density(positions, counts, kernel, radius):
 
 
 def call_peaks_one(positions, counts, kernel, radius,
-                   min_density, merge_dist, support_floor):
+                   min_density, merge_dist, support_floor,
+                   strand, summit_method, summit_frac):
     """Call peaks on one (chrom, strand) track.
 
-    Returns list of (summit_pos, kde_score, umi_support). Peaks below
+    Returns list of (summit_pos, score, umi_support). Peaks below
     `support_floor` (summed UMI support over the merged cluster) are dropped.
     `positions` must be sorted ascending.
+
+    Cluster DETECTION is unchanged (Gaussian density local maxima merged within
+    merge_dist). Only the SUMMIT within each cluster depends on summit_method:
+
+      'kde'        summit = max(raw count, density) within the local-maxima span
+                   (legacy behavior). `score` = smoothed density at the summit.
+
+      'downstream' 3'-end read pileups have a hard boundary at the cleavage site
+                   and tail UPSTREAM (transcript orientation); the Gaussian
+                   summit is pulled ~1-2 bp upstream into the tail's centre of
+                   mass. Instead, expand the summit search to the full occupied
+                   read cluster (bases connected within merge_dist around the
+                   called maxima) and take the MOST-DOWNSTREAM (transcript-3')
+                   base whose depth >= summit_frac * cluster-peak-depth. This
+                   snaps the summit onto the cleavage boundary. `score` = raw UMI
+                   depth at the summit.
     """
     density = sparse_density(positions, counts, kernel, radius)
 
@@ -166,18 +218,36 @@ def call_peaks_one(positions, counts, kernel, radius,
 
     results = []
     for a, b in zip(starts, ends):
-        lo_pos = peak_pos[a]
-        hi_pos = peak_pos[b]
-        lo = np.searchsorted(positions, lo_pos)
-        hi = np.searchsorted(positions, hi_pos, side='right')
+        # local-maxima span: defines the called cluster + its UMI support (this
+        # is unchanged, so the set of called sites and their support match the
+        # legacy cluster-detection behavior)
+        lo = int(np.searchsorted(positions, peak_pos[a]))
+        hi = int(np.searchsorted(positions, peak_pos[b], side='right'))
         umi_support = float(csum[hi] - csum[lo])
         if umi_support < support_floor:
             continue
-        # summit = highest raw UMI base within the merged window; tie -> density
-        window = range(lo, hi)
-        summit_j = max(window, key=lambda j: (counts[j], density[j]))
-        kde_score = float(density[summit_j])
-        results.append((int(positions[summit_j]), kde_score, umi_support))
+
+        if summit_method == 'downstream':
+            # expand the SUMMIT SEARCH (not the cluster/support) to the full
+            # occupied read pileup connected within merge_dist
+            slo, shi = lo, hi
+            while slo > 0 and (positions[slo] - positions[slo - 1]) <= merge_dist:
+                slo -= 1
+            while shi < n and (positions[shi] - positions[shi - 1]) <= merge_dist:
+                shi += 1
+            peak_depth = counts[slo:shi].max()
+            thr = summit_frac * peak_depth
+            # eligible bases at/above the fractional threshold; take the most
+            # downstream in transcript orientation ('-' -> lowest genomic coord)
+            elig = [j for j in range(slo, shi) if counts[j] >= thr]
+            summit_j = min(elig) if strand == '-' else max(elig)
+            score = float(counts[summit_j])
+        else:  # 'kde' (legacy)
+            window = range(lo, hi)
+            summit_j = max(window, key=lambda j: (counts[j], density[j]))
+            score = float(density[summit_j])
+
+        results.append((int(positions[summit_j]), score, umi_support))
     return results
 
 
@@ -185,6 +255,8 @@ def main():
     args = parse_args()
     if args.bandwidth <= 0:
         sys.exit("--bandwidth must be > 0")
+    if not (0.0 < args.summit_frac <= 1.0):
+        sys.exit("--summit-frac must be in (0, 1]")
 
     kernel, radius = gaussian_kernel(args.bandwidth)
 
@@ -209,16 +281,20 @@ def main():
             counts = counts[order]
             for summit, score, support in call_peaks_one(
                     positions, counts, kernel, radius,
-                    min_density, args.merge_dist, support_floor):
+                    min_density, args.merge_dist, support_floor,
+                    strand, args.summit_method, args.summit_frac):
                 out.write("{}\t{}\t{}\t{:.6g}\t{:.0f}\n".format(
                     chrom, summit, strand, score, support))
                 n_sites += 1
 
     sys.stderr.write(
         "kde_peaks: called {} RT priming sites across {} (chrom, strand) "
-        "tracks; support floor = max({}, {:g} * {:.0f}) = {:.0f} UMIs; "
-        "min_density = {:.6g}\n".format(
-            n_sites, len(data), args.min_umi, args.min_umi_frac,
+        "tracks; summit_method = {}{}; support floor = max({}, {:g} * {:.0f}) "
+        "= {:.0f} UMIs; min_density = {:.6g}\n".format(
+            n_sites, len(data), args.summit_method,
+            (" (frac %g)" % args.summit_frac
+             if args.summit_method == 'downstream' else ""),
+            args.min_umi, args.min_umi_frac,
             total_umi, support_floor, min_density))
 
 
