@@ -23,7 +23,7 @@ rule assign_sites_R1:
       polyaformat='GTF';
     fi
     
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
 
     featureCounts \
     -s 2 -Q 10 -O \
@@ -109,7 +109,7 @@ rule assign_sites_paired:
       polyaformat='GTF';
     fi
 
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
     
     featureCounts \
     -s 2 -Q 10 -O -p \
@@ -148,7 +148,7 @@ rule filter_R2:
     mem_mb = 8000
   shell:
     r"""
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
     samtools index {params.temp}
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
     samtools index {output}
