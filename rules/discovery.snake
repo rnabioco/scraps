@@ -65,7 +65,9 @@ rule stranded_bed:
   # single-base, UMI-deduplicated, strand-aware priming pileup per sample.
   # Consumes the featureCounts assigned BAM directly and does unique-UMI dedup +
   # single-base pileup in one pass (inst/scripts/pileup_sites.py), replacing
-  # umi_tools dedup + bedtools genomecov.
+  # umi_tools dedup + bedtools genomecov. Dedup is keyed on (cell, UMI, priming
+  # position); the opposite-end/fragmentation coordinate is ignored (see the
+  # bed_* note in count.snake), so counts collapse PCR duplicates by molecule.
   input:
     "{results}/temp/{sample}_" + DISC_READ + "_assigned.bam"
   output:

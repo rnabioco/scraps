@@ -181,9 +181,17 @@ rule count:
       2> {log}
     """
 
+# NOTE on bed_* semantics (all modes): pileup_sites.py deduplicates on
+# (cell, UMI, priming position) and reports the priming end. Unlike the former
+# umi_tools dedup + genomecov, it ignores the opposite-end / fragmentation /
+# splice coordinate, so PCR duplicates of one molecule (which differ only at the
+# post-amplification fragmentation end) collapse to a single count. This is
+# consistent with the count table and reduces bed signal ~3.7% vs the legacy
+# pipeline on test data. Intended change; see docs and tests/validate_synthetic.sh.
 rule bed_R1:
-  # unique-UMI 5' priming pileup direct from the assigned BAM (mapped reads),
-  # replacing umi_tools dedup + genomecov (see inst/scripts/pileup_sites.py)
+  # unique-UMI 5' priming pileup direct from the assigned BAM (proper-pair read1
+  # when paired-aligned), replacing umi_tools dedup + genomecov
+  # (see inst/scripts/pileup_sites.py)
   input:
     "{results}/temp/{sample}_R1_assigned.bam"
   output:

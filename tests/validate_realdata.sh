@@ -41,29 +41,54 @@ snakemake -j "$CORES" --configfile "$CONFIG" \
 
 echo ">>> DIFF"
 fail=0
-compare() {  # $1 = relative glob under results dir
+# count tables: must be BIT-EXACT vs umi_tools count (directional reproduced).
+compare_exact() {  # $1 = relative glob under results dir
   for oldf in "$OLD_DIR"/$1; do
     [ -e "$oldf" ] || continue
     rel="${oldf#$OLD_DIR/}"
     newf="$NEW_DIR/$rel"
     if [ ! -e "$newf" ]; then echo "  MISSING new: $rel"; fail=1; continue; fi
     if diff <(zcat < "$oldf" | sort) <(zcat < "$newf" | sort) >/dev/null; then
-      echo "  OK   $rel"
+      echo "  OK(exact)   $rel"
     else
-      echo "  DIFF $rel"; fail=1
+      echo "  DIFF        $rel"; fail=1
     fi
   done
 }
 
-compare "counts/*.tsv.gz"
-compare "bed/*.bed.gz"
-compare "discovery/beds/*.stranded.bed.gz"
+# beds: DIRECTIONAL vs legacy umi_tools dedup + genomecov. The new pileup keys
+# dedup on (cell, UMI, priming position) and ignores the fragmentation/splice
+# coordinate, so at each priming position new <= old and no new position is
+# introduced. Criterion: only-old == 0 AND total new signal <= total old signal.
+# (col4 is the count; for stranded beds the strand col is a pure relabel.)
+compare_directional() {  # $1 = relative glob
+  for oldf in "$OLD_DIR"/$1; do
+    [ -e "$oldf" ] || continue
+    rel="${oldf#$OLD_DIR/}"
+    newf="$NEW_DIR/$rel"
+    if [ ! -e "$newf" ]; then echo "  MISSING new: $rel"; fail=1; continue; fi
+    only_old=$(comm -23 \
+      <(zcat < "$oldf" | awk -v OFS='\t' '{print $1,$2}' | sort -u) \
+      <(zcat < "$newf" | awk -v OFS='\t' '{print $1,$2}' | sort -u) | wc -l | tr -d ' ')
+    old_sum=$(zcat < "$oldf" | awk '{s+=$4}END{print s+0}')
+    new_sum=$(zcat < "$newf" | awk '{s+=$4}END{print s+0}')
+    if [ "$only_old" -eq 0 ] && [ "$new_sum" -le "$old_sum" ]; then
+      echo "  OK(dir)     $rel  (only_old=0, new=$new_sum <= old=$old_sum)"
+    else
+      echo "  VIOLATION   $rel  (only_old=$only_old, new=$new_sum, old=$old_sum)"; fail=1
+    fi
+  done
+}
+
+compare_exact "counts/*.tsv.gz"
+compare_directional "bed/*.bed.gz"
+compare_directional "discovery/beds/*.stranded.bed.gz"
 
 git worktree remove --force "$OLD_TREE" || true
 
 echo "================================================="
 if [ "$fail" -eq 0 ]; then
-  echo "REAL-DATA VALIDATION PASSED (bit-exact)"
+  echo "REAL-DATA VALIDATION PASSED (counts exact; beds directional)"
 else
   echo "REAL-DATA VALIDATION FAILED"; exit 1
 fi

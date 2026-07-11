@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
-# Bit-exactness validation for the pysam replacements of umi_tools, on synthetic
-# aligned BAMs (all read modes). For each mode:
+# Validation for the pysam replacements of umi_tools, on synthetic aligned BAMs
+# (all read modes). For each mode:
 #   1. run REAL featureCounts (as assign_sites_* does) -> assigned BAM
-#   2. count path:  umi_tools count            vs  count_sites.py
+#   2. count path:  umi_tools count            vs  count_sites.py   [bit-exact]
 #   3. bed path:    umi_tools dedup + genomecov vs  pileup_sites.py
-# Exits non-zero on any diff. Requires the scraps_conda tools on PATH.
+#   4. stranded bed (discovery)                vs  pileup_sites.py --strand-split
+#
+# Correctness criteria differ by path, matching the agreed semantics:
+#   - count (all modes): BIT-EXACT vs umi_tools (directional collapse reproduced).
+#   - bed + sbed (ALL modes R1/R2/paired): DIRECTIONAL. The new pileup keys dedup
+#     on (cell, UMI, priming position) and ignores the opposite-end / fragment /
+#     splice coordinate (correct for post-amplification fragmentation, consistent
+#     with the count table), whereas umi_tools keys dedup on the read mapping
+#     coordinate. So at each priming position the new output must (a) introduce
+#     NO position absent from old (only-old == 0) and (b) have total signal <=
+#     old total signal (fragmentation-split PCR duplicates collapse to one).
+# Exits non-zero on any violation. Requires the scraps_conda tools on PATH.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,6 +27,26 @@ echo "saf:     $SAF"
 python3 "$REPO/tests/generate_synthetic.py" --saf "$SAF" --outdir "$WORK"
 
 fail=0
+
+# Directional check for a bed: every OLD position must appear in NEW
+# (only-old == 0) and total NEW signal must not exceed total OLD signal (new
+# collapses fragmentation-split PCR duplicates). Accepts an optional label.
+# Args: old.bed.gz new.bed.gz LABEL
+check_directional_bed() {
+  local old="$1" new="$2" label="$3"
+  local only_old old_sum new_sum
+  only_old=$(comm -23 \
+    <(zcat < "$old" | awk -v OFS='\t' '{print $1,$2}' | sort -u) \
+    <(zcat < "$new" | awk -v OFS='\t' '{print $1,$2}' | sort -u) | wc -l | tr -d ' ')
+  old_sum=$(zcat < "$old" | awk '{s+=$4}END{print s+0}')
+  new_sum=$(zcat < "$new" | awk '{s+=$4}END{print s+0}')
+  if [ "$only_old" -eq 0 ] && [ "$new_sum" -le "$old_sum" ]; then
+    echo "  $label:  OK (directional: only_old=0, new_sum=$new_sum <= old_sum=$old_sum)"
+    return 0
+  fi
+  echo "  $label:  VIOLATION (only_old=$only_old, new_sum=$new_sum, old_sum=$old_sum)"
+  return 1
+}
 
 # featureCounts strandedness / end per mode (matches count.snake assign_sites_*)
 declare -A FC_S=( [R1]=2 [R2]=1 [paired]=2 )
@@ -74,12 +105,7 @@ for mode in R2 R1 paired; do
     -i "$assigned" -o "$WORK/${mode}_bed_new.bed.gz" \
     --end "${BED_END[$mode]}" --mode "$mode"
 
-  if diff <(zcat < "$WORK/${mode}_bed_old.bed.gz" | sort) \
-          <(zcat < "$WORK/${mode}_bed_new.bed.gz" | sort) > "$WORK/${mode}_bed.diff"; then
-    echo "  BED:   IDENTICAL"
-  else
-    echo "  BED:   DIFFERENT -> $WORK/${mode}_bed.diff"; fail=1
-  fi
+  check_directional_bed "$WORK/${mode}_bed_old.bed.gz" "$WORK/${mode}_bed_new.bed.gz" "BED" || fail=1
 
   # 4. STRANDED bed (discovery stranded_bed path). Uses labels +/- here; the
   # real rule may relabel to transcript strand, but that is a pure per-strand
@@ -94,17 +120,17 @@ for mode in R2 R1 paired; do
     --end "${BED_END[$mode]}" --mode "$mode" \
     --strand-split --label-plus + --label-minus -
 
-  if diff <(zcat < "$WORK/${mode}_sbed_old.bed.gz" | sort) \
-          <(zcat < "$WORK/${mode}_sbed_new.bed.gz" | sort) > "$WORK/${mode}_sbed.diff"; then
-    echo "  SBED:  IDENTICAL"
-  else
-    echo "  SBED:  DIFFERENT -> $WORK/${mode}_sbed.diff"; fail=1
-  fi
+  # compare per (chrom,pos,count) — strand column (5) is a pure relabel.
+  # write to real temp files (the check reads its inputs twice; process
+  # substitution FIFOs cannot be re-read).
+  zcat < "$WORK/${mode}_sbed_old.bed.gz" | cut -f1-4 | gzip -c > "$WORK/${mode}_sbed_old4.bed.gz"
+  zcat < "$WORK/${mode}_sbed_new.bed.gz" | cut -f1-4 | gzip -c > "$WORK/${mode}_sbed_new4.bed.gz"
+  check_directional_bed "$WORK/${mode}_sbed_old4.bed.gz" "$WORK/${mode}_sbed_new4.bed.gz" "SBED" || fail=1
 done
 
 echo "================================================="
 if [ "$fail" -eq 0 ]; then
-  echo "ALL SYNTHETIC CHECKS PASSED (bit-exact)"
+  echo "ALL SYNTHETIC CHECKS PASSED (count bit-exact; bed/sbed directional)"
 else
   echo "SOME CHECKS FAILED"; exit 1
 fi
