@@ -131,7 +131,6 @@ DEFAULTS:
   alignments:
     - R2
     - paired
-  STAR_paired: --alignEndsProtrude 58 ConcordantPair
 
 SAMPLES:
 # per-sample labels, FASTQ basenames, and config options
@@ -142,6 +141,8 @@ SAMPLES:
 #   alignments
 #   cutadapt_args
 #   star_args (STAR_R1, STAR_R2, STAR_paired)
+#     STAR_R1 is single-mate: --clip5pNbases takes ONE value.
+#     STAR_paired is two-mate: --clip5pNbases takes TWO values (<R1clip> 0).
 #   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
   chromiumv2_test:
     basename: sample-

@@ -212,9 +212,20 @@ chemistry_name:
   bc_whitelist: path/to/whitelist
   platform_name:
     cutadapt_R1: "trimming parameters"
-    STAR_R1: "alignment parameters"
+    STAR_R1: "alignment parameters"     # single-mate R1 rule: --clip5pNbases = 1 value
+    STAR_paired: "alignment parameters" # two-mate paired rule: --clip5pNbases = 2 values (<R1clip> 0)
     STAR_R2: "alignment parameters"
 ```
+
+**clip5pNbases mate-count rule**: STAR requires one `--clip5pNbases` value per
+mate. `STAR_R1` feeds `starsolo_R1` (one `--readFilesIn` mate) so it must carry
+exactly one value; `STAR_paired` feeds `starsolo_paired` (two mates) so it
+carries two (`<R1clip> 0`, R2/cDNA unclipped). These are distinct keys — do NOT
+reuse a two-value `STAR_R1` for both, or R1-only alignment fails with
+"--clip5pNbases has to contain 1 values to match the number of mates".
+`STAR_paired` is fully self-contained (clip/solo args plus the paired-only
+`--alignEndsProtrude 58 ConcordantPair`); it is no longer split across a
+separate DEFAULTS key.
 
 ### SAF format (POLYA_SITES)
 

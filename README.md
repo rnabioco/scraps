@@ -108,7 +108,7 @@ Platform and chemistry-specific parameters organized hierarchically. Each chemis
 - **bc_cut**: Adapter sequences for complex barcode extraction (optional)
 - **Platform-specific settings**: Nested configurations for different sequencing platforms
   - `cutadapt_R1` / `cutadapt_paired`: Adapter trimming parameters
-  - `STAR_R1` / `STAR_R2`: STAR alignment parameters (UMI/barcode positions)
+  - `STAR_R1` / `STAR_R2` / `STAR_paired`: STAR alignment parameters (UMI/barcode positions). `STAR_R1` feeds the single-mate R1-only rule, so its `--clip5pNbases` must have exactly **one** value; `STAR_paired` feeds the two-mate paired rule and takes **two** clip values (`<R1clip> 0`).
 
 ### Configuration Hierarchy
 
