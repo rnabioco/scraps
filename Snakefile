@@ -20,34 +20,37 @@ with open('chemistry.yaml') as fp:
    CHEMISTRY = yaml.safe_load(fp)
 
 def _get_config(sample, item):
+  sample_cfg = SAMPLES[sample]
+
   try:
-    return SAMPLES[sample][item]
+    chemistry = sample_cfg.get("chemistry", DEFAULTS["chemistry"])
   except KeyError:
-    pass
+    print("Error: Chemistry must be defined per sample and/or in Defaults.")
+    raise
+
   try:
-    return CHEMISTRY[SAMPLES[sample]["chemistry"]][SAMPLES[sample]["platform"]][item]
+    platform = sample_cfg.get("platform", DEFAULTS["platform"])
   except KeyError:
-    pass
-  try:
-    return CHEMISTRY[SAMPLES[sample]["chemistry"]][DEFAULTS["platform"]][item]
-  except KeyError:
-    pass
-  try:
-    return CHEMISTRY[SAMPLES[sample]["chemistry"]][item]
-  except KeyError:
-    pass
-  try:
-    return CHEMISTRY[DEFAULTS["chemistry"]][SAMPLES[sample]["platform"]][item]
-  except KeyError:
-    pass
-  try:
-    return CHEMISTRY[DEFAULTS["chemistry"]][DEFAULTS["platform"]][item]
-  except KeyError:
-    pass
-  try:
-    return CHEMISTRY[DEFAULTS["chemistry"]][item]
-  except KeyError:
+    print("Error: Platform must be defined per sample and/or in Defaults.")
+    raise
+
+  if item in sample_cfg:
+    return sample_cfg[item]
+
+  if item in CHEMISTRY.get(chemistry, {}).get(platform, {}):
+    return CHEMISTRY[chemistry][platform][item]
+
+  if item in CHEMISTRY.get(chemistry, {}):
+    return CHEMISTRY[chemistry][item]
+
+  if item in DEFAULTS:
     return DEFAULTS[item]
+
+  print(
+    f"Message: {item} not found in config or chemistry "
+    f"for sample {sample}. Returning an empty string."
+  )
+  return ""
 
 # assemble outputs for rule all
 SAMPLE_OUTS = []
