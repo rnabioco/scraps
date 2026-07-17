@@ -9,13 +9,14 @@ rule assign_sites_R1:
     job_name = "assign_sites_R1",
     out = "{results}/temp/{sample}_R1_assigned",
     out_bam = "{results}/temp/{sample}_R1_filter.bam.featureCounts.bam",
-    temp = "{results}/temp/{sample}_R1_filter.bam"
+    temp = "{results}/temp/{sample}_R1_filter.bam",
+    sort_tmp = "{results}/temp/{sample}_R1_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -37,11 +38,14 @@ rule assign_sites_R1:
     2> {log}
 
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
-    samtools index {output.bam}
-    rm -rf {params.out_bam}
+    rm -rf {params.out_bam} {params.sort_tmp}*
     """
 
 rule assign_sites_R2:
@@ -52,13 +56,14 @@ rule assign_sites_R2:
   params:
     job_name = "assign_sites_R2",
     out = "{results}/temp/{sample}_R2_assigned",
-    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
+    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam",
+    sort_tmp = "{results}/temp/{sample}_R2_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_R2.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -78,12 +83,14 @@ rule assign_sites_R2:
     2> {log}
     
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
-    
-    samtools index {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
-    rm -rf {params.out_bam}
+    rm -rf {params.out_bam} {params.sort_tmp}*
     """
 
 rule assign_sites_paired:
@@ -95,13 +102,14 @@ rule assign_sites_paired:
     job_name = "assign_sites_paired",
     out = "{results}/temp/{sample}_paired_assigned",
     out_bam = "{results}/temp/{sample}_paired_filter.bam.featureCounts.bam",
-    temp = "{results}/temp/{sample}_paired_filter.bam"
+    temp = "{results}/temp/{sample}_paired_filter.bam",
+    sort_tmp = "{results}/temp/{sample}_paired_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_paired.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
@@ -123,11 +131,14 @@ rule assign_sites_paired:
     2> {log}
 
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
-    samtools index {output.bam}
-    rm -rf {params.out_bam}
+    rm -rf {params.out_bam} {params.sort_tmp}*
     rm -rf {params.temp}
     """
     
@@ -138,8 +149,7 @@ rule filter_R2:
     temp("{results}/temp/{sample}_R2.bam")
   params:
     job_name = "filter",
-    temp = "{results}/temp/{sample}_R2_filter.bam",
-    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai"
+    temp = "{results}/temp/{sample}_R2_filter.bam"
   log:
     "{results}/logs/filter_{sample}_R2.txt"
   threads:
@@ -148,12 +158,13 @@ rule filter_R2:
     mem_mb = 8000
   shell:
     r"""
+    # No samtools index needed: filter_bam.py reads via fetch(until_eof=True)
+    # (linear scan) and the {output} _R2.bam is consumed only by
+    # assign_sites_R2's featureCounts, which streams. Indexing either BAM was a
+    # wasted full read pass over a potentially very large (500GB+) file.
     samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
-    samtools index {params.temp}
     python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
-    samtools index {output}
     rm -rf {params.temp}
-    rm -rf {params.tempbai}
     """
 
 rule count:

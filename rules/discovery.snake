@@ -116,18 +116,23 @@ rule pool_beds:
   wildcard_constraints:
     unit = r"[^/]+"
   params:
-    job_name = "pool_beds"
+    job_name = "pool_beds",
+    sort_tmp = "{results}/temp"
   log:
     "{results}/logs/pool_beds_{unit}.txt"
   threads:
-    1
+    4
   resources:
     mem_mb = 16000
   shell:
     r"""
+    # bound the GNU sort: -S in-RAM buffer (under mem_mb) to limit temp spill,
+    # --parallel over threads, and -T pinned to the results volume (not the
+    # default /tmp, which may be small on shared clusters)
+    mkdir -p {params.sort_tmp}
     gunzip -c {input} \
       | awk 'BEGIN {{ OFS = "\t" }} {{ c[$1"\t"$2"\t"$3"\t"$5] += $4 }} END {{ for (k in c) {{ split(k, a, "\t"); print a[1], a[2], a[3], c[k], a[4] }} }}' - \
-      | sort -k1,1 -k2,2n \
+      | sort -k1,1 -k2,2n -S 12G --parallel={threads} -T {params.sort_tmp} \
       | gzip -c > {output} 2> {log}
     """
 
