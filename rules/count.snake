@@ -45,7 +45,7 @@ rule assign_sites_R1:
     -o {output.bam}##idx##{output.bam}.bai \
     {params.out_bam}
 
-    rm -rf {params.out_bam} {params.sort_tmp}*
+    rm -rf {params.out_bam}
     """
 
 rule assign_sites_R2:
@@ -90,7 +90,7 @@ rule assign_sites_R2:
     -o {output.bam}##idx##{output.bam}.bai \
     {params.out_bam}
 
-    rm -rf {params.out_bam} {params.sort_tmp}*
+    rm -rf {params.out_bam}
     """
 
 rule assign_sites_paired:
@@ -138,7 +138,7 @@ rule assign_sites_paired:
     -o {output.bam}##idx##{output.bam}.bai \
     {params.out_bam}
 
-    rm -rf {params.out_bam} {params.sort_tmp}*
+    rm -rf {params.out_bam}
     rm -rf {params.temp}
     """
     
