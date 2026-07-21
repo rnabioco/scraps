@@ -2,6 +2,8 @@
 
 _Branch `replace-umitools-pysam`. Baseline commit `94e9782` ("Add de novo RT priming site discovery module", 2026-06-16). This report summarizes every change on the branch through commit `4e44ec4` (2026-07-11), combining the commit record with the design rationale developed during the work._
 
+> **Superseded (later change):** the count-arm per-sample bed tracks (`{results}/bed/{sample}_{alignments}.bed.gz`, rules `bed_R1`/`bed_R2`/`bed_paired`) described below have since been **removed**. They were terminal, unstranded, and had no downstream consumers; strand-aware browser tracks are provided by the discovery arm's stranded beds, which are more correct for polyA data. In the same change, `pileup_sites.py` (now used only by discovery's `stranded_bed`) was rewritten from an in-RAM dedup dict to a sort-then-stream algorithm with O(1) resident memory, fixing an OOM on very large (hundreds-of-GB) assigned BAMs. Output remains byte-for-byte identical. References to the "bed path" in this historical report should be read with that removal in mind.
+
 ---
 
 ## 📌 Executive summary

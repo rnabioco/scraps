@@ -57,7 +57,6 @@ SAMPLE_OUTS = []
 for x in SAMPLES:
   SAMPLE_OUTS.extend(expand("{results}/counts/{sample}_{alignments}_counts.tsv.gz", results = RESULTS, sample = x, alignments = _get_config(x, "alignments")))
   SAMPLE_OUTS.extend(expand("{results}/{sample}/{sample}_{alignments}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = x, alignments = _get_config(x, "alignments")))
-  SAMPLE_OUTS.extend(expand("{results}/bed/{sample}_{alignments}.bed.gz", results = RESULTS, sample = x, alignments = _get_config(x, "alignments")))  
 
 # --- discovery unit resolution (shared by output assembly and rules) ---------
 # A discovery "unit" is an aggregation of one or more (sample, mode) stranded

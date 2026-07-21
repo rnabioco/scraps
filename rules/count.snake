@@ -193,72 +193,14 @@ rule count:
       -t {threads}
     """
 
-# NOTE on bed_* semantics (all modes): pileup_sites.py deduplicates on
+# NOTE on priming-pileup semantics: pileup_sites.py deduplicates on
 # (cell, UMI, priming position) and reports the priming end. Unlike the former
 # umi_tools dedup + genomecov, it ignores the opposite-end / fragmentation /
 # splice coordinate, so PCR duplicates of one molecule (which differ only at the
 # post-amplification fragmentation end) collapse to a single count. This is
-# consistent with the count table and reduces bed signal ~3.7% vs the legacy
+# consistent with the count table and reduces pileup signal ~3.7% vs the legacy
 # pipeline on test data. Intended change; see docs and tests/validate_synthetic.sh.
-rule bed_R1:
-  # unique-UMI 5' priming pileup direct from the assigned BAM (proper-pair read1
-  # when paired-aligned), replacing umi_tools dedup + genomecov
-  # (see inst/scripts/pileup_sites.py)
-  input:
-    "{results}/temp/{sample}_R1_assigned.bam"
-  output:
-    "{results}/bed/{sample}_R1.bed.gz"
-  params:
-    job_name = "bed"
-  log:
-    "{results}/logs/bed_{sample}_R1.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 4000
-  shell:
-    r"""
-    exec > {log} 2>&1
-    python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 5 --mode R1
-    """
-
-rule bed_R2:
-  input:
-    "{results}/temp/{sample}_R2_assigned.bam"
-  output:
-    "{results}/bed/{sample}_R2.bed.gz"
-  params:
-    job_name = "bed"
-  log:
-    "{results}/logs/bed_{sample}_R2.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 4000
-  shell:
-    r"""
-    exec > {log} 2>&1
-    python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 3 --mode R2
-    """
-
-rule bed_paired:
-  input:
-    "{results}/temp/{sample}_paired_assigned.bam"
-  output:
-    "{results}/bed/{sample}_paired.bed.gz"
-  params:
-    job_name = "bed"
-  log:
-    "{results}/logs/bed_{sample}_paired.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 4000
-  shell:
-    r"""
-    exec > {log} 2>&1
-    python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 5 --mode paired
-    """
+# The only consumer of pileup_sites.py is discovery's stranded_bed rule
+# (rules/discovery.snake); the count arm no longer emits per-sample bed tracks
+# (removed -- unstranded pileups are less informative for polyA data than the
+# strand-aware discovery beds).

@@ -83,24 +83,30 @@ rule stranded_bed:
     mode = lambda wc: wc.read,
     # transcript strand to label reads on the +/- aligned strand (see above)
     label_plus = lambda wc: _DISC_STRAND_LABEL[wc.read][0],
-    label_minus = lambda wc: _DISC_STRAND_LABEL[wc.read][1]
+    label_minus = lambda wc: _DISC_STRAND_LABEL[wc.read][1],
+    sort_tmp = "{results}/temp"
   log:
     "{results}/logs/stranded_bed_{sample}_{read}.txt"
   threads:
     4
   resources:
-    mem_mb = 4000
+    # pileup_sites.py is now O(1) resident memory; the external sort spills to
+    # sort_tmp beyond its -S buffer. mem_mb covers the sort -S buffer (8G) plus
+    # headroom, not a genome-scale in-RAM dedup dict as before.
+    mem_mb = 12000
   shell:
     r"""
     # 5-col stranded bed: chrom start end count strand, where strand is the
     # TRANSCRIPT strand (read-align strand converted per mode; see comment above
     # the rule). The only consumers (pool_beds, kde_peaks) re-sort, so line order
     # need not match the previous genomecov per-strand block layout.
+    mkdir -p {params.sort_tmp}
     python3 inst/scripts/pileup_sites.py \
       -i {input} -o {output} \
       --end {params.end} --mode {params.mode} \
       --strand-split \
       --label-plus {params.label_plus} --label-minus {params.label_minus} \
+      -t {threads} --sort-mem 8G --sort-tmp {params.sort_tmp} \
       2> {log}
     """
 

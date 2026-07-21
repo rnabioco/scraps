@@ -92,7 +92,10 @@ for mode in R2 R1 paired; do
     -I "$assigned" -S "$WORK/${mode}_dedup.bam" 2> "$WORK/${mode}_dedup.log"
   samtools index "$WORK/${mode}_dedup.bam"
 
-  # old bed path: replicate the exact samtools prefilter + genomecov + awk
+  # 4-COL UNIT CHECK: the count arm no longer emits per-sample bed tracks, but
+  # pileup_sites.py retains its non-strand-split (4-col) code path. Exercise it
+  # here against the legacy genomecov 4-col output so the branch stays covered.
+  # This is a unit check of the script, not a pipeline-output check.
   case "$mode" in
     R1)     samtools view -F 4 -b "$WORK/${mode}_dedup.bam" > "$WORK/${mode}_pre.bam" ;;
     paired) samtools view -f 0x42 -b "$WORK/${mode}_dedup.bam" > "$WORK/${mode}_pre.bam" ;;
@@ -105,7 +108,7 @@ for mode in R2 R1 paired; do
     -i "$assigned" -o "$WORK/${mode}_bed_new.bed.gz" \
     --end "${BED_END[$mode]}" --mode "$mode"
 
-  check_directional_bed "$WORK/${mode}_bed_old.bed.gz" "$WORK/${mode}_bed_new.bed.gz" "BED" || fail=1
+  check_directional_bed "$WORK/${mode}_bed_old.bed.gz" "$WORK/${mode}_bed_new.bed.gz" "BED(4col unit)" || fail=1
 
   # 4. STRANDED bed (discovery stranded_bed path). Uses labels +/- here; the
   # real rule may relabel to transcript strand, but that is a pure per-strand

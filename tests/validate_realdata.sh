@@ -81,7 +81,8 @@ compare_directional() {  # $1 = relative glob
 }
 
 compare_exact "counts/*.tsv.gz"
-compare_directional "bed/*.bed.gz"
+# count-arm bed/*.bed.gz outputs were removed (unstranded pileups are less
+# informative for polyA data than the strand-aware discovery beds).
 compare_directional "discovery/beds/*.stranded.bed.gz"
 
 git worktree remove --force "$OLD_TREE" || true
