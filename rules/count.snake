@@ -19,6 +19,7 @@ rule assign_sites_R1:
     mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -34,8 +35,7 @@ rule assign_sites_R1:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {params.temp} \
-    2> {log}
+    {params.temp}
 
     samtools sort \
     -@ {threads} \
@@ -66,6 +66,7 @@ rule assign_sites_R2:
     mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -79,8 +80,7 @@ rule assign_sites_R2:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {input} \
-    2> {log}
+    {input}
     
     samtools sort \
     -@ {threads} \
@@ -112,6 +112,7 @@ rule assign_sites_paired:
     mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -127,8 +128,7 @@ rule assign_sites_paired:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {params.temp} \
-    2> {log}
+    {params.temp}
 
     samtools sort \
     -@ {threads} \
@@ -158,6 +158,7 @@ rule filter_R2:
     mem_mb = 8000
   shell:
     r"""
+    exec > {log} 2>&1
     # No samtools index needed: filter_bam.py reads via fetch(until_eof=True)
     # (linear scan) and the {output} _R2.bam is consumed only by
     # assign_sites_R2's featureCounts, which streams. Indexing either BAM was a
@@ -185,11 +186,11 @@ rule count:
     mem_mb = 8000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/count_sites.py \
       -i {input} \
       -o {output} \
-      -t {threads} \
-      2> {log}
+      -t {threads}
     """
 
 # NOTE on bed_* semantics (all modes): pileup_sites.py deduplicates on
@@ -217,8 +218,9 @@ rule bed_R1:
     mem_mb = 4000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 5 --mode R1 2> {log}
+      -i {input} -o {output} --end 5 --mode R1
     """
 
 rule bed_R2:
@@ -236,8 +238,9 @@ rule bed_R2:
     mem_mb = 4000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 3 --mode R2 2> {log}
+      -i {input} -o {output} --end 3 --mode R2
     """
 
 rule bed_paired:
@@ -255,6 +258,7 @@ rule bed_paired:
     mem_mb = 4000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/pileup_sites.py \
-      -i {input} -o {output} --end 5 --mode paired 2> {log}
+      -i {input} -o {output} --end 5 --mode paired
     """
