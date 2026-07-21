@@ -88,12 +88,14 @@ rule stranded_bed:
   log:
     "{results}/logs/stranded_bed_{sample}_{read}.txt"
   threads:
-    4
+    8
   resources:
-    # pileup_sites.py is now O(1) resident memory; the external sort spills to
-    # sort_tmp beyond its -S buffer. mem_mb covers the sort -S buffer (8G) plus
-    # headroom, not a genome-scale in-RAM dedup dict as before.
-    mem_mb = 12000
+    # pileup_sites.py runs one worker process per contig (parallel over the BAM
+    # decode, the real bottleneck) with bounded memory: --sort-mem is an
+    # AGGREGATE sort -S budget split across workers, so peak RSS stays ~8G plus
+    # per-worker + Pool overhead regardless of thread count. Not a genome-scale
+    # in-RAM dedup dict as before.
+    mem_mb = 16000
   shell:
     r"""
     # 5-col stranded bed: chrom start end count strand, where strand is the

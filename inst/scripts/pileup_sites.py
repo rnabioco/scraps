@@ -1,7 +1,10 @@
 import os
+import re
 import gzip
+import shutil
 import argparse
 import subprocess
+from multiprocessing import Pool
 
 import pysam
 
@@ -12,10 +15,13 @@ Counts distinct (cell-barcode, UMI) pairs at each single-base PRIMING position
 (the configured 5'/3' read end). The priming position is both the dedup key and
 the reported coordinate: a molecule is defined by (cell, UMI, priming site).
 
-Implemented as a single linear BAM pass that streams one record per surviving
-read to an external `sort`, then collapses adjacent duplicates -- O(1) resident
-memory (see pileup() for details). This replaces an earlier in-RAM dict that
-OOM-killed on hundreds-of-GB assigned BAMs. Output is byte-for-byte identical.
+Implemented as a per-contig parallel BAM pass: each worker streams one record
+per surviving read on its contig to a per-worker external `sort`, collapses
+adjacent duplicates, and writes a gzipped per-contig fragment; the driver then
+concatenates fragments in C-locale contig order into the final bed (see
+pileup() for details). O(1) resident memory per worker; `sort` spills to disk
+under its -S buffer. This replaces an earlier in-RAM dict that OOM-killed on
+hundreds-of-GB assigned BAMs. Output is byte-for-byte identical.
 
 This deliberately differs from `umi_tools dedup` + `bedtools genomecov`. umi_tools
 keys deduplication on the read's mapping coordinate (5' end / full fragment span
@@ -87,128 +93,197 @@ def _passes_mode(read, mode):
     return not read.is_unmapped
 
 
-def pileup(bam_path, out_path, end, mode, strand_split, label_plus,
-           label_minus, threads=1, sort_mem="8G", sort_tmp=None):
-    """Sort-then-stream UMI-deduplicated priming pileup (O(1) resident memory).
+def _sort_cmd(strand_split, sort_mem, sort_tmp):
+    """GNU sort argv reproducing Python sorted()-tuple ordering under LC_ALL=C.
 
-    The previous implementation accumulated the whole genome-wide dedup universe
-    -- a dict of (cell, umi) sets keyed by priming position -- in RAM before
-    writing. On very large assigned BAMs (hundreds of GB) that exceeds available
-    memory and is OOM-killed. Instead we make a single linear BAM pass that emits
-    one record per surviving read to an external `sort`, then stream the sorted
-    output and collapse adjacent-duplicate (cell, umi) pairs per position group.
-    Peak Python memory is a few strings; `sort` spills to disk under -S.
-
-    Byte-for-byte output parity with the old writer requires the sort to
-    reproduce Python's `sorted()` tuple ordering: chrom by codepoint/byte order
-    (LC_ALL=C), pos numerically, then strand (when splitting) by byte order. The
-    (cell, umi) columns are sorted only to make identical triples adjacent for
-    collapsing; being lower-priority keys they do not perturb group ordering.
-
-    Record columns emitted to sort (tab-separated):
-      strand-split : chrom  pos  strand  cell  umi   (group = chrom,pos,strand)
-      plain        : chrom  pos  cell  umi          (group = chrom,pos)
+    -k1,1 chrom (byte), -k2,2n pos (numeric), then (when splitting) -k3,3 strand
+    (byte); the trailing cell/umi keys only cluster identical molecules
+    adjacently and, being lowest priority, do not perturb group ordering. Each
+    worker runs its own single-threaded sort (--parallel=1); parallelism here is
+    across contigs, and sort_mem is the per-worker -S buffer.
     """
-    if sort_tmp is None:
-        sort_tmp = os.environ.get("TMPDIR", ".")
+    keys = (["-k1,1", "-k2,2n", "-k3,3", "-k4,4", "-k5,5"] if strand_split
+            else ["-k1,1", "-k2,2n", "-k3,3", "-k4,4"])
+    return [
+        "sort", "-t", "\t", *keys,
+        "-S", sort_mem, "-T", sort_tmp,
+        "--parallel=1", "--compress-program=gzip",
+    ]
+
+
+def _collapse(sorted_lines, out, strand_split):
+    """Collapse adjacent-duplicate (cell, umi) per position group -> bed lines.
+
+    A group is a run of lines sharing the group key (chrom,pos[,strand]); within
+    it a molecule is new iff its (cell, umi) differs from the previous line
+    (sort clustered identical triples), so distinct-(cell,umi) == transitions+1.
+    """
+    cur_group = None
+    cur_pair = None
+    n = 0
+
+    def _flush(group, count):
+        if group is None:
+            return
+        if strand_split:
+            chrom, pos, strand = group
+            # [pos, pos+1) interval, 5-col stranded bed
+            out.write(f"{chrom}\t{pos}\t{pos + 1}\t{count}\t{strand}\n")
+        else:
+            chrom, pos = group
+            # [pos-1, pos) interval, 4-col bed
+            out.write(f"{chrom}\t{pos - 1}\t{pos}\t{count}\n")
+
+    for line in sorted_lines:
+        fields = line.rstrip("\n").split("\t")
+        if strand_split:
+            chrom, pos_s, strand, cb, ub = fields
+            group = (chrom, int(pos_s), strand)
+            pair = (cb, ub)
+        else:
+            chrom, pos_s, cb, ub = fields
+            group = (chrom, int(pos_s))
+            pair = (cb, ub)
+        if group != cur_group:
+            _flush(cur_group, n)
+            cur_group = group
+            cur_pair = pair
+            n = 1
+        else:
+            if pair != cur_pair:
+                n += 1
+                cur_pair = pair
+    _flush(cur_group, n)
+
+
+def _pileup_contig(job):
+    """Worker: pileup one contig -> gzipped per-contig bed fragment.
+
+    Streams surviving reads on `contig` to a per-worker external sort, collapses
+    adjacent duplicates, and writes fragment_path. Returns fragment_path (or
+    None if the contig produced no records). O(1) resident memory + the sort -S
+    buffer. Runs in a separate process (Pool), so all args are picklable.
+    """
+    (bam_path, contig, end, mode, strand_split, label_plus, label_minus,
+     sort_mem, sort_tmp, fragment_path) = job
 
     sort_env = dict(os.environ)
     sort_env["LC_ALL"] = "C"
-    if strand_split:
-        # -k1,1 chrom (byte), -k2,2n pos (numeric), -k3,3 strand (byte),
-        # then cell/umi to cluster identical molecules adjacently.
-        sort_cmd = [
-            "sort", "-t", "\t",
-            "-k1,1", "-k2,2n", "-k3,3", "-k4,4", "-k5,5",
-            "-S", sort_mem, "-T", sort_tmp,
-            "--parallel=%d" % max(1, threads),
-            "--compress-program=gzip",
-        ]
-    else:
-        sort_cmd = [
-            "sort", "-t", "\t",
-            "-k1,1", "-k2,2n", "-k3,3", "-k4,4",
-            "-S", sort_mem, "-T", sort_tmp,
-            "--parallel=%d" % max(1, threads),
-            "--compress-program=gzip",
-        ]
-
     sorter = subprocess.Popen(
-        sort_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        text=True, env=sort_env,
+        _sort_cmd(strand_split, sort_mem, sort_tmp),
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, env=sort_env,
     )
 
-    def _emit_records():
-        with pysam.AlignmentFile(bam_path, "rb") as bam:
-            for read in bam.fetch(until_eof=True):
-                if read.is_unmapped:
-                    continue
-                if not _passes_mode(read, mode):
-                    continue
-                try:
-                    cb = read.get_tag("CB")
-                    ub = read.get_tag("UB")
-                except KeyError:
-                    continue
-                if cb == "-" or ub == "-":
-                    continue
-                pos = _end_position(read, end)
-                if strand_split:
-                    strand = label_minus if read.is_reverse else label_plus
-                    sorter.stdin.write(
-                        f"{read.reference_name}\t{pos}\t{strand}\t{cb}\t{ub}\n")
-                else:
-                    sorter.stdin.write(
-                        f"{read.reference_name}\t{pos}\t{cb}\t{ub}\n")
-        sorter.stdin.close()
-
-    _emit_records()
-
-    # Stream sorted records; a group is a run of lines sharing the group key.
-    # Within a group, count DISTINCT (cell, umi): because sort clustered
-    # identical triples, a molecule is new iff its (cell, umi) differs from the
-    # previous line in the same group.
-    with gzip.open(out_path, "wt") as out:
-        cur_group = None
-        cur_pair = None
-        n = 0
-
-        def _flush(group, count):
-            if group is None:
-                return
+    wrote_any = False
+    with pysam.AlignmentFile(bam_path, "rb") as bam:
+        for read in bam.fetch(contig=contig):
+            if read.is_unmapped:
+                continue
+            if not _passes_mode(read, mode):
+                continue
+            try:
+                cb = read.get_tag("CB")
+                ub = read.get_tag("UB")
+            except KeyError:
+                continue
+            if cb == "-" or ub == "-":
+                continue
+            pos = _end_position(read, end)
             if strand_split:
-                chrom, pos, strand = group
-                # [pos, pos+1) interval, 5-col stranded bed
-                out.write(f"{chrom}\t{pos}\t{pos + 1}\t{count}\t{strand}\n")
+                strand = label_minus if read.is_reverse else label_plus
+                sorter.stdin.write(
+                    f"{read.reference_name}\t{pos}\t{strand}\t{cb}\t{ub}\n")
             else:
-                chrom, pos = group
-                # [pos-1, pos) interval, 4-col bed
-                out.write(f"{chrom}\t{pos - 1}\t{pos}\t{count}\n")
+                sorter.stdin.write(f"{read.reference_name}\t{pos}\t{cb}\t{ub}\n")
+            wrote_any = True
+    sorter.stdin.close()
 
-        for line in sorter.stdout:
-            fields = line.rstrip("\n").split("\t")
-            if strand_split:
-                chrom, pos_s, strand, cb, ub = fields
-                group = (chrom, int(pos_s), strand)
-                pair = (cb, ub)
-            else:
-                chrom, pos_s, cb, ub = fields
-                group = (chrom, int(pos_s))
-                pair = (cb, ub)
-            if group != cur_group:
-                _flush(cur_group, n)
-                cur_group = group
-                cur_pair = pair
-                n = 1
-            else:
-                if pair != cur_pair:
-                    n += 1
-                    cur_pair = pair
-        _flush(cur_group, n)
+    if wrote_any:
+        with gzip.open(fragment_path, "wt") as out:
+            _collapse(sorter.stdout, out, strand_split)
+    else:
+        # drain so the child can exit cleanly
+        sorter.stdout.read()
 
     ret = sorter.wait()
     if ret != 0:
-        raise subprocess.CalledProcessError(ret, sort_cmd)
+        raise subprocess.CalledProcessError(ret, "sort")
+    return fragment_path if wrote_any else None
+
+
+def pileup(bam_path, out_path, end, mode, strand_split, label_plus,
+           label_minus, threads=1, sort_mem="8G", sort_tmp=None):
+    """Per-contig parallel UMI-deduplicated priming pileup (bounded memory).
+
+    Each contig is processed independently in a worker process: stream surviving
+    reads to a per-worker external sort, collapse adjacent (cell,umi) duplicates,
+    and write a gzipped per-contig bed fragment. The driver concatenates the
+    fragments in C-locale contig-name order to produce the final bed.
+
+    Byte-for-byte parity with the serial writer: within a contig the sort keys
+    and collapse are identical; across contigs, concatenating fragments in
+    sorted(contigs) C-byte order reproduces the global `sorted()` ordering
+    (chrom byte order, then pos). Every record for a contig lands in exactly one
+    fragment, so no position group is ever split across fragments.
+
+    Memory: `sort_mem` is an AGGREGATE budget split evenly across workers, so
+    peak RSS stays ~sort_mem regardless of thread count. Per-worker -S =
+    sort_mem / n_workers.
+    """
+    if sort_tmp is None:
+        sort_tmp = os.environ.get("TMPDIR", ".")
+    os.makedirs(sort_tmp, exist_ok=True)
+
+    with pysam.AlignmentFile(bam_path, "rb") as bam:
+        contigs = list(bam.references)
+
+    n_workers = max(1, min(threads, len(contigs))) if contigs else 1
+    per_worker_mem = _split_sort_mem(sort_mem, n_workers)
+
+    # Fragment filenames are index-based (contig names may contain unsafe chars);
+    # the (index, contig) pairing is retained here to concat in C-byte order.
+    base = os.path.join(sort_tmp,
+                        "%s.part" % re.sub(r"[^\w.-]", "_",
+                                           os.path.basename(out_path)))
+    jobs = [
+        (bam_path, contig, end, mode, strand_split, label_plus, label_minus,
+         per_worker_mem, sort_tmp, "%s.%d.bed.gz" % (base, i))
+        for i, contig in enumerate(contigs)
+    ]
+
+    try:
+        if n_workers > 1 and len(jobs) > 1:
+            with Pool(n_workers) as pool:
+                fragments = pool.map(_pileup_contig, jobs)
+        else:
+            fragments = [_pileup_contig(j) for j in jobs]
+
+        # concat in C-locale contig-name order (matches the global sort's -k1,1)
+        order = sorted(range(len(contigs)), key=lambda i: contigs[i].encode())
+        with open(out_path, "wb") as out:
+            for i in order:
+                frag = fragments[i]
+                if frag is None:
+                    continue
+                with open(frag, "rb") as fh:
+                    shutil.copyfileobj(fh, out)
+    finally:
+        for j in jobs:
+            frag = j[-1]
+            if os.path.exists(frag):
+                os.remove(frag)
+
+
+def _split_sort_mem(sort_mem, n_workers):
+    """Divide an aggregate sort -S budget (e.g. '8G', '512M', '1048576') evenly
+    across n_workers, returned in sort's suffix form. Floors at 16M/worker."""
+    m = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*([KMGT]?)\s*", str(sort_mem), re.I)
+    if not m:
+        return sort_mem  # let sort validate/reject
+    value, suffix = float(m.group(1)), m.group(2).upper()
+    scale = {"": 1, "K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}[suffix]
+    per = max(int(value * scale / n_workers), 16 * 1024**2)  # >= 16M
+    return "%dK" % max(per // 1024, 1)
 
 
 def main():
@@ -230,13 +305,20 @@ def main():
     parser.add_argument("--label-minus", default="-",
                         help="transcript strand label for --aligned reads")
     parser.add_argument("-t", "--threads", type=int, default=1,
-                        help="threads for the external sort (--parallel)")
+                        help="worker processes (parallel over contigs); each "
+                             "worker runs a single-threaded sort")
     parser.add_argument("--sort-mem", default="8G",
-                        help="external sort in-RAM buffer (sort -S); spills to "
-                             "--sort-tmp beyond this")
+                        help="AGGREGATE external-sort buffer (sort -S), split "
+                             "evenly across workers; peak RSS stays ~this "
+                             "regardless of --threads. Spills to --sort-tmp.")
     parser.add_argument("--sort-tmp", default=None,
                         help="external sort tempdir (default: $TMPDIR or .)")
     args = parser.parse_args()
+
+    # per-contig fetch requires a BAM index
+    if not os.path.exists(args.inbam + ".bai") and not os.path.exists(
+            args.inbam.rsplit(".", 1)[0] + ".bai"):
+        pysam.index(args.inbam)
 
     pileup(args.inbam, args.out, args.end, args.mode,
            args.strand_split, args.label_plus, args.label_minus,
