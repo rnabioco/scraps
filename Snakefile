@@ -19,6 +19,38 @@ import yaml
 with open('chemistry.yaml') as fp:
    CHEMISTRY = yaml.safe_load(fp)
 
+def _validate_config():
+  """Fail fast on invalid chemistry/platform before _get_config's empty-string
+  fallback silently propagates empty args into cutadapt/STAR rules."""
+  errors = []
+  meta_keys = {"bc_whitelist", "bc_cut", "bc_length1"}  # scalar chemistry-level keys, not platforms
+  for sample, cfg in SAMPLES.items():
+    cfg = cfg or {}
+    chemistry = cfg.get("chemistry", DEFAULTS.get("chemistry"))
+    platform  = cfg.get("platform",  DEFAULTS.get("platform"))
+
+    if chemistry not in CHEMISTRY:
+      errors.append(
+        f"sample '{sample}': chemistry '{chemistry}' not found in chemistry.yaml. "
+        f"Valid options: {sorted(CHEMISTRY)}"
+      )
+      continue  # platform check meaningless without valid chemistry
+
+    platforms = [k for k, v in CHEMISTRY[chemistry].items()
+                 if isinstance(v, dict) and k not in meta_keys]
+    if platform not in platforms:
+      errors.append(
+        f"sample '{sample}': platform '{platform}' not found under chemistry "
+        f"'{chemistry}'. Valid options: {sorted(platforms)}"
+      )
+
+  if errors:
+    raise ValueError(
+      "Invalid chemistry/platform configuration:\n  - " + "\n  - ".join(errors)
+    )
+
+_validate_config()
+
 def _get_config(sample, item):
   sample_cfg = SAMPLES[sample]
 
