@@ -12,23 +12,27 @@
 chromiumV3:
   bc_whitelist: ref/3M-february-2018.txt
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     cutadapt_R1: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -n 2 -m 75 -l 300 --nextseq-trim=20
     STAR_R1: --soloUMIlen 12 --clip5pNbases 48 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
     STAR_R2: --soloUMIlen 12
   element:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 -q 20
     cutadapt_R1: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -n 2 -m 75 -l 300 -q 20
     STAR_R1: --soloUMIlen 12 --clip5pNbases 48 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
     STAR_paired: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --alignEndsProtrude 58 ConcordantPair
     STAR_R2: --soloUMIlen 12
   ultima:
+    valid_modes: [R1]
     cutadapt_R1: -a 'CTACACGACGCTCTTCCGATCT;max_error_rate=0.2;min_overlap=10;required...AGATCGGAAGAGCACACGTCTG;max_error_rate=0.2;min_overlap=6' -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -n 2 -m 68 -q 20
     STAR_R1: --soloUMIlen 9 --clip5pNbases 38 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
 chromiumV2:
   bc_whitelist: ref/737K-august-2016.txt
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 10 --clip5pNbases 46 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 10 --clip5pNbases 46 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
@@ -38,6 +42,7 @@ ddseq:
   bc_cut: TATGCATGAC...CAGTCAGTCA
   bc_length1: 15
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 8 --clip5pNbases 29 --soloCBstart 9 --soloCBlen 21 --soloUMIstart 1 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 8 --clip5pNbases 29 0 --soloCBstart 9 --soloCBlen 21 --soloUMIstart 1 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
@@ -45,6 +50,7 @@ ddseq:
 dropseq:
   bc_whitelist: None
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 8 --clip5pNbases 40 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 8 --clip5pNbases 40 0 --soloCBstart 1 --soloCBlen 12 --soloUMIstart 13 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
@@ -53,6 +59,7 @@ microwellseq:
   bc_whitelist: None
   bc_cut: CGACTCACTACAGGG...TCGGTGACACGATCG
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 6 --clip5pNbases 44 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 6 --clip5pNbases 44 0 --soloCBstart 1 --soloCBlen 18 --soloUMIstart 19 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
@@ -61,6 +68,7 @@ bd:
   bc_whitelist: None
   bc_cut: ACTGGCCTGCGA...GGTAGCGGTGACA
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 8 --clip5pNbases 43 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 8 --clip5pNbases 43 0 --soloCBstart 1 --soloCBlen 27 --soloUMIstart 28 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
@@ -68,6 +76,7 @@ bd:
 indrop:
   bc_whitelist: None
   illumina:
+    valid_modes: [R1, R2, paired]
     cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
     STAR_R1: --soloUMIlen 6 --clip5pNbases 22 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 6 --clip5pNbases 22 0 --soloCBstart 1 --soloCBlen 8 --soloUMIstart 9 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair

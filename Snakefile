@@ -51,6 +51,39 @@ def _validate_config():
 
 _validate_config()
 
+def _validate_modes():
+  """Fail fast when a sample requests alignment modes its chemistry/platform
+  does not support (valid_modes in chemistry.yaml). Runs after
+  _validate_config() so chemistry/platform are known-valid."""
+  errors = []
+  for sample, cfg in SAMPLES.items():
+    cfg = cfg or {}
+    chemistry = cfg.get("chemistry", DEFAULTS.get("chemistry"))
+    platform  = cfg.get("platform",  DEFAULTS.get("platform"))
+    plat_cfg = CHEMISTRY.get(chemistry, {}).get(platform, {})
+    valid = plat_cfg.get("valid_modes")
+    if not valid:
+      errors.append(
+        f"sample '{sample}': chemistry '{chemistry}' platform '{platform}' "
+        f"defines no valid_modes in chemistry.yaml"
+      )
+      continue
+    modes = cfg.get("alignments", DEFAULTS.get("alignments", []))
+    if isinstance(modes, str):
+      modes = [modes]
+    bad = [m for m in modes if m not in valid]
+    if bad:
+      errors.append(
+        f"sample '{sample}': alignment mode(s) {bad} not supported by "
+        f"chemistry '{chemistry}' platform '{platform}'. Valid: {sorted(valid)}"
+      )
+  if errors:
+    raise ValueError(
+      "Invalid alignment mode configuration:\n  - " + "\n  - ".join(errors)
+    )
+
+_validate_modes()
+
 def _get_config(sample, item):
   sample_cfg = SAMPLES[sample]
 
