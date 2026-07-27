@@ -166,20 +166,34 @@ rule rulename:
         job_name = "rulename",
         # Additional parameters
     log:
-        "{results}/logs/{sample}_rulename.txt"
+        "{results}/logs/rulename_{sample}_{read}.txt"
     threads:
         12
     resources:
         mem_mb = 8000
     shell:
         r"""
-        command --arg {input} > {output} 2> {log}
+        exec > {log} 2>&1
+        command --arg {input} > {output}
         """
 ```
 
 **Key conventions**:
 - Use raw strings `r"""..."""` for shell blocks
-- Redirect stderr to log files: `2> {log}`
+- **Log naming**: `{results}/logs/{rulename}_{sample}_{read}.txt`, i.e.
+  `{rulename}` first, then sample, then the alignment mode (`R1`/`R2`/`paired`),
+  and always the `.txt` extension. Discovery rules that operate on a unit rather
+  than a single (sample, mode) use `{rulename}_{unit}.txt` (the unit id already
+  encodes the mode). Aggregate rules with no per-sample wildcard use a bare
+  descriptive name (`multiqc.txt`, `check_versions.txt`). Keep this consistent so
+  logs sort by rule and are trivially associable with their origin.
+- **Capture ALL shell output to the log**: put `exec > {log} 2>&1` as the first
+  line of every shell body (preferred over appending `2> {log}` to each command).
+  This routes stdout *and* stderr — including bare `echo` status messages like
+  cutadapt's `"no trimming"` — into the per-rule log instead of leaking into the
+  Snakemake console/master log where they are hard to attribute. All shell-bearing
+  rules do this; discovery rules use the inline `> {log} 2>&1` / `2> {log}`
+  equivalents on their single pipeline.
 - Mark intermediate files with `temp()`
 - Use wildcards in paths: `{sample}`, `{results}`, `{read}`
 - Resource specifications: `threads`, `mem_mb`
@@ -190,6 +204,11 @@ rule rulename:
 def _get_config(sample, item):
     # Hierarchical lookup: sample -> chemistry[platform] -> chemistry -> defaults
 ```
+Diagnostic messages from `_get_config` (missing chemistry/platform, or an item
+falling through to the empty-string default) are written to **`sys.stderr`**, not
+`print()`/stdout. Snakemake buffers stdout independently of its own stderr log
+stream, so `print()` here lands detached (often bunched at the end of the run);
+`sys.stderr.write(...)` keeps the messages in order at their point of origin.
 
 ---
 
@@ -238,7 +257,13 @@ gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
 
 - Delimiter `{D}`: `;` human, `_` mouse (matches `ref/polyadb32.{hg38,mm10}.saf.gz`).
 - `pos` = field 5 (1-based cleavage position); `pas_type` = field 7 (class).
-  Missing values are `NA`.
+  Missing values are `NA`. `pos` may occasionally appear in float/scientific
+  notation (e.g. `7.7e+07` from a float round-trip, as in one legacy row of the
+  bundled `ref/polyadb32.mm10.saf.gz`, since repaired). Parsers must coerce it
+  with `int(round(float(pos)))` rather than `int(pos)` so such rows are recovered
+  instead of silently skipped — both `annotate_sites.py` (`load_polya`) and
+  `inst/scripts/polyadb/validate_saf.py` do this. The converters in
+  `inst/scripts/polyadb/` always emit plain integers.
 - `Start`/`End` = strand-specific 15 bp window (transcript -10/+5):
   `+` → `[pos-10, pos+5]`, `-` → `[pos-5, pos+10]`.
 - The `_` (mouse) delimiter appears inside RefSeq IDs and scaffold chrom names;
@@ -312,9 +337,13 @@ auto-downloaded). Not part of the Snakemake DAG.
 
 ## Error Handling and Debugging
 
-**Log files**: All rules write logs to `{results}/logs/`
+**Log files**: All rules write logs to `{results}/logs/`, named
+`{rulename}_{sample}_{read}.txt` (or `{rulename}_{unit}.txt` for discovery,
+`multiqc.txt` / `check_versions.txt` for aggregates).
 - Check logs for detailed error messages
-- Logs include stderr from all commands
+- Logs capture BOTH stdout and stderr (`exec > {log} 2>&1`), so status echoes
+  (e.g. cutadapt's `"no trimming"`) and tool output land in the per-rule log,
+  not the Snakemake console/master log.
 
 **Common issues**:
 - Missing conda dependencies → check `scraps_conda.yml`

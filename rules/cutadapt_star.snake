@@ -72,12 +72,13 @@ rule cutadapt_R1:
       bc_cut = _get_bc_cut,
       info = "{results}/cutadapt/temp_{sample}_R1.info",
       temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz"
-    log: "{results}/logs/{sample}_cutadapt.out"
+    log: "{results}/logs/cutadapt_{sample}_R1.txt"
     threads: 24
     resources:
       mem_mb = 32000
     shell:
       """
+      exec > {log} 2>&1
       if [ -z "{params.cut_params}" ] ; then
         echo "no trimming"
         cat {input} > {output.R1}
@@ -104,12 +105,13 @@ rule cutadapt_paired:
       info = "{results}/cutadapt/temp_{sample}_paired.info",
       temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz"
-    log: "{results}/logs/{sample}_cutadapt.out"
+    log: "{results}/logs/cutadapt_{sample}_paired.txt"
     threads: 24
     resources:
       mem_mb = 32000
     shell:
       """
+      exec > {log} 2>&1
       if [ -z "{params.cut_params}" ] ; then
         echo "no trimming"
         cat {input} > {output.R1}
@@ -155,13 +157,14 @@ rule starsolo_R1:
       chemistry = _get_chem_version_R1,
       out_dir = "{results}/{sample}/{sample}_R1_",
       job_name = "star_R1"
-    log: "{results}/logs/{sample}_star_R1.out"
+    log: "{results}/logs/starsolo_{sample}_R1.txt"
     resources:
       total_impact = 5,
       mem_mb = 48000
     threads: 14
     shell:
       """
+      exec > {log} 2>&1
       {STAR} --soloType CB_UMI_Simple \
       --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
       --soloUMIfiltering MultiGeneUMI \
@@ -195,13 +198,14 @@ rule starsolo_R2:
       chemistry = _get_chem_version_R2,
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2"
-    log: "{results}/logs/{sample}_star_R2.out"
+    log: "{results}/logs/starsolo_{sample}_R2.txt"
     resources:
       total_impact = 5,
       mem_mb = 48000
     threads: 14
     shell:
       """
+      exec > {log} 2>&1
       {STAR} --soloType CB_UMI_Simple \
       --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
       --soloUMIfiltering MultiGeneUMI \
@@ -235,13 +239,14 @@ rule starsolo_paired:
       chemistry = _get_chem_version_paired,
       out_dir = "{results}/{sample}/{sample}_paired_", 
       job_name = "star_paired"
-    log: "{results}/logs/{sample}_star_paired.out"
+    log: "{results}/logs/starsolo_{sample}_paired.txt"
     resources:
       total_impact = 5,
       mem_mb = 48000
     threads: 14
     shell:
       """
+      exec > {log} 2>&1
       {STAR} --soloType CB_UMI_Simple \
       --soloCBmatchWLtype 1MM_multi_Nbase_pseudocounts \
       --soloUMIfiltering MultiGeneUMI \

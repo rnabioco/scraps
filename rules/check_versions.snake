@@ -15,25 +15,27 @@ rule check:
      1
    shell:
      """
-      if python --version &&
-        snakemake -v &&
-        python -c "import pysam, umi_tools; print('pysam', pysam.__version__)" &&
-        cutadapt --version &&
-        samtools --version &&
-        featureCounts -v &&
-        STAR --version &&
-        multiqc --version; then
+     exec > {log} 2>&1
+     if python --version &&
+       snakemake -v &&
+       python -c "import pysam, umi_tools; print('pysam', pysam.__version__)" &&
+       cutadapt --version &&
+       samtools --version &&
+       featureCounts -v &&
+       STAR --version &&
+       multiqc --version; then
        python --version > {output.checked}
        echo snakemake: >> {output.checked}
        snakemake -v >> {output.checked}
        python -c "import pysam; print('pysam', pysam.__version__)" >> {output.checked}
        echo cutadapt: >> {output.checked}
-      cutadapt --version >> {output.checked}
-      samtools --version >> {output.checked}
-      featureCounts -v >> {output.checked} 2>&1
-      STAR --version >> {output.checked}
-      multiqc --version >> {output.checked} else
-     exit 1
+       cutadapt --version >> {output.checked}
+       samtools --version >> {output.checked}
+       featureCounts -v >> {output.checked} 2>&1
+       STAR --version >> {output.checked}
+       multiqc --version >> {output.checked}
+     else
+       exit 1
      fi
      """
 
