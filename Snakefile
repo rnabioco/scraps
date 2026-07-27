@@ -15,6 +15,7 @@ READS = ["R1", "R2", "paired"]
 GENOME_FASTA = config.get("GENOME_FASTA")
 DISCOVERY = config.get("DISCOVERY", {}) or {}
 
+import sys
 import yaml
 with open('chemistry.yaml') as fp:
    CHEMISTRY = yaml.safe_load(fp)
@@ -90,13 +91,13 @@ def _get_config(sample, item):
   try:
     chemistry = sample_cfg.get("chemistry", DEFAULTS["chemistry"])
   except KeyError:
-    print("Error: Chemistry must be defined per sample and/or in Defaults.")
+    sys.stderr.write("Error: Chemistry must be defined per sample and/or in Defaults.\n")
     raise
 
   try:
     platform = sample_cfg.get("platform", DEFAULTS["platform"])
   except KeyError:
-    print("Error: Platform must be defined per sample and/or in Defaults.")
+    sys.stderr.write("Error: Platform must be defined per sample and/or in Defaults.\n")
     raise
 
   if item in sample_cfg:
@@ -111,9 +112,9 @@ def _get_config(sample, item):
   if item in DEFAULTS:
     return DEFAULTS[item]
 
-  print(
+  sys.stderr.write(
     f"Message: {item} not found in config or chemistry "
-    f"for sample {sample}. Returning an empty string."
+    f"for sample {sample}. Returning an empty string.\n"
   )
   return ""
 

@@ -96,7 +96,8 @@ def validate_format(records, label, delim=None):
             errors.append("[{}] record {}: GeneID strand={!r} != column {!r}".format(
                 label, i, gid_strand, r["strand"]))
         try:
-            pos = int(pos_str)
+            # tolerate float/scientific-notation encodings (e.g. '7.7e+07')
+            pos = int(round(float(pos_str)))
         except ValueError:
             errors.append("[{}] record {}: GeneID pos not integer: {!r}".format(
                 label, i, pos_str))

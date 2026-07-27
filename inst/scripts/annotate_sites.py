@@ -165,7 +165,9 @@ def load_polya(path):
                     bad_examples.append(geneid)
                 continue
             try:
-                pos = int(parts[4])
+                # coerce float/scientific-notation encodings (e.g. '7.7e+07'
+                # from a float round-trip) back to the integer cleavage position
+                pos = int(round(float(parts[4])))
             except (ValueError, IndexError):
                 n_skipped += 1
                 if len(bad_examples) < 3:
