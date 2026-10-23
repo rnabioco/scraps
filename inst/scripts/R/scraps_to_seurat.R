@@ -1,6 +1,19 @@
-#' Read scraps output from umi_tools to sparseMatrix
-#' 
-#' @param file scraps output table containing 
+# GeneID parsing lives in geneid.R (parse_geneid); source it alongside this file
+local({
+  f <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+  if (!exists("parse_geneid", mode = "function") && !is.null(f)) {
+    source(file.path(dirname(f), "geneid.R"))
+  }
+})
+.need_geneid <- function() {
+  if (!exists("parse_geneid", mode = "function")) {
+    stop("parse_geneid() not found: source inst/scripts/R/geneid.R first")
+  }
+}
+
+#' Read scraps output (count table) to sparseMatrix
+#'
+#' @param file scraps output table containing
 #' @param n_min  minimum number of observations for a site to be kept
 #' @param gene_min  minimum number of observations for gene to be kept
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
@@ -49,12 +62,9 @@ scraps_to_matrix <- function(file,
   # if TRUE, toss observations where gene only has 1 polyA site
   if (alt_only) {
     message("filter for genes with alternative sites")
-    dat2 <- dat %>% separate(gene, 
-                             sep = "_", 
-                             into = c("gene_name", "gene_info"), 
-                             remove = FALSE,
-                             extra = "merge") %>% 
-      distinct(gene, gene_name, gene_info)
+    .need_geneid()
+    dat2 <- dat %>% distinct(gene) %>%
+      mutate(gene_name = parse_geneid(gene)$gene)
     
     keeps2 <- dat2$gene_name %>% table() %>%
       as.data.frame() %>%
@@ -72,16 +82,17 @@ scraps_to_matrix <- function(file,
   # use psi values if pf is used
   if (!is.null(pf)) {
     message("calculate normalized PSI value")
-    if (!is.null(gene_min) & gene_min > n_min) {
+    .need_geneid()
+    if (!is.null(gene_min) && gene_min > n_min) {
       if (filter_low) {
-        dat <- dat %>% group_by(gene) %>% 
-          mutate(total = sum(count)) %>% 
-          filter(total >= gene_min) %>% 
-          ungroup() %>% 
+        dat <- dat %>% group_by(gene) %>%
+          mutate(total = sum(count)) %>%
+          filter(total >= gene_min) %>%
+          ungroup() %>%
           select(-total)
-        
-        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
-          mutate(gene_name = str_remove(gene, "_.+")) %>% 
+
+        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>%
+          mutate(gene_name = parse_geneid(gene)$gene) %>%
           mutate(count2 = pf * count) %>% 
           group_by(gene_name, cell) %>% 
           summarize(count = sum(count2)/sum(count)) %>% 
@@ -91,11 +102,11 @@ scraps_to_matrix <- function(file,
         dat <- dat %>% group_by(gene) %>% 
           mutate(total = sum(count))
         
-        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>% 
-          mutate(gene_name = str_remove(gene, "_.+")) %>% 
-          mutate(count2 = pf * count) %>% 
-          group_by(gene_name, cell) %>% 
-          summarize(count = sum(count2)/sum(count), total = first(total)) %>% 
+        dat <- dat %>% inner_join(pf, by = c("gene" = "GeneID")) %>%
+          mutate(gene_name = parse_geneid(gene)$gene) %>%
+          mutate(count2 = pf * count) %>%
+          group_by(gene_name, cell) %>%
+          summarize(count = sum(count2)/sum(count), total = first(total)) %>%
           mutate(count = ifelse(total >= gene_min, count, -1)) %>% 
           ungroup() %>% 
           rename(gene = "gene_name")
@@ -149,8 +160,9 @@ scraps_to_matrix <- function(file,
 
 #' Add scraps output to existing seurat object as new assay
 #' 
-#' @param file scraps output table containing 
+#' @param file scraps output table containing
 #' @param object seurat object
+#' @param assay_name name of the new assay
 #' @param n_min  minimum number of observations for a site to be kept
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
 #' @param types filter to only these types of PA sites, set to NULL to use all
@@ -158,16 +170,15 @@ scraps_to_matrix <- function(file,
 #' @import dplyr Seurat
 #' @return Seurat object with inserted assay
 #' @export
-scraps_to_seurat <- function(file, object, 
+scraps_to_seurat <- function(file, object,
                              assay_name = "Asite",
                              n_min = 5,
                              alt_only = TRUE,
                              types = "3'UTR",
                              pf = NULL) {
   cell_ids <- Cells(object)
-  
+
   mat <- scraps_to_matrix(file,
-                          object, 
                           n_min = n_min,
                           alt_only = alt_only,
                           cell_ids = cell_ids,
@@ -184,13 +195,15 @@ scraps_to_seurat <- function(file, object,
 #' @param file SAF file used with Scraps
 #' @param types filter to only these types of PA sites, set to NULL to use all
 #' @param alt_only if TRUE, only keep genes with alternative polyA sites
+#' @param sep GeneID delimiter; `NULL` (default) auto-detects per row
 #' @import readr dplyr
 #' @return data.frame with SAF first column and position factor by gene
 #' @export
 parse_saf_pf <- function(file,
                          types = "3'UTR",
-                         alt_only = TRUE) {
-  bed1 <- parse_saf(file, types)
+                         alt_only = TRUE,
+                         sep = NULL) {
+  bed1 <- parse_saf(file, types, sep = sep)
   
   # remove symbols that come from different chromosomes
   diffchrom <- bed1 %>% distinct(gene, chrom) %>% 
@@ -230,36 +243,41 @@ parse_saf_pf <- function(file,
 }
 
 #' Read SAF annotation file
-#' 
+#'
+#' The SAF GeneID must use the scraps 7-field encoding
+#' (gene;genbank;id;chrom;pos;strand;class), where the cleavage position is
+#' field 5 and the site class is field 7, with ';' (human references) or '_'
+#' (mouse references) as delimiter; the delimiter is detected per row by
+#' \code{parse_geneid}. Converters that produce conforming SAFs from polyAdb
+#' releases are in inst/scripts/polyadb/. Rows whose GeneID position is NA
+#' (region SAFs from \code{expand_region_saf}) are dropped.
+#'
 #' @param file SAF file used with Scraps
-#' @param types filter to only these types of PA sites, set to NULL to use all
-#' @param sep separator between fields for full name
+#' @param types filter to only these types of PA sites, set to NULL or FALSE to use all
+#' @param sep GeneID delimiter; `NULL` (default) auto-detects per row. Kept for
+#'   backwards compatibility: a value forces that delimiter for every row.
 #' @import readr dplyr stringr tidyr
-#' @return data.frame
+#' @return data.frame (bed-like: chrom, start (0-based), end, strand, gene, GeneID)
 #' @export
-parse_saf <- function(file, types = FALSE, sep = ";") {
-  # read SAF and split for gene symbol
-  saf <- read_tsv(file) %>% 
-    mutate(GeneID2 = str_remove(GeneID, Chr)) %>% 
-    separate(GeneID2, 
-             sep = sep, 
-             into = c("gene", 
-                      "genbank", 
-                      "id", 
-                      "chrom", 
-                      "pos",
-                      "strand",
-                      "class"),
-             convert = TRUE,
-             remove = FALSE) %>% 
-    filter(!is.na(gene) | !is.na(genbank) | !is.na(id)) %>%
-    mutate(pos = as.numeric(pos)) %>% 
-    filter(!is.na(pos)) %>% 
+parse_saf <- function(file, types = FALSE, sep = NULL) {
+  .need_geneid()
+  saf <- read_tsv(file, col_types = cols(.default = col_character(),
+                                         Start = col_double(), End = col_double()))
+  p <- parse_geneid(saf$GeneID, chrom = saf$Chr, strand = saf$Strand)
+  if (!is.null(sep) && any(p$delim != sep, na.rm = TRUE)) {
+    warning("sep = '", sep, "' given but some GeneIDs use another delimiter; parsed per row")
+  }
+  saf <- saf %>%
+    mutate(gene = p$gene, genbank = p$refseq, id = p$ensembl, pos = p$pos,
+           strand = p$strand, class = p$type) %>%
+    filter(!is.na(class)) %>%
+    filter(!is.na(pos)) %>%
     mutate(Start = Start - 1)
-  
-  if (types != FALSE) {
-    saf <- saf %>% filter(str_detect(class, types))}
-  
+
+  if (!is.null(types) && !identical(types, FALSE)) {
+    saf <- saf %>% filter(str_detect(class, types))
+  }
+
   # convert to bed format
   bed1 <- saf %>% select(chrom = Chr, start = Start, end = End, strand, gene, GeneID)
   bed1

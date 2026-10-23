@@ -1,5 +1,14 @@
 """ rules for scraps counting """
 
+import os
+
+def _get_bam_path(wildcards):
+    """Input BAM for the bam mode: SAMPLES.<sample>.bam, absolute as given or
+    relative to DATA. Presence is validated at parse time (Snakefile
+    _validate_bam_inputs); existence is left to Snakemake's missing-input check."""
+    path = SAMPLES[wildcards.sample]["bam"]
+    return path if os.path.isabs(path) else os.path.join(DATA, path)
+
 rule assign_sites_R1:
   input:
     "{results}/{sample}/{sample}_R1_Aligned.sortedByCoord.out.bam"
@@ -9,21 +18,23 @@ rule assign_sites_R1:
     job_name = "assign_sites_R1",
     out = "{results}/temp/{sample}_R1_assigned",
     out_bam = "{results}/temp/{sample}_R1_filter.bam.featureCounts.bam",
-    temp = "{results}/temp/{sample}_R1_filter.bam"
+    temp = "{results}/temp/{sample}_R1_filter.bam",
+    sort_tmp = "{results}/temp/{sample}_R1_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_R1.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
     fi
     
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
 
     featureCounts \
     -s 2 -Q 10 -O \
@@ -33,14 +44,16 @@ rule assign_sites_R1:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {params.temp} \
-    2> {log}
+    {params.temp}
 
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
-    samtools index {output.bam}
     rm -rf {params.out_bam}
     """
 
@@ -52,15 +65,23 @@ rule assign_sites_R2:
   params:
     job_name = "assign_sites_R2",
     out = "{results}/temp/{sample}_R2_assigned",
-    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam"
+    out_bam = "{results}/temp/{sample}_R2.bam.featureCounts.bam",
+    sort_tmp = "{results}/temp/{sample}_R2_sortstage",
+    # R2_priming_offset (platform/sample key, default 0): N > 0 renders
+    # `--readShiftType downstream --readShiftSize N` so the read 3' end used by
+    # --read2pos 3 is moved N bp toward the read's 3' (= transcript 3' in R2
+    # mode). Ultima FASTQs: the priming site is 5 bp past the alignment end.
+    # Mirrored by pileup_sites.py --shift in discovery's stranded_bed.
+    shift = lambda wc: _fc_shift_args(wc.sample, "R2")
   log:
     "{results}/logs/assign_sites_{sample}_R2.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
@@ -69,19 +90,21 @@ rule assign_sites_R2:
     featureCounts \
     -s 1 -Q 10 -O \
     --read2pos 3 \
+    {params.shift} \
     -o {params.out} \
     -F $polyaformat \
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {input} \
-    2> {log}
+    {input}
     
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
-    
-    samtools index {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
     rm -rf {params.out_bam}
     """
@@ -95,21 +118,23 @@ rule assign_sites_paired:
     job_name = "assign_sites_paired",
     out = "{results}/temp/{sample}_paired_assigned",
     out_bam = "{results}/temp/{sample}_paired_filter.bam.featureCounts.bam",
-    temp = "{results}/temp/{sample}_paired_filter.bam"
+    temp = "{results}/temp/{sample}_paired_filter.bam",
+    sort_tmp = "{results}/temp/{sample}_paired_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_paired.txt"
   threads:
     12
   resources:
-    mem_mb = 8000
+    mem_mb = 28000
   shell:
     r"""
+    exec > {log} 2>&1
     if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
       polyaformat='SAF'; else
       polyaformat='GTF';
     fi
 
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
+    samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
     
     featureCounts \
     -s 2 -Q 10 -O -p \
@@ -119,14 +144,16 @@ rule assign_sites_paired:
     -a {POLYA_SITES} \
     -R BAM \
     -T {threads} \
-    {params.temp} \
-    2> {log}
+    {params.temp}
 
     samtools sort \
-    {params.out_bam} \
-    -o {output.bam}
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
 
-    samtools index {output.bam}
     rm -rf {params.out_bam}
     rm -rf {params.temp}
     """
@@ -139,7 +166,10 @@ rule filter_R2:
   params:
     job_name = "filter",
     temp = "{results}/temp/{sample}_R2_filter.bam",
-    tempbai = "{results}/temp/{sample}_R2_filter.bam.bai"
+    # R2_polyA_filter (platform/sample key, default true): "false" skips the
+    # soft-clipped poly(A) requirement. Ultima FASTQs trim the 5 bp adjacent to
+    # the homopolymer, so no A-tail soft clip exists to filter on.
+    polya_filter = lambda wc: _polya_filter(wc.sample, "R2", True)
   log:
     "{results}/logs/filter_{sample}_R2.txt"
   threads:
@@ -148,15 +178,134 @@ rule filter_R2:
     mem_mb = 8000
   shell:
     r"""
-    samtools view -h {input} | grep -v 'CB:Z:-\|UB:Z:-' | samtools view -b - > {params.temp}
-    samtools index {params.temp}
-    python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
-    samtools index {output}
-    rm -rf {params.temp}
-    rm -rf {params.tempbai}
+    exec > {log} 2>&1
+    # No samtools index needed: filter_bam.py reads via fetch(until_eof=True)
+    # (linear scan) and the {output} _R2.bam is consumed only by
+    # assign_sites_R2's featureCounts, which streams. Indexing either BAM was a
+    # wasted full read pass over a potentially very large (500GB+) file.
+    if [ "{params.polya_filter}" = "true" ]; then
+      samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
+      python3 inst/scripts/filter_bam.py -i {params.temp} -o {output}
+      rm -rf {params.temp}
+    else
+      echo "R2_polyA_filter=false: skipping soft-clipped poly(A) filter (CB/UB filter only)"
+      samtools view -@ {threads} -b -e '[CB]!="-" && [UB]!="-"' {input} > {output}
+    fi
+    """
+
+# --- bam mode: pre-aligned, barcode-tagged BAM input (no STAR) ----------------
+# Documented ASSUMPTIONS (not enforced): the BAM holds full-length molecules
+# (adapters at both ends), carries CellRanger/STARsolo-style tags (CB/UB are the
+# ones used), and its strand assignment is accurate for the declared bam_strand:
+#   same    - read (or selected mate) is on the transcript strand; the priming
+#             site is its 3' end             -> featureCounts -s 1 --read2pos 3
+#   reverse - read is antisense; the priming site is its 5' end
+#                                            -> featureCounts -s 2 --read2pos 5
+# bam_polyA_filter additionally requires a poly(A) (same) / poly(T) (reverse)
+# soft clip at that end (filter_bam.py --end). Paired-end BAMs: bam_mate names
+# the mate carrying the priming site; only proper pairs are kept, the other
+# mate is dropped and the selected mate is rewritten as a single-end record, so
+# every later step (featureCounts, count_sites.py, pileup_sites.py) handles one
+# record per FRAGMENT at the priming end. Secondary/supplementary alignments and
+# reads without CB/UB are always dropped.
+rule filter_bam:
+  input:
+    _get_bam_path
+  output:
+    temp("{results}/temp/{sample}_bam.bam")
+  params:
+    job_name = "filter_bam",
+    temp = "{results}/temp/{sample}_bam_filter.bam",
+    polya_filter = lambda wc: _polya_filter(wc.sample, "bam", False),
+    end = lambda wc: _bam_end(wc.sample),
+    mate = lambda wc: _bam_mate(wc.sample),
+    # samtools -f: proper pair + read1 (0x42) / read2 (0x82); none for single-end
+    mate_flags = lambda wc: {0: "", 1: "-f 0x42", 2: "-f 0x82"}[_bam_mate(wc.sample)],
+    clip_flag = lambda wc: ("" if _polya_filter(wc.sample, "bam", False) == "true"
+                            else "--no-clip-filter")
+  log:
+    "{results}/logs/filter_{sample}_bam.txt"
+  threads:
+    4
+  resources:
+    mem_mb = 8000
+  shell:
+    r"""
+    exec > {log} 2>&1
+    # -F 0x904: drop unmapped, secondary, supplementary. [CB]/[UB] comparisons
+    # are false for missing tags (htslib >= 1.16), so untagged reads drop too.
+    samtools view -@ {threads} -b -F 0x904 {params.mate_flags} \
+      -e '[CB]!="-" && [UB]!="-"' {input} > {params.temp}
+    if [ "{params.mate}" != "0" ] || [ "{params.polya_filter}" = "true" ]; then
+      echo "filter_bam.py: mate={params.mate} end={params.end} clip_filter={params.polya_filter}"
+      python3 inst/scripts/filter_bam.py --mate {params.mate} --end {params.end} \
+        {params.clip_flag} -i {params.temp} -o {output}
+      rm -rf {params.temp}
+    else
+      echo "single-end BAM, bam_polyA_filter=false: CB/UB + flag filter only"
+      mv {params.temp} {output}
+    fi
+    """
+
+rule assign_sites_bam:
+  input:
+    "{results}/temp/{sample}_bam.bam"
+  output:
+    bam = temp("{results}/temp/{sample}_bam_assigned.bam")
+  params:
+    job_name = "assign_sites_bam",
+    out = "{results}/temp/{sample}_bam_assigned",
+    out_bam = "{results}/temp/{sample}_bam.bam.featureCounts.bam",
+    sort_tmp = "{results}/temp/{sample}_bam_sortstage",
+    # strandedness + counted end follow bam_strand (see filter_bam comment)
+    strand_args = lambda wc: ("-s 1 --read2pos 3" if _bam_strand(wc.sample) == "same"
+                              else "-s 2 --read2pos 5"),
+    # bam_priming_offset: shift type (downstream/upstream) follows bam_strand
+    shift = lambda wc: _fc_shift_args(wc.sample, "bam")
+  log:
+    "{results}/logs/assign_sites_{sample}_bam.txt"
+  threads:
+    12
+  resources:
+    mem_mb = 28000
+  shell:
+    r"""
+    exec > {log} 2>&1
+    if echo {POLYA_SITES} | tr '[:upper:]' '[:lower:]' | grep -q -e "\.saf$" -e "\.saf.gz$"; then
+      polyaformat='SAF'; else
+      polyaformat='GTF';
+    fi
+
+    # -L (long-read mode) lifts featureCounts' cap on the number of M blocks per
+    # CIGAR; without it the extra blocks of spliced long reads are silently
+    # dropped and the counted end is wrong. -L forces a single featureCounts
+    # thread (-T 1); samtools sort below still uses {threads}. No -p: paired
+    # input was reduced to one single-end record per fragment by filter_bam.
+    featureCounts \
+    -L {params.strand_args} -Q 10 -O \
+    {params.shift} \
+    -o {params.out} \
+    -F $polyaformat \
+    -a {POLYA_SITES} \
+    -R BAM \
+    -T 1 \
+    {input}
+
+    samtools sort \
+    -@ {threads} \
+    -m 2G \
+    -T {params.sort_tmp} \
+    --write-index \
+    -o {output.bam}##idx##{output.bam}.bai \
+    {params.out_bam}
+
+    rm -rf {params.out_bam}
     """
 
 rule count:
+  # directional UMI count per (cell, site), replacing `umi_tools count`. Groups
+  # reads by (CB, featureCounts XT) and collapses distinct UMIs with umi_tools'
+  # own directional network algorithm, per-site; parallel over contigs.
   input:
     "{results}/temp/{sample}_{read}_assigned.bam"
   output:
@@ -171,109 +320,23 @@ rule count:
     mem_mb = 8000
   shell:
     r"""
-    umi_tools count \
-      --per-gene \
-      --gene-tag=XT \
-      --assigned-status-tag=XS \
-      --per-cell \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --cell-tag=CB \
-      -I {input} \
-      -S {output} \
-      > {log}
+    exec > {log} 2>&1
+    python3 inst/scripts/count_sites.py \
+      -i {input} \
+      -o {output} \
+      -t {threads}
     """
 
-rule bed_R1:
-  input:
-    "{results}/temp/{sample}_R1_assigned.bam"
-  output:
-    "{results}/bed/{sample}_R1.bed.gz"
-  params:
-    job_name = "bed",
-    dedup = "{results}/temp/{sample}_R1_dedup.bam",
-    r = "{results}/temp/{sample}_R1_r.bam"
-  log:
-    "{results}/logs/bed_{sample}_R1.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 48000
-  shell:
-    r"""
-    umi_tools dedup \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --per-cell \
-      --cell-tag=CB \
-      --paired \
-      --method=unique \
-      -I {input} \
-      -S {params.dedup} \
-      > {log}
-    samtools view -F 4 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
-    rm -rf {params.r}
-    """
-
-rule bed_R2:
-  input:
-    "{results}/temp/{sample}_R2_assigned.bam"
-  output:
-    "{results}/bed/{sample}_R2.bed.gz"
-  params:
-    job_name = "bed",
-    dedup = "{results}/temp/{sample}_R2_dedup.bam"
-  log:
-    "{results}/logs/bed_{sample}_R2.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 48000
-  shell:
-    r"""
-    umi_tools dedup \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --per-cell \
-      --cell-tag=CB \
-      --method=unique \
-      -I {input} \
-      -S {params.dedup} \
-      > {log}
-
-    bedtools genomecov -ibam {params.dedup} -3 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
-    """
-
-rule bed_paired:
-  input:
-    "{results}/temp/{sample}_paired_assigned.bam"
-  output:
-    "{results}/bed/{sample}_paired.bed.gz"
-  params:
-    job_name = "bed",
-    dedup = "{results}/temp/{sample}_paired_dedup.bam",
-    r = "{results}/temp/{sample}_paired_r.bam"
-  log:
-    "{results}/logs/bed_{sample}_paired.txt"
-  threads:
-    4
-  resources:
-    mem_mb = 48000
-  shell:
-    r"""
-    umi_tools dedup \
-      --extract-umi-method=tag \
-      --umi-tag=UB \
-      --per-cell \
-      --cell-tag=CB \
-      --paired \
-      --method=unique \
-      -I {input} \
-      -S {params.dedup} \
-      > {log}
-    # 0x82 for R2
-    samtools view -f 0x42 {params.dedup} -b > {params.r}
-    bedtools genomecov -ibam {params.r} -5 -dz | awk 'BEGIN {{ OFS = "\t" }} {{ print $1, $2 - 1, $2, $3 }}' - | gzip -c > {output}
-    rm -rf {params.r}
-    """
+# NOTE on priming-pileup semantics: pileup_sites.py deduplicates on
+# (cell, UMI, priming position) and reports the priming end. Unlike the former
+# umi_tools dedup + genomecov, it ignores the opposite-end / fragmentation /
+# splice coordinate, so PCR duplicates of one molecule (which differ only at the
+# post-amplification fragmentation end) collapse to a single count. This is
+# keyed like the count table (one molecule per priming event; the pileup uses
+# exact rather than directional UMI matching) and reduces pileup signal ~3.7%
+# vs the legacy pipeline on test data. Intended change; see the
+# inst/scripts/pileup_sites.py docstring and tests/validate_synthetic.sh.
+# The only consumer of pileup_sites.py is discovery's stranded_bed rule
+# (rules/discovery.snake); the count arm no longer emits per-sample bed tracks
+# (removed -- unstranded pileups are less informative for polyA data than the
+# strand-aware discovery beds).

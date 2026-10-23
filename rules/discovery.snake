@@ -1,0 +1,263 @@
+""" De novo RT priming site discovery.
+
+Identifies RT priming sites from single-cell data via kernel density estimation
+(KDE) on pseudobulked, UMI-deduplicated, strand-aware single-base priming
+positions, then annotates each site as a known polyA site, likely internal
+priming, or a potential novel polyA site. See docs/discovery.md.
+"""
+
+# discovery configuration (with defaults)
+# DISC_UNITS ({unit_id: [(sample, mode), ...]}) is computed in the Snakefile
+# (shared global) from the scalar-or-list DISCOVERY.read, per-sample
+# discovery_read overrides, DISCOVERY.groups, and DISCOVERY.units. A unit may
+# aggregate stranded beds across samples AND/OR modes.
+DISC_BANDWIDTH = DISCOVERY.get("kde_bandwidth", 10)
+# min_density: omitted / <=0 -> kde_peaks.py derives it from the bandwidth
+# (float() coerces CLI --config string overrides, not just YAML numbers)
+DISC_MIN_DENSITY = float(DISCOVERY.get("min_density", 0.0))
+DISC_MERGE_DIST = DISCOVERY.get("peak_merge_dist", 24)
+# UMI support floor: max(min_umi, min_umi_frac * total_UMIs). min_umi is the
+# primary absolute floor; the depth-relative min_umi_frac term is off by default
+# (0) because it scales linearly with depth and over-filters usable peaks.
+DISC_MIN_UMI = int(DISCOVERY.get("min_umi", 10))
+DISC_MIN_UMI_FRAC = float(DISCOVERY.get("min_umi_frac", 0.0))
+# summit placement within a called cluster (kde_peaks.py --summit-method):
+# 'downstream' (default) snaps the summit to the transcript-3' cleavage boundary
+# via the most-downstream base >= summit_frac * cluster peak depth; 'kde' is the
+# legacy smoothed-density-maximum (biased ~1-2 bp upstream). See kde_peaks.py.
+DISC_SUMMIT_METHOD = DISCOVERY.get("summit_method", "downstream")
+DISC_SUMMIT_FRAC = float(DISCOVERY.get("summit_frac", 0.75))
+DISC_SAF_SLOP = DISCOVERY.get("saf_slop", [10, 5])
+DISC_MATCH_WINDOW = DISCOVERY.get("match_window", [10, 5])
+DISC_PAS_WINDOW = DISCOVERY.get("pas_window", [-40, 0])
+DISC_A_WINDOW = DISCOVERY.get("a_content_window", [1, 20])
+DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
+
+# priming-site end per alignment mode (passed to pileup_sites.py --end):
+# R1 priming site = read 5' end; R2 = read 3' end; paired = read1 (first-in-pair)
+# 5' end. A per-(sample, mode) `{mode}_priming_offset` (Snakefile
+# _priming_offset; honoured for R2 and bam only, e.g. R2_priming_offset: 5 for
+# Ultima FASTQs) is then applied via --shift, moving the selected end N bp
+# OUTWARD past the read end (read 3' direction for 3'-end modes, read 5'
+# direction for 5'-end modes), matching the featureCounts --readShiftType
+# downstream/upstream used in assign_sites_R2 / assign_sites_bam.
+_DISC_END = {"R1": "5", "R2": "3", "paired": "5"}
+
+# bam mode (pre-aligned BAM): end and strand labels follow the sample's
+# bam_strand (Snakefile _bam_strand): 'same' behaves like R2 (3' end, identity
+# labels), 'reverse' like R1/paired (5' end, flipped labels).
+def _disc_end(sample, mode):
+  return _bam_end(sample) if mode == "bam" else _DISC_END[mode]
+
+def _disc_labels(sample, mode):
+  if mode == "bam":
+    return ("+", "-") if _bam_strand(sample) == "same" else ("-", "+")
+  return _DISC_STRAND_LABEL[mode]
+
+# read-alignment strand -> TRANSCRIPT strand, per alignment mode. The emitted
+# bed must carry the transcript strand (as consumed strand-aware by kde_peaks /
+# annotate_sites), NOT the read's own aligned strand. This mirrors the validated
+# featureCounts strandedness in count.snake:
+#   R2     -> featureCounts -s 1 (same strand): read strand == transcript strand
+#   R1     -> featureCounts -s 2 (reverse):     read strand == opposite strand
+#   paired -> featureCounts -s 2 (reverse, R1-of-pair keyed): opposite strand
+# So R2 is identity; R1 and paired flip. (label_plus, label_minus) is the
+# transcript strand to print for reads on the + and - aligned strands.
+_DISC_STRAND_LABEL = {
+  "R2": ("+", "-"),
+  "R1": ("-", "+"),
+  "paired": ("-", "+"),
+}
+
+
+def _disc_pool_inputs(wildcards):
+  """Stranded (sample, mode) beds that feed pooling for a discovery unit."""
+  return [
+    "{}/discovery/beds/{}_{}.stranded.bed.gz".format(RESULTS, sample, mode)
+    for (sample, mode) in DISC_UNITS[wildcards.unit]
+  ]
+
+
+rule stranded_bed:
+  # single-base, UMI-deduplicated, strand-aware priming pileup per (sample, mode).
+  # Consumes the featureCounts assigned BAM directly and does unique-UMI dedup +
+  # single-base pileup in one pass (inst/scripts/pileup_sites.py), replacing
+  # umi_tools dedup + bedtools genomecov. Dedup is keyed on (cell, UMI, priming
+  # position); the opposite-end/fragmentation coordinate is ignored (see the
+  # priming-pileup NOTE at the end of rules/count.snake), so counts collapse PCR
+  # duplicates by molecule.
+  # {read} is the alignment mode (R1|R2|paired|bam); a discovery unit may aggregate
+  # several of these beds across samples and/or modes (see pool_beds).
+  input:
+    "{results}/temp/{sample}_{read}_assigned.bam"
+  output:
+    "{results}/discovery/beds/{sample}_{read}.stranded.bed.gz"
+  wildcard_constraints:
+    read = "R1|R2|paired|bam"
+  params:
+    job_name = "stranded_bed",
+    # end to pile up per mode: R1/paired -> 5' end, R2 -> 3' end, bam -> by bam_strand
+    end = lambda wc: _disc_end(wc.sample, wc.read),
+    mode = lambda wc: wc.read,
+    # transcript strand to label reads on the +/- aligned strand (see above)
+    label_plus = lambda wc: _disc_labels(wc.sample, wc.read)[0],
+    label_minus = lambda wc: _disc_labels(wc.sample, wc.read)[1],
+    # bp shift of the piled-up end toward the read's 3' (0 = none)
+    shift = lambda wc: _priming_offset(wc.sample, wc.read),
+    sort_tmp = "{results}/temp"
+  log:
+    "{results}/logs/stranded_bed_{sample}_{read}.txt"
+  threads:
+    8
+  resources:
+    # pileup_sites.py runs one worker process per contig (parallel over the BAM
+    # decode, the real bottleneck) with bounded memory: --sort-mem is an
+    # AGGREGATE sort -S budget split across workers, so peak RSS stays ~8G plus
+    # per-worker + Pool overhead regardless of thread count. Not a genome-scale
+    # in-RAM dedup dict as before.
+    mem_mb = 16000
+  shell:
+    r"""
+    # 5-col stranded bed: chrom start end count strand, where strand is the
+    # TRANSCRIPT strand (read-align strand converted per mode; see comment above
+    # the rule). The only consumers (pool_beds, kde_peaks) re-sort, so line order
+    # need not match the previous genomecov per-strand block layout.
+    exec > {log} 2>&1
+    mkdir -p {params.sort_tmp}
+    python3 inst/scripts/pileup_sites.py \
+      -i {input} -o {output} \
+      --end {params.end} --mode {params.mode} \
+      --shift {params.shift} \
+      --strand-split \
+      --label-plus {params.label_plus} --label-minus {params.label_minus} \
+      -t {threads} --sort-mem 8G --sort-tmp {params.sort_tmp}
+    """
+
+
+rule pool_beds:
+  # sum priming counts per (chrom, pos, strand) across a unit's member
+  # (sample, mode) beds. The unit id fully identifies the track (it already
+  # encodes the mode for per-(sample|group, mode) units), so no read suffix.
+  input:
+    _disc_pool_inputs
+  output:
+    temp("{results}/discovery/beds/{unit}.pooled.bed.gz")
+  wildcard_constraints:
+    unit = r"[^/]+"
+  params:
+    job_name = "pool_beds",
+    sort_tmp = "{results}/temp"
+  log:
+    "{results}/logs/pool_beds_{unit}.txt"
+  threads:
+    4
+  resources:
+    mem_mb = 16000
+  shell:
+    r"""
+    # Constant-memory pooling: sort by (chrom, pos, strand) first -- the GNU sort
+    # is bounded (-S in-RAM buffer under mem_mb, --parallel over threads, -T
+    # pinned to the results volume, not a possibly small /tmp) -- then sum
+    # adjacent identical keys in awk, so no genome-wide hash is ever held.
+    exec > {log} 2>&1
+    mkdir -p {params.sort_tmp}
+    export LC_ALL=C
+    gunzip -c {input} \
+      | sort -t $'\t' -k1,1 -k2,2n -k5,5 -S 12G --parallel={threads} -T {params.sort_tmp} \
+      | awk 'BEGIN {{ OFS = "\t" }}
+             {{ k = $1 "\t" $2 "\t" $3 "\t" $5
+                if (NR > 1 && k != pk) {{ print c1, c2, c3, sum, c5; sum = 0 }}
+                pk = k; c1 = $1; c2 = $2; c3 = $3; c5 = $5; sum += $4 }}
+             END {{ if (NR > 0) print c1, c2, c3, sum, c5 }}' \
+      | gzip -c > {output}
+    """
+
+
+rule kde_peaks:
+  # call RT priming site summits: Gaussian KDE for cluster detection, then
+  # orientation-aware summit placement (see kde_peaks.py --summit-method)
+  input:
+    "{results}/discovery/beds/{unit}.pooled.bed.gz"
+  output:
+    temp("{results}/discovery/{unit}_peaks.tsv.gz")
+  params:
+    job_name = "kde_peaks",
+    bandwidth = DISC_BANDWIDTH,
+    # pass --min-density only when configured > 0; otherwise the script derives
+    # it from the bandwidth
+    min_density = ("--min-density " + str(DISC_MIN_DENSITY)
+                   if DISC_MIN_DENSITY > 0 else ""),
+    merge_dist = DISC_MERGE_DIST,
+    min_umi = DISC_MIN_UMI,
+    min_umi_frac = DISC_MIN_UMI_FRAC,
+    summit_method = DISC_SUMMIT_METHOD,
+    summit_frac = DISC_SUMMIT_FRAC
+  log:
+    "{results}/logs/kde_peaks_{unit}.txt"
+  threads:
+    4
+  resources:
+    mem_mb = 32000
+  shell:
+    r"""
+    exec > {log} 2>&1
+    python3 inst/scripts/kde_peaks.py \
+      -i {input} \
+      -o {output} \
+      --bandwidth {params.bandwidth} \
+      {params.min_density} \
+      --merge-dist {params.merge_dist} \
+      --min-umi {params.min_umi} \
+      --min-umi-frac {params.min_umi_frac} \
+      --summit-method {params.summit_method} \
+      --summit-frac {params.summit_frac}
+    """
+
+
+rule annotate_sites:
+  # annotate RT priming sites: known_pas / likely_internal_priming / potential_novel_pas
+  input:
+    peaks = "{results}/discovery/{unit}_peaks.tsv.gz",
+    polya = POLYA_SITES,
+    fasta = GENOME_FASTA if GENOME_FASTA else "ref/genome.fa"
+  output:
+    tsv = "{results}/discovery/{unit}_sites.tsv.gz",
+    bed = "{results}/discovery/{unit}_sites.bed.gz",
+    saf = "{results}/discovery/{unit}_denovo.saf.gz"
+  params:
+    job_name = "annotate_sites",
+    saf_slop_up = DISC_SAF_SLOP[0],
+    saf_slop_down = DISC_SAF_SLOP[1],
+    match_up = DISC_MATCH_WINDOW[0],
+    match_down = DISC_MATCH_WINDOW[1],
+    pas_start = DISC_PAS_WINDOW[0],
+    pas_end = DISC_PAS_WINDOW[1],
+    a_start = DISC_A_WINDOW[0],
+    a_end = DISC_A_WINDOW[1],
+    a_max = DISC_A_MAX
+  log:
+    "{results}/logs/annotate_sites_{unit}.txt"
+  threads:
+    2
+  resources:
+    mem_mb = 16000
+  shell:
+    r"""
+    exec > {log} 2>&1
+    python3 inst/scripts/annotate_sites.py \
+      --peaks {input.peaks} \
+      --polya {input.polya} \
+      --fasta {input.fasta} \
+      --out-tsv {output.tsv} \
+      --out-bed {output.bed} \
+      --out-saf {output.saf} \
+      --saf-slop-up {params.saf_slop_up} \
+      --saf-slop-down {params.saf_slop_down} \
+      --match-up {params.match_up} \
+      --match-down {params.match_down} \
+      --pas-start {params.pas_start} \
+      --pas-end {params.pas_end} \
+      --a-start {params.a_start} \
+      --a-end {params.a_end} \
+      --a-content-max {params.a_max}
+    """

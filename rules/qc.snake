@@ -17,6 +17,7 @@ rule qc_check:
      mem_mb = 5000
    shell:
      """
+     exec > {log} 2>&1
      export LC_ALL=en_US.utf-8
      export LANG=en_US.utf-8
      multiqc {params.target} -o {params.path} -c config.yaml

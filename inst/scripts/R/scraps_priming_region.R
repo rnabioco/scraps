@@ -1,15 +1,27 @@
+# GeneID parsing lives in geneid.R (parse_geneid); source it alongside this file
+local({
+  f <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+  if (!exists("parse_geneid", mode = "function") && !is.null(f)) {
+    source(file.path(dirname(f), "geneid.R"))
+  }
+})
+
 #' Read scraps output to read counts by region type
-#' 
-#' @param files scraps output table files containing 
+#'
+#' @param files scraps output table files containing
 #' @param cell_ids if given, use only these cell barcodes, and fill in empty ones
 #' @param batch batch prefix to use in order for list of files
+#' @param batch_sep separator between batch prefix and cell barcode
 #' @return count list for regions
 #' @export
-#' 
+#'
 scraps_to_region_counts <- function(files,
                                     cell_ids = NULL,
                                     batch = NULL,
                                     batch_sep = "-") {
+  if (!exists("parse_geneid", mode = "function")) {
+    stop("parse_geneid() not found: source inst/scripts/R/geneid.R first")
+  }
   ids <- cell_ids
   if (!is.null(batch)) {
     temp <- map(seq_along(files),
@@ -25,16 +37,9 @@ scraps_to_region_counts <- function(files,
     temp <- temp %>% filter(cell %in% ids)
   }
   
-  temp2 <- temp %>%
-    separate(gene, 
-             sep = "_", 
-             into = c("gene", NA,
-                      NA, NA, NA, NA,
-                      "pos"))
-  temp3 <- temp2 %>%
-    separate(pos, 
-             sep = ",",
-             into = c("pos", NA))
+  # first comma-joined feature of each id: gene symbol + site class
+  p <- parse_geneid(temp$gene, multi = "first")
+  temp3 <- temp %>% mutate(gene = p$gene, pos = p$type)
   temp4 <- temp3 %>% mutate(pos2 = case_when(
     str_detect(pos, "3'UTR") ~ "utr3",
     pos == "utr3" ~ "utr3", 

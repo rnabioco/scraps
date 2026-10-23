@@ -1,3 +1,11 @@
+# GeneID parsing lives in geneid.R (parse_geneid); source it alongside this file
+local({
+  f <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+  if (!exists("parse_geneid", mode = "function") && !is.null(f)) {
+    source(file.path(dirname(f), "geneid.R"))
+  }
+})
+
 #' prepare motif index from oRNAment files
 #' 
 #' @param rna cDNA_oRNAment.csv.gz file
@@ -21,7 +29,7 @@ motifs_prep <- function(rna = "http://rnabiology.ircm.qc.ca/BIF/oRNAment/static/
   rbps <- read_csv(id2,
                    col_names = c("RBPid", "RBP"))
   
-  cdna <- cdna %>% filter(score >= 0.8) 
+  cdna <- cdna %>% filter(score >= min_score)
   
   cdna2 <- cdna %>% 
     inner_join(conv, by = c("ensembl_transcript_id" = "ensembl_transcript_id_INT")) %>% 
@@ -35,15 +43,15 @@ motifs_prep <- function(rna = "http://rnabiology.ircm.qc.ca/BIF/oRNAment/static/
 #' find motif differences from 1 pair polyA sites
 #' 
 #' @param motifs motif file
-#' @param site1 chr and site name for 1
-#' @param site2 chr and site name for 2
+#' @param site1 site key `chrom_pos` for site 1 (chrom may itself contain `_`)
+#' @param site2 site key `chrom_pos` for site 2
 #' @return motif vector
 #' @import dplyr tidyr stringr
 #' @export
 PA_motifs <- function(site1 = "chr14_77512017",
                       site2 = "chr14_77505997", motifs) {
-  chr1 <- str_remove(site1, "_.+")
-  chr2 <- str_remove(site2, "_.+")
+  chr1 <- str_remove(site1, "_[^_]+$")
+  chr2 <- str_remove(site2, "_[^_]+$")
   if (chr1 != chr2) {
     warning("not same chromosome")
     return(NA)
@@ -71,21 +79,19 @@ PA_motifs <- function(site1 = "chr14_77512017",
 #' @export
 DE_PA_motifs <- function(motifs,
                          res) {
-  res2 <- res %>% separate(full_site, remove = FALSE, sep = "_", into = c("gene", 
-                                                                          "genbank", 
-                                                                          "id", 
-                                                                          "chrom", 
-                                                                          "pos",
-                                                                          "strand",
-                                                                          "class")) %>% 
-    mutate(site = str_c(chrom, pos, sep = "_")) %>% 
+  if (!exists("parse_geneid", mode = "function")) {
+    stop("parse_geneid() not found: source inst/scripts/R/geneid.R first")
+  }
+  p <- parse_geneid(res$full_site, multi = "first")
+  res2 <- res %>%
+    mutate(gene = p$gene, site = str_c(p$chrom, p$pos, sep = "_")) %>%
     select(gene, site)
-  
+
   res3 <- res2 %>%
     group_by(gene) %>%
-    filter(n() >= 2) %>% 
-    arrange(site) %>% 
-    do(as_data_frame(t(combn(.$site, m = 2)))) %>%
+    filter(n() >= 2) %>%
+    arrange(site) %>%
+    do({ cmb <- combn(.$site, m = 2); tibble(V1 = cmb[1, ], V2 = cmb[2, ]) }) %>%
     ungroup() %>%
     mutate(diff_motifs = mapply(PA_motifs, V1, V2, MoreArgs = list(motifs = motifs)), comp = str_c(V1, "_vs_", V2))
   
