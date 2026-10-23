@@ -2,13 +2,16 @@
 """ Validate a scraps SAF file (and optionally compare to a reference).
 
 Checks:
-  1. FORMAT  - header, 7-field GeneID, GeneID chrom/pos/strand consistency with
-               the SAF columns, strand-specific window, sort order.
+  1. FORMAT  - header, 5 columns, integer Start/End, 7-field GeneID, GeneID
+               chrom/pos/strand consistency with the SAF columns, the
+               strand-specific window layout (+: [pos-10, pos+5],
+               -: [pos-5, pos+10]), sort order.
   2. CONTENT - row-level comparison against a reference SAF at shared
                (chrom, encoded position, strand) positions (optional).
 
-The GeneID delimiter (';' human / '_' mouse) is auto-detected per file, or set
-with --delim. Inputs may be gzipped.
+The GeneID delimiter (';' human / '_' mouse) is auto-detected per row, or set
+with --delim. Inputs may be gzipped. Exit status is 1 when any format error is
+found (the content comparison is informational).
 
 Usage:
   python3 validate_saf.py GENERATED.saf[.gz] [REFERENCE.saf[.gz]]
@@ -16,7 +19,10 @@ Usage:
 
 import argparse
 import gzip
+import sys
 from collections import defaultdict
+
+import saf_common as sc
 
 
 def open_text(path):
@@ -57,66 +63,81 @@ def split_geneid(gene_id, delim, chrom, strand):
     return [gene, "NA", "NA", chrom, pos_tok, strand, klass]
 
 
-def load_saf(path, delim=None):
+def load_saf(path):
+    """Read a SAF into records; structural problems (header, column count,
+    non-integer Start/End) are returned as errors rather than raised."""
     records = []
+    errors = []
     with open_text(path) as fh:
         header = fh.readline().rstrip("\n")
-        assert header == "GeneID\tChr\tStart\tEnd\tStrand", \
-            "Bad header in {}: {!r}".format(path, header)
-        for line in fh:
+        if header != sc.SAF_HEADER:
+            errors.append("bad header in {}: {!r} (expected {!r})".format(
+                path, header, sc.SAF_HEADER))
+            return records, errors
+        for lineno, line in enumerate(fh, start=2):
             f = line.rstrip("\n").split("\t")
-            assert len(f) == 5, "Expected 5 columns, got {}: {!r}".format(
-                len(f), line)
+            if len(f) != 5:
+                errors.append("line {}: expected 5 columns, got {}: {!r}".format(
+                    lineno, len(f), line.rstrip("\n")))
+                continue
+            try:
+                start, end = int(f[2]), int(f[3])
+            except ValueError:
+                errors.append("line {}: Start/End not integers: {!r} {!r}".format(
+                    lineno, f[2], f[3]))
+                continue
             records.append({
                 "gene_id": f[0],
                 "chrom": f[1],
-                "start": int(f[2]),
-                "end": int(f[3]),
+                "start": start,
+                "end": end,
                 "strand": f[4],
+                "line": lineno,
             })
-    return records
+    return records, errors
 
 
 def validate_format(records, label, delim=None):
     errors = []
     prev_chrom, prev_start = None, -1
     for i, r in enumerate(records):
+        where = "[{}] line {}".format(label, r.get("line", i))
+        if r["strand"] not in sc.VALID_STRANDS:
+            errors.append("{}: invalid strand {!r}".format(where, r["strand"]))
+            continue
         d = detect_delim(r["gene_id"], delim)
         g = split_geneid(r["gene_id"], d, r["chrom"], r["strand"])
         if g is None:
-            errors.append(
-                "[{}] record {}: GeneID not parseable as 7 fields: {!r}".format(
-                    label, i, r["gene_id"]))
+            errors.append("{}: GeneID not parseable as 7 fields: {!r}".format(
+                where, r["gene_id"]))
             continue
         _, _, _, gid_chrom, pos_str, gid_strand, _ = g
         if gid_chrom != r["chrom"]:
-            errors.append("[{}] record {}: GeneID chrom={!r} != column {!r}".format(
-                label, i, gid_chrom, r["chrom"]))
+            errors.append("{}: GeneID chrom={!r} != column {!r}".format(
+                where, gid_chrom, r["chrom"]))
         if gid_strand != r["strand"]:
-            errors.append("[{}] record {}: GeneID strand={!r} != column {!r}".format(
-                label, i, gid_strand, r["strand"]))
+            errors.append("{}: GeneID strand={!r} != column {!r}".format(
+                where, gid_strand, r["strand"]))
         try:
             # tolerate float/scientific-notation encodings (e.g. '7.7e+07')
             pos = int(round(float(pos_str)))
         except ValueError:
-            errors.append("[{}] record {}: GeneID pos not integer: {!r}".format(
-                label, i, pos_str))
+            errors.append("{}: GeneID pos not integer: {!r}".format(where, pos_str))
             continue
-        window = r["end"] - r["start"]
-        if window < 15:
-            errors.append("[{}] record {}: window too small ({}bp)".format(
-                label, i, window))
-        if not (r["start"] <= pos <= r["end"]):
+        exp_start, exp_end = sc.site_window(pos, r["strand"])
+        if (r["start"], r["end"]) != (exp_start, exp_end):
             errors.append(
-                "[{}] record {}: GeneID pos={} outside window [{}, {}]".format(
-                    label, i, pos, r["start"], r["end"]))
+                "{}: window layout mismatch for pos={} strand={}: got [{}, {}], "
+                "expected [{}, {}] (-10/+5 transcript-oriented)".format(
+                    where, pos, r["strand"], r["start"], r["end"],
+                    exp_start, exp_end))
         if prev_chrom is not None:
             if r["chrom"] < prev_chrom:
-                errors.append("[{}] record {}: chrom out of order: {!r} after {!r}".format(
-                    label, i, r["chrom"], prev_chrom))
+                errors.append("{}: chrom out of order: {!r} after {!r}".format(
+                    where, r["chrom"], prev_chrom))
             elif r["chrom"] == prev_chrom and r["start"] < prev_start:
-                errors.append("[{}] record {}: start out of order in {}: {} < {}".format(
-                    label, i, r["chrom"], r["start"], prev_start))
+                errors.append("{}: start out of order in {}: {} < {}".format(
+                    where, r["chrom"], r["start"], prev_start))
         prev_chrom, prev_start = r["chrom"], r["start"]
     return errors
 
@@ -127,6 +148,8 @@ def index_positions(path, delim=None):
         fh.readline()
         for line in fh:
             f = line.rstrip("\n").split("\t")
+            if len(f) != 5:
+                continue
             dd = detect_delim(f[0], delim)
             g = split_geneid(f[0], dd, f[1], f[4])
             if g is not None:
@@ -163,44 +186,48 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("generated")
     ap.add_argument("reference", nargs="?", default=None)
-    ap.add_argument("--delim", default=None, help="force ';' or '_'")
+    ap.add_argument("--delim", default=None, choices=sc.VALID_DELIMS,
+                    help="force the GeneID delimiter (';' human / '_' mouse); "
+                         "default: auto-detect per row")
     args = ap.parse_args()
 
     print("=== Format: {} ===".format(args.generated))
-    records = load_saf(args.generated, args.delim)
-    errors = validate_format(records, "generated", args.delim)
+    records, errors = load_saf(args.generated)
+    errors += validate_format(records, "generated", args.delim)
     if errors:
         print("FAIL - {} format error(s):".format(len(errors)))
         for e in errors[:20]:
             print("  " + e)
+        if len(errors) > 20:
+            print("  ... ({} more)".format(len(errors) - 20))
     else:
         print("PASS - {:,} records, all format checks clean".format(len(records)))
 
-    if not args.reference:
-        return
+    if args.reference:
+        print("\n=== Content: {} vs {} ===".format(args.generated, args.reference))
+        r = compare_content(args.generated, args.reference, args.delim)
+        print("Generated : {:>8,} rows ({:,} positions)".format(
+            r["gen_rows"], r["gen_positions"]))
+        print("Reference : {:>8,} rows ({:,} positions)".format(
+            r["ref_rows"], r["ref_positions"]))
+        print("Shared positions  : {:,}".format(r["shared"]))
+        if r["shared"]:
+            print("  Exact match     : {:,} ({:.2f}%)".format(
+                r["exact"], 100 * r["exact"] / r["shared"]))
+            print("  Mismatch        : {:,}".format(r["mismatch"]))
+        print("Only in generated : {:,}".format(r["only_gen"]))
+        print("Only in reference : {:,}".format(r["only_ref"]))
+        if r["examples"]:
+            print("\nMismatch examples:")
+            for key, gg, rg in r["examples"]:
+                print("  pos={}".format(key))
+                for g in gg:
+                    print("    gen: {}".format(g))
+                for g in rg:
+                    print("    ref: {}".format(g))
 
-    print("\n=== Content: {} vs {} ===".format(args.generated, args.reference))
-    r = compare_content(args.generated, args.reference, args.delim)
-    print("Generated : {:>8,} rows ({:,} positions)".format(
-        r["gen_rows"], r["gen_positions"]))
-    print("Reference : {:>8,} rows ({:,} positions)".format(
-        r["ref_rows"], r["ref_positions"]))
-    print("Shared positions  : {:,}".format(r["shared"]))
-    if r["shared"]:
-        print("  Exact match     : {:,} ({:.2f}%)".format(
-            r["exact"], 100 * r["exact"] / r["shared"]))
-        print("  Mismatch        : {:,}".format(r["mismatch"]))
-    print("Only in generated : {:,}".format(r["only_gen"]))
-    print("Only in reference : {:,}".format(r["only_ref"]))
-    if r["examples"]:
-        print("\nMismatch examples:")
-        for key, gg, rg in r["examples"]:
-            print("  pos={}".format(key))
-            for g in gg:
-                print("    gen: {}".format(g))
-            for g in rg:
-                print("    ref: {}".format(g))
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

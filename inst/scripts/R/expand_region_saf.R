@@ -1,7 +1,26 @@
+#' Expand a polyA-site SAF with gene-region features (5'UTR, CDS, intron, 3'UTR, non-coding)
+#'
+#' Region features that do not overlap a polyA site are added with GeneIDs of
+#' the form `gene{D}NA{D}NA{D}chrom{D}NA{D}strand{D}<nc|cds|intron|utr3|utr5>`,
+#' using the same delimiter `{D}` as the input SAF (';' human / '_' mouse) so
+#' the output is consistently delimited. Requires `parse_saf` / `parse_gtf`
+#' (scraps_to_seurat.R), `parse_geneid` (geneid.R) and valr.
+#'
+#' @param saf_file polyA-site SAF (scraps 7-field GeneID encoding)
+#' @param gtf_file GTF annotation matching the SAF's genome build
+#' @param save_file output SAF path
+#' @param slop bp added on both sides of each polyA-site window before subtraction
+#' @import readr dplyr stringr valr
+#' @return invisibly, the written table
+#' @export
 expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
   saf_names <- read_tsv(saf_file, n_max = 2) %>% colnames()
   print(saf_names)
   saf <- parse_saf(saf_file)
+  delim <- geneid_delim(saf$GeneID)
+  region_id <- function(name, chrom, strand, type) {
+    str_c(name, "NA", "NA", chrom, "NA", strand, type, sep = delim)
+  }
   gtf <- parse_gtf(gtf_file)
   
   if (slop != 0) {
@@ -14,7 +33,7 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
   nc <- gtf %>% filter(name %in% ncgenes, type == "exon")
   nc_notpolya <- bed_subtract(nc, saf)
   nc_notpolya2 <- nc_notpolya %>% 
-    mutate(GeneID = str_c(name, "NA", "NA", chrom, "NA", strand, "nc", sep = "_")) %>% 
+    mutate(GeneID = region_id(name, chrom, strand, "nc")) %>% 
     rename(gene = "name") %>% 
     dplyr::select(colnames(saf))
   
@@ -22,7 +41,7 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
   cds <- gtf %>% filter(type == "CDS")
   cds_notpolya <- bed_subtract(cds, saf)
   cds_notpolya2 <- cds_notpolya %>% 
-    mutate(GeneID = str_c(name, "NA", "NA", chrom, "NA", strand, "cds", sep = "_")) %>% 
+    mutate(GeneID = region_id(name, chrom, strand, "cds")) %>% 
     rename(gene = "name") %>% 
     dplyr::select(colnames(saf))
   
@@ -31,7 +50,7 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
                          gtf %>% filter(type == "exon"))
   intron_notpolya <- bed_subtract(intron, saf)
   intron_notpolya2 <- intron_notpolya %>% 
-    mutate(GeneID = str_c(name, "NA", "NA", chrom, "NA", strand, "intron", sep = "_")) %>% 
+    mutate(GeneID = region_id(name, chrom, strand, "intron")) %>% 
     rename(gene = "name") %>% 
     dplyr::select(colnames(saf))
   
@@ -43,7 +62,7 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
     dplyr::select(name = name.x, chrom = chrom.x, strand = strand.x, start = start.x, end = end.x)
   utr3_notpolya <- bed_subtract(utr3, saf)
   utr3_notpolya2 <- utr3_notpolya %>% 
-    mutate(GeneID = str_c(name, "NA", "NA", chrom, "NA", strand, "utr3", sep = "_")) %>% 
+    mutate(GeneID = region_id(name, chrom, strand, "utr3")) %>% 
     rename(gene = "name") %>% 
     dplyr::select(colnames(saf))
   
@@ -53,7 +72,7 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
     dplyr::select(name = name.x, chrom = chrom.x, strand = strand.x, start = start.x, end = end.x)
   utr5_notpolya <- bed_subtract(utr5, saf)
   utr5_notpolya2 <- utr5_notpolya %>% 
-    mutate(GeneID = str_c(name, "NA", "NA", chrom, "NA", strand, "utr5", sep = "_")) %>% 
+    mutate(GeneID = region_id(name, chrom, strand, "utr5")) %>% 
     rename(gene = "name") %>% 
     dplyr::select(colnames(saf))
   
@@ -68,4 +87,5 @@ expand_region_saf <- function(saf_file, gtf_file, save_file, slop = 0) {
     dplyr::select(saf_names)
   
   write_tsv(full, save_file)
+  invisible(full)
 }

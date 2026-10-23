@@ -4,8 +4,15 @@ Input is a strand-aware, single-base, UMI-deduplicated priming pileup bed
 (chrom, start, end, count, strand). For each (chrom, strand) the per-base UMI
 counts are smoothed with a Gaussian kernel (fixed bandwidth, in bp) to estimate
 the RT priming density. Local maxima of the density above a threshold are
-called as priming sites; maxima closer than --merge-dist are collapsed into one
-cluster. Gaussian smoothing is used for cluster DETECTION and umi_support.
+called as priming sites; maxima within --merge-dist of each other are collapsed
+into one cluster. Gaussian smoothing is used for cluster DETECTION only.
+
+Each cluster then owns a disjoint EXTENT of occupied bases: the run of occupied
+bases chained by gaps <= --merge-dist that contains its maxima ("island"),
+split from any neighbouring cluster in the same island at the occupied base of
+lowest density between the two clusters' maxima. umi_support is the raw UMI sum
+over that extent, and the summit is searched within it, so every occupied base
+contributes to at most one cluster and summits are unique per track.
 
 Summit placement within each cluster is controlled by --summit-method:
 
@@ -15,7 +22,7 @@ Summit placement within each cluster is controlled by --summit-method:
                         true cleavage site (in the tail's centre of mass). This
                         method instead takes the most-downstream (transcript-3')
                         base whose depth >= --summit-frac * cluster peak depth,
-                        searched over the full occupied read pileup, snapping the
+                        searched over the cluster's extent, snapping the
                         summit onto the cleavage boundary. Validated against
                         polyAdb: exact-hit rate rises from ~25% (kde) to ~65% and
                         the systematic upstream bias (~ -1.4 bp) is removed at
@@ -23,7 +30,7 @@ Summit placement within each cluster is controlled by --summit-method:
                         depth at the summit under this method.
 
   kde                   legacy behavior: summit = highest (raw count, then
-                        smoothed density) base within the local-maxima span;
+                        smoothed density) base within the cluster's extent;
                         kde_score is the smoothed density at the summit.
 
 Because discovery operates on pseudobulk (UMI-deduplicated per cell, then summed
@@ -99,10 +106,10 @@ def parse_args():
                         help="how to place the summit within a called cluster. "
                              "'downstream' (default): most-downstream "
                              "(transcript-3') base with depth >= --summit-frac * "
-                             "cluster peak depth, searched over the full occupied "
-                             "read pileup -- snaps to the cleavage boundary "
+                             "cluster peak depth, searched over the cluster's "
+                             "extent -- snaps to the cleavage boundary "
                              "(score = raw UMI depth). 'kde' (legacy): max(count, "
-                             "smoothed density) within the local-maxima span "
+                             "smoothed density) within the cluster's extent "
                              "(score = smoothed density), which is biased ~1-2 bp "
                              "upstream into the read tail.")
     parser.add_argument('--summit-frac', type=float, default=0.75,
@@ -174,25 +181,25 @@ def call_peaks_one(positions, counts, kernel, radius,
                    strand, summit_method, summit_frac):
     """Call peaks on one (chrom, strand) track.
 
-    Returns list of (summit_pos, score, umi_support). Peaks below
-    `support_floor` (summed UMI support over the merged cluster) are dropped.
-    `positions` must be sorted ascending.
+    Returns (results, n_dropped) where results is a list of
+    (summit_pos, score, umi_support) and n_dropped the number of clusters
+    rejected by `support_floor`. `positions` must be sorted ascending.
 
-    Cluster DETECTION is unchanged (Gaussian density local maxima merged within
-    merge_dist). Only the SUMMIT within each cluster depends on summit_method:
+    Cluster DETECTION: Gaussian density local maxima, merged within merge_dist.
+    Each cluster then gets a disjoint EXTENT [elo, ehi) of occupied bases (see
+    cluster_extents): umi_support is the raw UMI sum over the extent, and the
+    summit is searched within it. Only the SUMMIT rule depends on summit_method:
 
-      'kde'        summit = max(raw count, density) within the local-maxima span
-                   (legacy behavior). `score` = smoothed density at the summit.
+      'kde'        summit = max(raw count, density) within the extent (legacy
+                   placement). `score` = smoothed density at the summit.
 
       'downstream' 3'-end read pileups have a hard boundary at the cleavage site
                    and tail UPSTREAM (transcript orientation); the Gaussian
                    summit is pulled ~1-2 bp upstream into the tail's centre of
-                   mass. Instead, expand the summit search to the full occupied
-                   read cluster (bases connected within merge_dist around the
-                   called maxima) and take the MOST-DOWNSTREAM (transcript-3')
-                   base whose depth >= summit_frac * cluster-peak-depth. This
-                   snaps the summit onto the cleavage boundary. `score` = raw UMI
-                   depth at the summit.
+                   mass. Instead take the MOST-DOWNSTREAM (transcript-3') base
+                   of the extent whose depth >= summit_frac * extent peak depth.
+                   This snaps the summit onto the cleavage boundary. `score` =
+                   raw UMI depth at the summit.
     """
     density = sparse_density(positions, counts, kernel, radius)
 
@@ -205,7 +212,7 @@ def call_peaks_one(positions, counts, kernel, radius,
     ismax = (density > min_density) & (density > left) & (density > right)
     peak_idx = np.nonzero(ismax)[0]
     if peak_idx.size == 0:
-        return []
+        return [], 0
 
     peak_pos = positions[peak_idx]
     # merge maxima whose genomic positions are within merge_dist into clusters
@@ -213,42 +220,74 @@ def call_peaks_one(positions, counts, kernel, radius,
     starts = np.concatenate(([0], breaks + 1))
     ends = np.concatenate((breaks, [peak_idx.size - 1]))
 
+    extents = cluster_extents(positions, density, peak_idx[starts],
+                              peak_idx[ends], merge_dist)
+
     # cumulative sum over occupied counts for O(1) cluster support
     csum = np.concatenate(([0.0], np.cumsum(counts)))
 
     results = []
-    for a, b in zip(starts, ends):
-        # local-maxima span: defines the called cluster + its UMI support (this
-        # is unchanged, so the set of called sites and their support match the
-        # legacy cluster-detection behavior)
-        lo = int(np.searchsorted(positions, peak_pos[a]))
-        hi = int(np.searchsorted(positions, peak_pos[b], side='right'))
-        umi_support = float(csum[hi] - csum[lo])
+    n_dropped = 0
+    for elo, ehi in extents:
+        umi_support = float(csum[ehi] - csum[elo])
         if umi_support < support_floor:
+            n_dropped += 1
             continue
 
         if summit_method == 'downstream':
-            # expand the SUMMIT SEARCH (not the cluster/support) to the full
-            # occupied read pileup connected within merge_dist
-            slo, shi = lo, hi
-            while slo > 0 and (positions[slo] - positions[slo - 1]) <= merge_dist:
-                slo -= 1
-            while shi < n and (positions[shi] - positions[shi - 1]) <= merge_dist:
-                shi += 1
-            peak_depth = counts[slo:shi].max()
+            peak_depth = counts[elo:ehi].max()
             thr = summit_frac * peak_depth
             # eligible bases at/above the fractional threshold; take the most
             # downstream in transcript orientation ('-' -> lowest genomic coord)
-            elig = [j for j in range(slo, shi) if counts[j] >= thr]
+            elig = [j for j in range(elo, ehi) if counts[j] >= thr]
             summit_j = min(elig) if strand == '-' else max(elig)
             score = float(counts[summit_j])
-        else:  # 'kde' (legacy)
-            window = range(lo, hi)
+        else:  # 'kde' (legacy placement)
+            window = range(elo, ehi)
             summit_j = max(window, key=lambda j: (counts[j], density[j]))
             score = float(density[summit_j])
 
         results.append((int(positions[summit_j]), score, umi_support))
-    return results
+    return results, n_dropped
+
+
+def cluster_extents(positions, density, first_max, last_max, merge_dist):
+    """Disjoint extent [elo, ehi) (indices into `positions`) per cluster.
+
+    `first_max` / `last_max` are the indices of each cluster's first and last
+    density maximum (clusters in position order). A cluster's extent is its
+    island -- the run of occupied bases chained by gaps <= merge_dist -- cut
+    where a neighbouring cluster shares the island: the boundary is placed just
+    after the occupied base of minimum density strictly between the previous
+    cluster's last maximum and this cluster's first maximum, so sparse bridging
+    bases are split at the density valley and every occupied base belongs to at
+    most one cluster.
+    """
+    n = positions.size
+    gap_after = np.nonzero(np.diff(positions) > merge_dist)[0]  # gap between i and i+1
+    island_starts = np.concatenate(([0], gap_after + 1))
+    island_ends = np.concatenate((gap_after + 1, [n]))           # exclusive
+    island_of = np.concatenate(([0], np.cumsum(np.diff(positions) > merge_dist)))
+
+    n_clusters = first_max.size
+    elo = np.empty(n_clusters, dtype=np.int64)
+    ehi = np.empty(n_clusters, dtype=np.int64)
+    for c in range(n_clusters):
+        isl = island_of[first_max[c]]
+        elo[c] = island_starts[isl]
+        ehi[c] = island_ends[isl]
+    for c in range(1, n_clusters):
+        if island_of[last_max[c - 1]] != island_of[first_max[c]]:
+            continue
+        a, b = int(last_max[c - 1]), int(first_max[c])   # a < b, both maxima
+        if b - a > 1:
+            j = a + 1 + int(np.argmin(density[a + 1:b]))
+            cut = j + 1          # valley base goes to the upstream cluster
+        else:
+            cut = b              # adjacent maxima: split between them
+        ehi[c - 1] = cut
+        elo[c] = cut
+    return list(zip(elo.tolist(), ehi.tolist()))
 
 
 def main():
@@ -270,6 +309,7 @@ def main():
     support_floor = max(float(args.min_umi), args.min_umi_frac * total_umi)
 
     n_sites = 0
+    n_dropped = 0
     with gzip.open(args.output, 'wt') as out:
         out.write("chrom\tsummit\tstrand\tkde_score\tumi_support\n")
         for (chrom, strand) in sorted(data.keys()):
@@ -279,19 +319,22 @@ def main():
             order = np.argsort(positions)
             positions = positions[order]
             counts = counts[order]
-            for summit, score, support in call_peaks_one(
-                    positions, counts, kernel, radius,
-                    min_density, args.merge_dist, support_floor,
-                    strand, args.summit_method, args.summit_frac):
+            peaks, dropped = call_peaks_one(
+                positions, counts, kernel, radius,
+                min_density, args.merge_dist, support_floor,
+                strand, args.summit_method, args.summit_frac)
+            n_dropped += dropped
+            for summit, score, support in peaks:
                 out.write("{}\t{}\t{}\t{:.6g}\t{:.0f}\n".format(
                     chrom, summit, strand, score, support))
                 n_sites += 1
 
     sys.stderr.write(
         "kde_peaks: called {} RT priming sites across {} (chrom, strand) "
-        "tracks; summit_method = {}{}; support floor = max({}, {:g} * {:.0f}) "
-        "= {:.0f} UMIs; min_density = {:.6g}\n".format(
-            n_sites, len(data), args.summit_method,
+        "tracks ({} clusters dropped by the support floor); summit_method = "
+        "{}{}; support floor = max({}, {:g} * {:.0f}) = {:.0f} UMIs; "
+        "min_density = {:.6g}\n".format(
+            n_sites, len(data), n_dropped, args.summit_method,
             (" (frac %g)" % args.summit_frac
              if args.summit_method == 'downstream' else ""),
             args.min_umi, args.min_umi_frac,

@@ -29,9 +29,7 @@ Examples:
 """
 
 import argparse
-import shutil
 import sys
-from pathlib import Path
 
 import saf_common as sc
 
@@ -50,18 +48,29 @@ def parse_args():
                     help="genome build of the input (e.g. hg38, mm10)")
     ap.add_argument("--target-build", required=True,
                     help="desired build; equal to --source-build skips liftOver")
-    ap.add_argument("--liftover", default=None)
-    ap.add_argument("--chain", default=None)
-    ap.add_argument("--delim", default=None)
-    ap.add_argument("--tmpdir", default="/tmp/pasv4_to_saf")
-    ap.add_argument("--keep-tmp", action="store_true")
+    ap.add_argument("--liftover", default=None,
+                    help="path to liftOver binary (default: `liftOver` on PATH, "
+                         "else a platform-matched UCSC download)")
+    ap.add_argument("--chain", default=None,
+                    help="path to source->target chain (default: auto-download)")
+    ap.add_argument("--delim", default=None, choices=sc.VALID_DELIMS,
+                    help="override GeneID delimiter (default by --species)")
+    ap.add_argument("--tmpdir", default=None,
+                    help="scratch directory for liftOver files (default: a fresh "
+                         "mkdtemp, removed afterwards; a user-supplied directory "
+                         "is never removed)")
+    ap.add_argument("--keep-tmp", action="store_true",
+                    help="do not remove the mkdtemp scratch directory")
     return ap.parse_args()
 
 
-def parse_pas_id(pas_id):
+def parse_pas_id(pas_id, where=""):
     """'chr1:+:940182' -> (chrom, strand, pos_int)."""
-    chrom, strand, pos_str = pas_id.rsplit(":", 2)
-    return chrom, strand, int(pos_str)
+    try:
+        chrom, strand, pos_str = pas_id.rsplit(":", 2)
+    except ValueError:
+        sys.exit("{}: PAS_ID not of the form chr:strand:pos: {!r}".format(where, pas_id))
+    return chrom, sc.check_strand(strand, where), sc.parse_pos(pos_str, where)
 
 
 def detect_mode(header_line):
@@ -79,21 +88,24 @@ def parse_pas(path, mode):
         if mode == "main":
             wanted["pas_type"] = "PAS_type_RefSeq_label"
         idx = sc.resolve_columns(header, wanted)
-        for line in fh:
+        for lineno, line in enumerate(fh, start=2):
             line = line.rstrip("\n")
             if not line:
                 continue
             f = line.split("\t")
-            chrom, strand, pos = parse_pas_id(f[idx["pas_id"]])
-            yield {
-                "chrom": chrom,
-                "pos": pos,
-                "strand": strand,
-                "sym": f[idx["sym"]],
-                "pas_type": f[idx["pas_type"]] if mode == "main" else "NA",
-            }
-    # expose resolved mode to caller via attribute on the generator is awkward;
-    # callers use --mode or detect separately when needed.
+            where = "{} line {}".format(path, lineno)
+            try:
+                chrom, strand, pos = parse_pas_id(f[idx["pas_id"]], where)
+                rec = {
+                    "chrom": chrom,
+                    "pos": pos,
+                    "strand": strand,
+                    "sym": f[idx["sym"]],
+                    "pas_type": f[idx["pas_type"]] if mode == "main" else "NA",
+                }
+            except IndexError:
+                sys.exit("{}: short/ragged line ({} columns)".format(where, len(f)))
+            yield rec
 
 
 def rows_no_liftover(records, delim):
@@ -118,10 +130,10 @@ def rows_with_liftover(records, delim, args, tmpdir):
                             args.chain)
     lifted_bed = str(tmpdir / "tgt_point.bed")
     unmapped = str(tmpdir / "unmapped_point.bed")
-    sc.run_liftover(liftover_bin, chain, point_bed, lifted_bed, unmapped)
+    n_unmapped = sc.run_liftover(liftover_bin, chain, point_bed, lifted_bed, unmapped)
     lifted = sc.load_lifted(lifted_bed)
-    sys.stderr.write("  lifted {}/{} cleavage positions\n".format(
-        len(lifted), len(records)))
+    sys.stderr.write("  lifted {}/{} cleavage positions ({} unmapped)\n".format(
+        len(lifted), len(records), n_unmapped))
 
     for i, r in enumerate(records):
         pt = lifted.get(str(i))
@@ -139,9 +151,10 @@ def rows_with_liftover(records, delim, args, tmpdir):
 
 def main():
     args = parse_args()
-    delim = args.delim or sc.SPECIES_DELIM[args.species]
-    tmpdir = Path(args.tmpdir)
-    tmpdir.mkdir(parents=True, exist_ok=True)
+    delim = sc.check_delim(args.delim or sc.SPECIES_DELIM[args.species])
+    need_tmp = args.source_build != args.target_build
+    tmpdir, created = (sc.make_tmpdir(args.tmpdir, "pasv4_to_saf")
+                       if need_tmp else (None, False))
 
     # determine mode (for the log) up front
     mode = args.mode
@@ -151,20 +164,21 @@ def main():
     sys.stderr.write("parsing {} (mode={}) ...\n".format(args.pas, mode))
     records = parse_pas(args.pas, mode)
 
-    if args.source_build == args.target_build:
-        sys.stderr.write("  source build == target build; skipping liftOver\n")
-        raw = rows_no_liftover(records, delim)
-    else:
-        sys.stderr.write("  lifting {} -> {}\n".format(
-            args.source_build, args.target_build))
-        raw = rows_with_liftover(records, delim, args, tmpdir)
+    try:
+        if not need_tmp:
+            sys.stderr.write("  source build == target build; skipping liftOver\n")
+            raw = rows_no_liftover(records, delim)
+        else:
+            sys.stderr.write("  lifting {} -> {}\n".format(
+                args.source_build, args.target_build))
+            raw = rows_with_liftover(records, delim, args, tmpdir)
 
-    rows = sc.dedup_sort_rows(raw)
-    sc.write_saf(rows, args.out)
-    sys.stderr.write("wrote {} records -> {}\n".format(len(rows), args.out))
-
-    if not args.keep_tmp and tmpdir.exists():
-        shutil.rmtree(tmpdir, ignore_errors=True)
+        rows = sc.dedup_sort_rows(raw)
+        sc.write_saf(rows, args.out)
+        sys.stderr.write("wrote {} records -> {}\n".format(len(rows), args.out))
+    finally:
+        if need_tmp:
+            sc.cleanup_tmpdir(tmpdir, created, args.keep_tmp)
 
 
 if __name__ == "__main__":
