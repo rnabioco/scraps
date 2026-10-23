@@ -308,7 +308,10 @@ For each discovery unit (`<sample>_<mode>`, `<group>_<mode>`, or an explicit
   polya_dist, pas_motif, pas_dist, a_content, a_run`. `polya_dist` is the
   **signed transcript-oriented** distance (bp) from the summit to the matched
   polyAdb cleavage point (negative = upstream, positive = downstream;
-  `NA` for unmatched/novel sites).
+  `NA` for unmatched/novel sites). `pas_dist` is the distance (bp, positive =
+  upstream) from the summit to the start of the **nearest** PAS motif
+  occurrence within `pas_window`, in transcript orientation; `pas_motif` names
+  that motif (`NA` for both when none is found).
 - **`<unit>_sites.bed.gz`** — BED6 of summits (`name` = status) for browsing.
 - **`<unit>_denovo.saf.gz`** — a SAF using the same `GeneID` encoding as
   polyAdb (`gene;genbank;id;chrom;summit;strand;class`, where `class` is the

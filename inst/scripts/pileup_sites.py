@@ -302,12 +302,18 @@ def pileup(bam_path, out_path, end, mode, strand_split, label_plus,
         # concat in C-locale contig-name order (matches the global sort's -k1,1)
         order = sorted(range(len(contigs)), key=lambda i: contigs[i].encode())
         with open(out_path, "wb") as out:
+            wrote = False
             for i in order:
                 frag = fragments[i]
                 if frag is None:
                     continue
                 with open(frag, "rb") as fh:
                     shutil.copyfileobj(fh, out)
+                wrote = True
+            if not wrote:
+                # no surviving reads: still emit a valid (empty) gzip member so
+                # downstream gunzip / gzip -t do not fail on a zero-byte file
+                out.write(gzip.compress(b""))
     finally:
         for j in jobs:
             frag = j[-1]

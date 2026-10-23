@@ -203,13 +203,23 @@ def call_peaks_one(positions, counts, kernel, radius,
     """
     density = sparse_density(positions, counts, kernel, radius)
 
-    # local maxima among occupied bases: strictly greater than occupied
-    # neighbors, above the density floor (strict both sides -> no plateau
-    # double-calling)
+    # local maxima among occupied bases, above the density floor. Neighbours
+    # are gap-aware: an occupied base farther than the kernel radius away does
+    # not influence this base's density, so it is treated as a missing (zero
+    # density) neighbour rather than suppressing it. Track ends and isolated
+    # single bases can therefore be maxima. Plateaus (equal adjacent
+    # densities) yield exactly one representative, the last base of the run
+    # (>= to the left, strictly > to the right).
     n = density.size
-    left = np.concatenate(([np.inf], density[:-1]))
-    right = np.concatenate((density[1:], [np.inf]))
-    ismax = (density > min_density) & (density > left) & (density > right)
+    if n > 1:
+        gap = np.diff(positions)
+        near = gap <= radius
+        left = np.concatenate(([0.0], np.where(near, density[:-1], 0.0)))
+        right = np.concatenate((np.where(near, density[1:], 0.0), [0.0]))
+    else:
+        left = np.zeros(n)
+        right = np.zeros(n)
+    ismax = (density > min_density) & (density >= left) & (density > right)
     peak_idx = np.nonzero(ismax)[0]
     if peak_idx.size == 0:
         return [], 0

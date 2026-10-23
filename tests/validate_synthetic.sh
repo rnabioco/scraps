@@ -46,14 +46,15 @@ fail=0
 
 # Directional check for a bed: every OLD position must appear in NEW
 # (only-old == 0) and total NEW signal must not exceed total OLD signal (new
-# collapses fragmentation-split PCR duplicates). Accepts an optional label.
+# collapses fragmentation-split PCR duplicates). Keys include the strand column
+# when present (5-col stranded beds), so a strand inversion cannot pass.
 # Args: old.bed.gz new.bed.gz LABEL
 check_directional_bed() {
   local old="$1" new="$2" label="$3"
   local only_old old_sum new_sum
   only_old=$(comm -23 \
-    <(zcat < "$old" | awk -v OFS='\t' '{print $1,$2}' | sort -u) \
-    <(zcat < "$new" | awk -v OFS='\t' '{print $1,$2}' | sort -u) | wc -l | tr -d ' ')
+    <(zcat < "$old" | awk -v OFS='\t' '{print $1,$2,(NF>=5?$5:"")}' | sort -u) \
+    <(zcat < "$new" | awk -v OFS='\t' '{print $1,$2,(NF>=5?$5:"")}' | sort -u) | wc -l | tr -d ' ')
   old_sum=$(zcat < "$old" | awk '{s+=$4}END{print s+0}')
   new_sum=$(zcat < "$new" | awk '{s+=$4}END{print s+0}')
   if [ "$only_old" -eq 0 ] && [ "$new_sum" -le "$old_sum" ]; then
@@ -177,13 +178,22 @@ for mode in R2 R1 paired bam_same bam_reverse bam_paired1; do
     --end "${BED_END[$mode]}" --mode "${PILEUP_MODE[$mode]}" \
     --strand-split --label-plus + --label-minus -
 
-  # compare per (chrom,pos,count) — strand column (5) is a pure relabel.
-  # write to real temp files (the check reads its inputs twice; process
-  # substitution FIFOs cannot be re-read).
-  zcat < "$WORK/${mode}_sbed_old.bed.gz" | cut -f1-4 | gzip -c > "$WORK/${mode}_sbed_old4.bed.gz"
-  zcat < "$WORK/${mode}_sbed_new.bed.gz" | cut -f1-4 | gzip -c > "$WORK/${mode}_sbed_new4.bed.gz"
-  check_directional_bed "$WORK/${mode}_sbed_old4.bed.gz" "$WORK/${mode}_sbed_new4.bed.gz" "SBED" || fail=1
+  # compare per (chrom, pos, strand): labels are identity (+/-) here, matching
+  # genomecov's aligned-strand output, so the strand column is comparable.
+  check_directional_bed "$WORK/${mode}_sbed_old.bed.gz" "$WORK/${mode}_sbed_new.bed.gz" "SBED" || fail=1
 done
+
+echo "=================== empty input -> valid empty gzip ==================="
+# an assigned BAM with no surviving reads must still yield a readable gzip bed
+samtools view -b -f 4 "$WORK/R2_assigned.bam" > "$WORK/empty.bam"   # header only (no unmapped reads in the fixture)
+samtools index "$WORK/empty.bam"
+python3 "$REPO/inst/scripts/pileup_sites.py" -i "$WORK/empty.bam" -o "$WORK/empty.bed.gz" \
+  --end 3 --mode R2 --strand-split
+if gzip -t "$WORK/empty.bed.gz" 2>/dev/null && [ "$(zcat < "$WORK/empty.bed.gz" | wc -l | tr -d ' ')" = 0 ]; then
+  echo "  EMPTY: OK (valid gzip, 0 records)"
+else
+  echo "  EMPTY: FAIL (invalid gzip or non-empty)"; fail=1
+fi
 
 echo "=================== priming offset (Ultima FASTQ: R2 3' end + 5) ==================="
 # The ultima_fastq platform sets R2_priming_offset=5: assign_sites_R2 adds

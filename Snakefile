@@ -108,19 +108,18 @@ _OPTIONAL_SUFFIXES = ("_extra_args", "_polyA_filter", "_priming_offset")
 def _get_config(sample, item):
   """Hierarchical lookup: sample -> chemistry.platform -> chemistry -> DEFAULTS
   -> "" (with a one-time warning unless the key is optional)."""
-  sample_cfg = SAMPLES[sample]
+  sample_cfg = SAMPLES[sample] or {}
 
-  try:
-    chemistry = sample_cfg.get("chemistry", DEFAULTS["chemistry"])
-  except KeyError:
-    logger.error("Error: Chemistry must be defined per sample and/or in DEFAULTS.")
-    raise
+  # per-sample value wins; DEFAULTS is consulted only when the sample has none
+  chemistry = sample_cfg.get("chemistry") or DEFAULTS.get("chemistry")
+  if chemistry is None:
+    raise ValueError(
+      "sample '{}': chemistry must be defined per sample or in DEFAULTS".format(sample))
 
-  try:
-    platform = sample_cfg.get("platform", DEFAULTS["platform"])
-  except KeyError:
-    logger.error("Error: Platform must be defined per sample and/or in DEFAULTS.")
-    raise
+  platform = sample_cfg.get("platform") or DEFAULTS.get("platform")
+  if platform is None:
+    raise ValueError(
+      "sample '{}': platform must be defined per sample or in DEFAULTS".format(sample))
 
   if item in sample_cfg:
     return sample_cfg[item]
@@ -339,43 +338,77 @@ def _sample_disc_modes(sample):
   return [m for m in want if m in aln]
 
 def _discovery_units():
-  """Return {unit_id: [(sample, mode), ...]} for all discovery tracks."""
+  """Return {unit_id: [(sample, mode), ...]} for all discovery tracks.
+
+  Unit ids must be unique across the three sources (explicit DISCOVERY.units,
+  "{group}_{mode}", "{sample}_{mode}"); a collision is a config error rather
+  than a silent overwrite. Explicit (sample, mode) members must name a mode the
+  sample is actually aligned in (its `alignments`), otherwise discovery would
+  schedule an alignment the user never asked for.
+  """
   units = {}
+  origin = {}
+  errors = []
   groups = DISCOVERY.get("groups", {}) or {}
   explicit = DISCOVERY.get("units", {}) or {}
   grouped_samples = set()
   for members in groups.values():
     grouped_samples.update(members)
 
+  def _add(name, pairs, source):
+    if name in units:
+      errors.append(
+        "discovery unit id '{}' from {} collides with the {} unit of the same "
+        "name; rename the explicit unit or group".format(name, source, origin[name]))
+      return
+    units[name] = pairs
+    origin[name] = source
+
   # explicit units: arbitrary (sample, mode) aggregation (cross-sample/mode)
   for name, members in explicit.items():
     pairs = []
     for m in members:
       s, mode = (m[0], m[1]) if not isinstance(m, str) else (m, None)
-      modes = [mode] if mode else _sample_disc_modes(s)
-      for md in modes:
-        if md in _sample_disc_modes(s) or mode:
-          pairs.append((s, md))
+      if s not in SAMPLES:
+        errors.append("DISCOVERY.units '{}': unknown sample '{}'".format(name, s))
+        continue
+      aligned = _as_mode_list(_get_config(s, "alignments")) or []
+      if mode:
+        if mode not in aligned:
+          errors.append(
+            "DISCOVERY.units '{}': sample '{}' is not aligned in mode '{}' "
+            "(alignments: {})".format(name, s, mode, aligned))
+          continue
+        pairs.append((s, mode))
+      else:
+        pairs.extend((s, md) for md in _sample_disc_modes(s))
     if pairs:
-      units[name] = pairs
+      _add(name, pairs, "DISCOVERY.units")
 
   # groups: pool member samples within each shared mode -> "{group}_{mode}"
   for gname, members in groups.items():
+    unknown = [s for s in members if s not in SAMPLES]
+    if unknown:
+      errors.append("DISCOVERY.groups '{}': unknown sample(s) {}".format(gname, unknown))
+      continue
     # modes shared by all members (intersection, order from first member)
     per = [ _sample_disc_modes(s) for s in members ]
     if not per:
       continue
     shared = [m for m in per[0] if all(m in p for p in per[1:])]
     for md in shared:
-      units["{}_{}".format(gname, md)] = [(s, md) for s in members]
+      _add("{}_{}".format(gname, md), [(s, md) for s in members], "DISCOVERY.groups")
 
   # ungrouped samples: one unit per (sample, mode) -> "{sample}_{mode}"
   for s in SAMPLES:
     if s in grouped_samples:
       continue
     for md in _sample_disc_modes(s):
-      units["{}_{}".format(s, md)] = [(s, md)]
+      _add("{}_{}".format(s, md), [(s, md)], "per-sample")
 
+  if errors:
+    raise ValueError(
+      "Invalid DISCOVERY configuration:\n  - " + "\n  - ".join(errors))
   return units
 
 DISC_UNITS = {}

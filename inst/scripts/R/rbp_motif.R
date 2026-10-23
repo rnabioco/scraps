@@ -91,7 +91,7 @@ DE_PA_motifs <- function(motifs,
     group_by(gene) %>%
     filter(n() >= 2) %>%
     arrange(site) %>%
-    do(as_tibble(t(combn(.$site, m = 2)), .name_repair = "minimal")) %>%
+    do({ cmb <- combn(.$site, m = 2); tibble(V1 = cmb[1, ], V2 = cmb[2, ]) }) %>%
     ungroup() %>%
     mutate(diff_motifs = mapply(PA_motifs, V1, V2, MoreArgs = list(motifs = motifs)), comp = str_c(V1, "_vs_", V2))
   

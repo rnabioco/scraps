@@ -50,8 +50,8 @@ parse_geneid <- function(x, multi = c("first", "all"), chrom = NULL, strand = NU
     strand = rep(NA_character_, n), type = rep(NA_character_, n)
   )
 
-  # ';' features: fixed 7-field split (vectorised)
-  is_semi <- stringr::str_detect(feat, stringr::fixed(";"))
+  # ';' features: fixed 7-field split (vectorised). Missing ids stay NA rows.
+  is_semi <- !is.na(feat) & stringr::str_detect(feat, stringr::fixed(";"))
   if (any(is_semi)) {
     ok <- is_semi & stringr::str_count(feat, stringr::fixed(";")) == 6L
     parts <- stringr::str_split_fixed(feat[ok], stringr::fixed(";"), 7)
@@ -72,7 +72,7 @@ parse_geneid <- function(x, multi = c("first", "all"), chrom = NULL, strand = NU
     out$type[i] <- r$type
   }
 
-  bad <- is.na(out$type)
+  bad <- is.na(out$type) & !is.na(feat)
   if (any(bad)) {
     warning(sum(bad), " GeneID feature(s) not parseable as 7 fields, e.g. ",
             paste(utils::head(unique(feat[bad]), 3), collapse = " | "))

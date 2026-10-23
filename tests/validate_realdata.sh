@@ -28,22 +28,47 @@ cd "$REPO"
 OLD_REF="${OLD_REF:-d335350}"
 CONFIG="${CONFIG:-config.yaml}"
 CORES="${CORES:-8}"
-SCRATCH="${SCRATCH:-$REPO/.validate_realdata}"
+# fresh result directories per invocation: the count/pileup helper scripts are
+# invoked from shell commands, not declared as Snakemake inputs, so reusing a
+# results dir would let an edited script "pass" on stale outputs
+RUN_ID="$(date +%Y%m%d_%H%M%S)"
+SCRATCH="${SCRATCH:-$REPO/.validate_realdata}/$RUN_ID"
 OLD_DIR="$SCRATCH/results_old"
 NEW_DIR="$SCRATCH/results_new"
 OLD_TREE="$SCRATCH/worktree_old"
+RESOLVED_CONFIG="$SCRATCH/config.resolved.yaml"
 
 mkdir -p "$SCRATCH"
+echo ">>> scratch: $SCRATCH"
+
+# Resolve the config's resource paths (DATA, STAR_INDEX, POLYA_SITES,
+# GENOME_FASTA) to absolute paths so both runs see the same files even though
+# the legacy run executes inside the old worktree. chemistry.yaml whitelist
+# paths are relative (ref/...), so missing ref/ entries are linked into the
+# worktree from this repository as well.
+python3 - "$REPO" "$CONFIG" "$RESOLVED_CONFIG" <<'EOF'
+import os, sys, yaml
+repo, cfg_in, cfg_out = sys.argv[1:4]
+cfg = yaml.safe_load(open(os.path.join(repo, cfg_in) if not os.path.isabs(cfg_in) else cfg_in))
+for key in ("DATA", "STAR_INDEX", "POLYA_SITES", "GENOME_FASTA"):
+    val = cfg.get(key)
+    if isinstance(val, str) and val and not os.path.isabs(val):
+        cfg[key] = os.path.abspath(os.path.join(repo, val))
+yaml.safe_dump(cfg, open(cfg_out, "w"), sort_keys=False)
+EOF
 
 echo ">>> OLD path from git ref: $OLD_REF"
 git worktree remove --force "$OLD_TREE" 2>/dev/null || true
 git worktree add --force "$OLD_TREE" "$OLD_REF"
-# reuse the same config but redirect RESULTS to OLD_DIR via --config override
-( cd "$OLD_TREE" && snakemake -j "$CORES" --configfile "$REPO/$CONFIG" \
+mkdir -p "$OLD_TREE/ref"
+for f in "$REPO"/ref/*; do
+  [ -e "$OLD_TREE/ref/$(basename "$f")" ] || ln -s "$f" "$OLD_TREE/ref/$(basename "$f")"
+done
+( cd "$OLD_TREE" && snakemake -j "$CORES" --configfile "$RESOLVED_CONFIG" \
     --config RESULTS="$OLD_DIR" --resources total_impact=5 --keep-going )
 
 echo ">>> NEW path (current working tree)"
-snakemake -j "$CORES" --configfile "$CONFIG" \
+snakemake -j "$CORES" --configfile "$RESOLVED_CONFIG" \
     --config RESULTS="$NEW_DIR" --resources total_impact=5 --keep-going
 
 echo ">>> DIFF"
@@ -64,10 +89,13 @@ compare_exact() {  # $1 = relative glob under results dir
 }
 
 # beds: DIRECTIONAL vs legacy umi_tools dedup + genomecov. The new pileup keys
-# dedup on (cell, UMI, priming position) and ignores the fragmentation/splice
-# coordinate, so at each priming position new <= old and no new position is
-# introduced. Criterion: only-old == 0 AND total new signal <= total old signal.
-# (col4 is the count; for stranded beds the strand col is a pure relabel.)
+# dedup on (cell, UMI, priming position); umi_tools keyed on the mapping
+# coordinate and kept ONE read per (cell, UMI, start), whose priming end may
+# differ from its duplicates'. So every legacy priming position must still be
+# present in the new output (only-old == 0), while the new output may contain
+# positions the legacy one lacked and per-position counts are not comparable;
+# total signal must not grow (fragmentation-split duplicates collapse).
+# Keys are (chrom, pos, strand) for stranded (5-col) beds.
 compare_directional() {  # $1 = relative glob
   for oldf in "$OLD_DIR"/$1; do
     [ -e "$oldf" ] || continue
@@ -75,8 +103,8 @@ compare_directional() {  # $1 = relative glob
     newf="$NEW_DIR/$rel"
     if [ ! -e "$newf" ]; then echo "  MISSING new: $rel"; fail=1; continue; fi
     only_old=$(comm -23 \
-      <(zcat < "$oldf" | awk -v OFS='\t' '{print $1,$2}' | sort -u) \
-      <(zcat < "$newf" | awk -v OFS='\t' '{print $1,$2}' | sort -u) | wc -l | tr -d ' ')
+      <(zcat < "$oldf" | awk -v OFS='\t' '{print $1,$2,(NF>=5?$5:"")}' | sort -u) \
+      <(zcat < "$newf" | awk -v OFS='\t' '{print $1,$2,(NF>=5?$5:"")}' | sort -u) | wc -l | tr -d ' ')
     old_sum=$(zcat < "$oldf" | awk '{s+=$4}END{print s+0}')
     new_sum=$(zcat < "$newf" | awk '{s+=$4}END{print s+0}')
     if [ "$only_old" -eq 0 ] && [ "$new_sum" -le "$old_sum" ]; then

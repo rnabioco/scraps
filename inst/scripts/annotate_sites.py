@@ -300,26 +300,35 @@ def seq_context(fasta, chrom, summit0, strand, args):
     a_content = (a_seq.count('A') / len(a_seq)) if a_seq else 0.0
     a_run = max_a_run(a_seq)
 
-    # upstream PAS motif window (sense strand)
+    # upstream PAS motif window (sense strand). p_seq[i] is the base at
+    # transcript-relative offset `first_off + i` from the summit (negative =
+    # upstream), where first_off accounts for the configured window AND any
+    # clipping of the fetch at the contig boundary.
     if strand == '+':
         p_s, p_e = summit0 + args.pas_start, summit0 + args.pas_end + 1
         p_seq = fetch_seq(fasta, chrom, p_s, p_e)
+        first_off = max(0, p_s) - summit0
     else:
         p_s, p_e = summit0 - args.pas_end, summit0 - args.pas_start + 1
         p_seq = revcomp(fetch_seq(fasta, chrom, p_s, p_e))
+        clipped_end = min(fasta.get_reference_length(chrom), p_e) if p_seq else p_e
+        first_off = summit0 - (clipped_end - 1)
 
     pas_motif = "NA"
     pas_dist = "NA"
-    best_off = None
+    best_dist = None
     for motif in PAS_MOTIFS:
-        idx = p_seq.find(motif)
+        # nearest occurrence to the summit in transcript orientation = the
+        # LAST occurrence in the sense-oriented window
+        idx = p_seq.rfind(motif)
         if idx >= 0:
-            # distance upstream of summit (bp); window end aligns to summit
-            off = len(p_seq) - idx
-            if best_off is None or off < best_off:
-                best_off = off
+            # bp upstream of the summit at which the motif starts (positive =
+            # upstream, as in the pas_window convention; 0 = starts at summit)
+            dist = -(first_off + idx)
+            if best_dist is None or dist < best_dist:
+                best_dist = dist
                 pas_motif = motif
-                pas_dist = off
+                pas_dist = dist
     return pas_motif, pas_dist, a_content, a_run
 
 

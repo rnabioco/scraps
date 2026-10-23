@@ -37,6 +37,11 @@ for strand in "+-":
     bed(f"{work}/b_{strand}.bed.gz", [("chr1", p, c, strand) for p, c in bridge])
 bed(f"{work}/c.bed.gz", [("chr1", 1000 + i, c, "+") for i, c in enumerate(a1)]
                        + [("chr1", p, c, "+") for p, c in isolated])
+# D: a single isolated 100-UMI base (track of one), a far-away small bump 5 kb
+#    downstream (must not be suppressed by the big site across the gap), and a
+#    flat-topped plateau (two adjacent equal bases) -> exactly one summit each
+bed(f"{work}/d.bed.gz", [("chr1", 2000, 100, "+"), ("chr1", 7000, 12, "+"), ("chr1", 7001, 12, "+"),
+                         ("chr2", 500, 40, "-")])
 EOF
 
 run() {  # $1 = bed, $2 = out tsv, rest = extra args; stderr -> $2.log
@@ -106,6 +111,21 @@ if [ "$n" = 1 ] && grep -q '1 clusters dropped by the support floor' "$WORK/c.ts
 else
   echo "  C: FAIL (n=$n; log: $(cat "$WORK/c.tsv.gz.log"))"; fail=1
 fi
+
+echo "--- D. isolated bases, gap-separated sites and plateaus"
+for method in downstream kde; do
+  run "$WORK/d.bed.gz" "$WORK/d_$method.tsv.gz" --summit-method "$method"
+  got=$(rows "$WORK/d_$method.tsv.gz" | awk -v OFS=':' '{print $1,$2,$3,$5}' | tr '\n' ' ')
+  n=$(rows "$WORK/d_$method.tsv.gz" | wc -l | tr -d ' ')
+  n2000=$(rows "$WORK/d_$method.tsv.gz" | awk '$2==2000 && $5==100' | wc -l | tr -d ' ')
+  nplat=$(rows "$WORK/d_$method.tsv.gz" | awk '$2>=7000 && $2<=7001 && $5==24' | wc -l | tr -d ' ')
+  n500=$(rows "$WORK/d_$method.tsv.gz" | awk '$1=="chr2" && $2==500 && $5==40' | wc -l | tr -d ' ')
+  if [ "$n" = 3 ] && [ "$n2000" = 1 ] && [ "$nplat" = 1 ] && [ "$n500" = 1 ]; then
+    echo "  D $method: OK ($got)"
+  else
+    echo "  D $method: FAIL (n=$n; $got)"; fail=1
+  fi
+done
 
 echo "================================================="
 if [ "$fail" -eq 0 ]; then
