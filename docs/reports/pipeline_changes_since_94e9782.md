@@ -256,3 +256,16 @@ _Aggregate diffstat across all ten commits: 22 files, +2,307 / −239 lines._
 ## ✅ Net assessment
 
 The branch removes the pipeline's real runtime bottlenecks while keeping the primary quantitative output (the count matrix) bit-identical. The bed and discovery changes are deliberate scientific corrections — molecule-level deduplication and cleavage-boundary summit placement — each validated against real data and polyAdb, and each documented with its caveats. Discovery configuration is now substantially more flexible without breaking existing configs.
+
+---
+
+## Addendum: cluster extents in `kde_peaks.py`
+
+A later review found that `umi_support` was summed only over the occupied bases between a
+cluster's first and last density maximum (one base for a single-maximum cluster), and that
+the `downstream` summit search could wander across sparse bridging bases into a
+neighbouring cluster, producing duplicate summits. Clusters now own disjoint extents (their
+occupied-base island, split at the density valley between neighbouring clusters);
+`umi_support` sums the extent and the summit is searched within it. Support can only
+increase, so more peaks pass the same `min_umi`; the called site set differs from the
+numbers quoted above. Regression checks: `tests/validate_kde_peaks.sh`.

@@ -3,7 +3,12 @@
 Helper scripts that convert [polyAdb](https://exon.apps.wistar.org/polya_db/)
 releases into the scraps SAF format used as `POLYA_SITES`. All scripts use only
 the Python 3 standard library (plus UCSC `liftOver`, auto-downloaded when
-needed).
+needed). The liftOver binary is resolved in this order: `--liftover PATH`, then
+a `liftOver` found on `PATH` (e.g. the `ucsc-liftover` conda package), then a
+download of the UCSC build matching the current platform (macOS arm64 / x86_64,
+Linux x86_64; other platforms must supply `--liftover`). Downloads are atomic
+(`.part` then rename). Run the scripts from the repository root as shown below
+(Python puts the script directory on `sys.path`, so `saf_common` resolves).
 
 | Script | Input | Notes |
 |---|---|---|
@@ -27,13 +32,19 @@ gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
 - `pas_type` (field 7) is the **site class**.
 - Missing values are `NA`.
 
-`Start`/`End` describe a strand-specific 15 bp window (transcript-oriented
--10 / +5 slop) around the cleavage position:
+`Start`/`End` describe a strand-specific 16-base window (`End - Start = 15`;
+transcript-oriented -10 / +5 slop) around the cleavage position:
 
 ```
 + strand: Start = pos - 10, End = pos + 5
 - strand: Start = pos - 5,  End = pos + 10
 ```
+
+This is what the converters emit and what the bundled references use;
+`validate_saf.py` checks it. All bundled references
+(`ref/polyadb32.{hg38,mm10}.saf.gz`, `ref/polyadb4.{hg38,mm10}.{main,max}.saf.gz`)
+were produced by these scripts from the original polyAdb 3.2 `*.PAS.txt` and
+polyAdb 4 `*.PAS.{main,max}.tsv` tables (human 3.2 lifted hg19→hg38).
 
 Rows are deduplicated on `(chrom, pos, strand, GeneID)` and sorted by
 `(chrom lexicographic, start numeric)`.
@@ -51,19 +62,20 @@ Rows are deduplicated on `(chrom, pos, strand, GeneID)` and sorted by
 
 ### polyAdb 3.2 (`*.PAS.txt`)
 
-polyAdb 3.2 human coordinates are hg19 and require liftOver to hg38; mouse is
-already mm10.
+Both polyAdb 3.2 tables need liftOver: human coordinates are hg19 (→ hg38) and
+mouse coordinates are mm9 (→ mm10), as stated on the polyAdb download page,
+even though the mouse file is distributed under an "mm10" label.
 
 ```bash
-# human: hg19 -> hg38 (auto-downloads liftOver binary + chain)
-python3 pas32_to_saf.py --species human --pas human.PAS.txt \
+# human: hg19 -> hg38 (auto-downloads liftOver binary + chain; see note above)
+python3 inst/scripts/polyadb/pas32_to_saf.py --species human --pas human.PAS.txt \
   --source-build hg19 --target-build hg38 \
-  --out ../../../ref/polyadb32.hg38.saf.gz
+  --out ref/polyadb32.hg38.saf.gz
 
-# mouse: already mm10 (no liftOver)
-python3 pas32_to_saf.py --species mouse --pas mouse.PAS.txt \
-  --source-build mm10 --target-build mm10 \
-  --out ../../../ref/polyadb32.mm10.saf.gz
+# mouse: mm9 -> mm10
+python3 inst/scripts/polyadb/pas32_to_saf.py --species mouse --pas mouse.PAS.txt \
+  --source-build mm9 --target-build mm10 \
+  --out ref/polyadb32.mm10.saf.gz
 ```
 
 ### polyAdb 4 (`*.PAS.{main,max}.tsv`)
@@ -90,7 +102,11 @@ liftOver is available for v4 too (future builds): set `--source-build` and
 - `--liftover PATH` — use a local liftOver binary (else auto-download).
 - `--chain PATH` — use a local `source→target` chain (`.gz` accepted; else
   auto-download by build name).
-- `--tmpdir PATH`, `--keep-tmp` — control intermediate files.
+- `--tmpdir PATH`, `--keep-tmp` — control intermediate files. By default a fresh
+  `mkdtemp` directory is used and removed afterwards (`--keep-tmp` keeps it); a
+  user-supplied `--tmpdir` is created if needed but never removed.
+- `--delim {;,_}` — override the delimiter implied by `--species`. The
+  converters refuse rows whose fields already contain the delimiter.
 
 If the source and target builds are equal, liftOver is skipped.
 
@@ -98,13 +114,17 @@ If the source and target builds are equal, liftOver is skipped.
 
 ```bash
 # format only
-python3 validate_saf.py polyadb32.hg38.saf.gz
+python3 inst/scripts/polyadb/validate_saf.py ref/polyadb32.hg38.saf.gz
 
 # format + content comparison against a reference
-python3 validate_saf.py generated.saf.gz ../../../ref/polyadb32.hg38.saf.gz
+python3 inst/scripts/polyadb/validate_saf.py generated.saf.gz ref/polyadb32.hg38.saf.gz
 ```
 
-`.gz` inputs are read transparently.
+`.gz` inputs are read transparently. The format check verifies the header, the
+7-field GeneID, GeneID chrom/strand against the SAF columns, the strand-specific
+-10/+5 window layout (`+`: `[pos-10, pos+5]`, `-`: `[pos-5, pos+10]`), valid
+strands and sort order, and exits with status 1 on any format error (the content
+comparison is informational).
 
 ## PAS type / class vocabulary
 

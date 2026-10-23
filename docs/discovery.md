@@ -26,20 +26,41 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
 ## What it does
 
 1. **Pseudobulk, strand-aware, single-base priming signal.** For the chosen
-   alignment mode (`DISCOVERY.read`), reads are UMI-deduplicated per cell
-   (`umi_tools dedup`) and collapsed to single-base priming positions per
-   strand (`bedtools genomecov`). Cell identity is intentionally collapsed —
-   discovery operates on pseudobulk.
+   alignment mode (`DISCOVERY.read`), the featureCounts output BAM
+   (`temp/{sample}_{mode}_assigned.bam`: all mapped reads, not only
+   polyAdb-assigned ones) is collapsed by `inst/scripts/pileup_sites.py` into
+   single-base, strand-aware priming counts. Each count is the number of
+   distinct (cell barcode, UMI) pairs at that priming position (exact UMI
+   match); the opposite/fragmentation end is ignored, so PCR duplicates of one
+   molecule count once. Reads used: R2 = mapped reads; R1 = mapped reads (read1
+   of a proper pair if the BAM is paired); paired = read1 of proper pairs; bam =
+   the primary single-end records left by `filter_bam`. Cell identity is
+   intentionally collapsed — discovery operates on pseudobulk.
+
+   The piled-up read end can be offset per mode via `{mode}_priming_offset`
+   (resolved like any other key: sample → platform → chemistry → `DEFAULTS`;
+   e.g. `R2_priming_offset: 5` for `ultima_fastq`, whose reads end 5 bp short
+   of the priming site, or `bam_priming_offset` for the bam mode): the
+   `stranded_bed` rule passes it as `pileup_sites.py --shift N`, moving the
+   counted end N bp *outward* past the read end (the read's 3' direction for
+   3'-end modes, its 5' direction for 5'-end modes), the same shift
+   `assign_sites_R2` / `assign_sites_bam` apply in featureCounts
+   (`--readShiftType downstream` / `upstream`), so discovery and quantitation
+   use one site coordinate. Only R2 and bam honour an offset; the R1/paired
+   count rules apply no shift, so `R1_`/`paired_priming_offset` are ignored.
 
    The emitted strand is the **transcript strand**, not the read's own aligned
-   strand. `bedtools genomecov` reports each position on the strand the read
-   aligned to, so the strand is converted per alignment mode to match the
+   strand. `pileup_sites.py` keys each read by its aligned strand and prints the
+   transcript strand given by `--label-plus`/`--label-minus` (set per mode in
+   `rules/discovery.snake`, `_disc_labels`), converted per alignment mode to match the
    validated `featureCounts` strandedness used for quantitation
    (`rules/count.snake`): **R2** is same-strand (`-s 1`), so the read-aligned
    strand already equals the transcript strand; **R1** and **paired** are
    reverse-stranded (`-s 2`), so the read-aligned strand is the *opposite* of
    the transcript strand and is flipped when the stranded bed is written
-   (`rules/discovery.snake`, `stranded_bed`). All downstream steps (KDE per
+   (`rules/discovery.snake`, `stranded_bed`). The pre-aligned **bam** mode
+   follows the sample's `bam_strand`: `same` behaves like R2 (3' end, no
+   flip), `reverse` like R1/paired (5' end, flipped). All downstream steps (KDE per
    `(chrom, strand)`, polyAdb matching, sequence-context scanning, SAF slop)
    are strand-aware and consume this transcript strand.
 
@@ -74,8 +95,13 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
 
    Because discovery is **pseudobulk** — UMIs are deduplicated per cell, then
    summed across *all* cells and (with `groups`) across pooled samples — a raw
-   UMI count of 1–2 at a base is background, not signal. A merged peak is kept
-   only if its summed support clears
+   UMI count of 1–2 at a base is background, not signal. Each merged peak
+   (cluster) owns a disjoint *extent*: the run of occupied bases chained within
+   `peak_merge_dist` that contains its density maxima, split from a
+   neighbouring cluster in the same run at the lowest-density base between
+   them. `umi_support` is the raw UMI sum over that extent, the summit is
+   searched within it (so summits are unique per track), and a peak is kept
+   only if its support clears
 
    ```
    umi_support >= max(min_umi, min_umi_frac * T)
@@ -99,7 +125,7 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
    | Status | Meaning | Use |
    |:--|:--|:--|
    | `known_pas` | Summit falls within the strand-aware `match_window` of a validated polyAdb cleavage point | Validated |
-   | `likely_internal_priming` | Downstream genomic A-content / A-run indicates priming off a genomic poly(A) stretch | **Exclude (artifact)** |
+   | `likely_internal_priming` | Downstream genomic A-content / A-run indicates priming off a genomic poly(A) stretch, **or** an unmatched site with no upstream PAS motif (conservative default) | **Exclude (artifact)** |
    | `potential_novel_pas` | No internal-priming signature **and** a canonical poly(A) signal (PAS) motif present upstream | Candidate — validate before use |
 
 ## How sites are classified
@@ -112,8 +138,12 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
   labeled `known_pas` if it lies within `upstream` bp upstream or `downstream`
   bp downstream of a polyAdb cleavage point, in the direction of transcription.
   The asymmetry reflects the skew of RT priming read distributions, and the
-  default `[10, 5]` mirrors the slop of the provided polyAdb SAF references. A
-  matched site inherits the polyAdb gene/id/class metadata, and the reported
+  default `[10, 5]` mirrors the slop of the provided polyAdb SAF references
+  (matching is point-based, so the SAF window itself does not affect
+  `known_pas` calls). A matched site inherits the polyAdb
+  gene symbol and id (and the genbank id in the de novo SAF GeneID); the polyAdb
+  site class is **not** propagated — the `class` column / SAF field 7 carry the
+  discovery status. The reported
   `polya_dist` is the **signed transcript-oriented** distance from the summit to
   the polyAdb point (negative = upstream, positive = downstream). Summits that
   fall outside the window proceed to the novel-vs-internal-priming branch below.
@@ -122,8 +152,9 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
   > Known-site annotation reads the single-base cleavage position from
   > **field 5** of the `GeneID`. A SAF that does not follow this encoding will
   > fail to annotate known sites — every summit is treated as novel.
-  > `annotate_sites.py` validates the GeneID field count and warns/errors if no
-  > rows parse, so this failure mode is surfaced rather than silent. The bundled
+  > `annotate_sites.py` validates the GeneID field count, warns on stderr, and
+  > prints an ERROR message (without failing the rule) if no rows parse, so this
+  > failure mode is surfaced rather than silent. The bundled
   > `ref/polyadb32.{hg38,mm10}.saf.gz` already conform; converters for polyAdb
   > 3.2 and 4 are in `inst/scripts/polyadb/`.
 
@@ -162,13 +193,14 @@ gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
 | `chrom` | 4 | chromosome |
 | `pos` | **5** | **1-based single-base cleavage position** (used for matching) |
 | `strand` | 6 | `+` / `-` |
-| `pas_type` | **7** | **site class** (used as the discovery `class`) |
+| `pas_type` | **7** | site class (passed through in `POLYA_SITES`; not used by discovery) |
 
 - Delimiter `{D}` is **`;` for human** and **`_` for mouse** references (matching
   the bundled `ref/polyadb32.{hg38,mm10}.saf.gz`).
-- `Start`/`End` form a strand-specific 15 bp window around `pos`
-  (transcript-oriented -10 / +5 slop): `+` → `[pos-10, pos+5]`,
-  `-` → `[pos-5, pos+10]`.
+- `Start`/`End` form a strand-specific 16-base window around `pos`
+  (`End - Start = 15`; transcript-oriented -10 / +5 slop): `+` → `[pos-10, pos+5]`,
+  `-` → `[pos-5, pos+10]`. This is the layout written by the converters in
+  `inst/scripts/polyadb/` and used by the bundled references.
 
 **Mouse `_` delimiter caveat:** RefSeq IDs (e.g. `NR_152944`) and scaffold
 chromosome names (e.g. `chrUn_GL456...`) contain underscores, so a naive split
@@ -235,6 +267,8 @@ DISCOVERY:
                                   # (support >= max(min_umi, min_umi_frac * total_UMIs))
   min_density: 0.0                # 0 / omit -> derived from kde_bandwidth
   peak_merge_dist: 24
+  summit_method: downstream       # downstream (default) | kde
+  summit_frac: 0.75               # downstream-method depth threshold
   match_window: [10, 5]           # [upstream, downstream] bp, transcript-oriented
   saf_slop: [10, 5]              # de novo SAF window; matches provided polyAdb slop
   pas_window: [-40, 0]
@@ -266,8 +300,8 @@ snakemake --configfile config.yaml --keep-going  # run
 
 ## Outputs
 
-For each discovery unit (group name or ungrouped sample) under
-`results/discovery/`:
+For each discovery unit (`<sample>_<mode>`, `<group>_<mode>`, or an explicit
+`DISCOVERY.units` name) under `{RESULTS}/discovery/`:
 
 - **`<unit>_sites.tsv.gz`** — full annotation table:
   `chrom, summit, strand, kde_score, umi_support, status, gene, id, class,
@@ -278,8 +312,15 @@ For each discovery unit (group name or ungrouped sample) under
 - **`<unit>_sites.bed.gz`** — BED6 of summits (`name` = status) for browsing.
 - **`<unit>_denovo.saf.gz`** — a SAF using the same `GeneID` encoding as
   polyAdb (`gene;genbank;id;chrom;summit;strand;class`, where `class` is the
-  status), windowed by `saf_slop` (transcript-oriented `[upstream, downstream]`,
-  default `[10, 5]`).
+  status and gene/genbank/id are `NA` for unmatched sites), windowed by
+  `saf_slop` (transcript-oriented `[upstream, downstream]`, default `[10, 5]`;
+  `Start` clamped to >= 1). The SAF GeneID position is 1-based, while `summit`
+  in the TSV/BED is 0-based. The de novo SAF always uses `;` as delimiter (also
+  for mouse); `annotate_sites.py` and featureCounts accept either.
+- The per-(sample, mode) input pileups `discovery/beds/<sample>_<mode>.stranded.bed.gz`
+  are kept (5 columns: chrom, start, end = `[pos, pos+1)`, UMI count, transcript
+  strand) and are useful for browsing; `*.pooled.bed.gz` and `*_peaks.tsv.gz`
+  are temporary.
 
 ## Re-quantifying against discovered sites (advanced)
 
@@ -288,7 +329,7 @@ supplied as `POLYA_SITES` to re-run the normal per-cell quantitation against the
 discovered sites — no code changes required:
 
 ```yaml
-POLYA_SITES: "results/discovery/groupA_denovo.saf.gz"
+POLYA_SITES: "results/discovery/groupA_R2_denovo.saf.gz"   # units are mode-suffixed
 ```
 
 > **Before doing this, filter the SAF.** Drop `likely_internal_priming`
@@ -303,6 +344,8 @@ POLYA_SITES: "results/discovery/groupA_denovo.saf.gz"
 | Component | Location |
 |:--|:--|
 | Snakemake rules | `rules/discovery.snake` |
+| Unit resolution (`DISC_UNITS`, `_sample_disc_modes`, `_priming_offset`) | `Snakefile` |
+| Stranded single-base pileup (`stranded_bed`) | `inst/scripts/pileup_sites.py` |
 | KDE peak calling | `inst/scripts/kde_peaks.py` |
 | Annotation + SAF | `inst/scripts/annotate_sites.py` |
-| Config | `config.yaml` (`GENOME_FASTA`, `DISCOVERY`) |
+| Config | `config.yaml` (`GENOME_FASTA`, `DISCOVERY`); `chemistry.yaml` / samples (`{mode}_priming_offset`) |
