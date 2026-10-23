@@ -10,10 +10,14 @@ from umi_tools.network import UMIClusterer
 """ Count UMI-deduplicated reads per (cell, polyA site) from a featureCounts
 assigned BAM (with CB/UB/XT/XS tags), replacing `umi_tools count`.
 
-Grouping is per (cell-barcode, featureCounts XT site tag). Within each group the
+Grouping is per (cell-barcode, featureCounts XT site tag), over primary mapped
+records only (unmapped, read2, secondary and supplementary records are skipped,
+as are reads with XS != Assigned or missing/"-" CB/UB). Within each group the
 distinct UMIs are collapsed with umi_tools' own directional network algorithm
 (UMIClusterer, threshold=1) so the output matches
-`umi_tools count --per-gene --per-cell` (default method=directional) bit-for-bit.
+`umi_tools count --per-gene --gene-tag=XT --assigned-status-tag=XS --per-cell
+--extract-umi-method=tag --umi-tag=UB --cell-tag=CB` (default
+method=directional) bit-for-bit.
 STAR already 1MM-directional error-corrects UMIs upstream; the directional pass
 here operates per-site (not per-gene), which is the resolution scraps requires.
 

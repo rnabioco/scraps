@@ -17,8 +17,22 @@ DISCOVERY = config.get("DISCOVERY", {}) or {}
 
 import sys
 import yaml
+from snakemake.logging import logger
 with open('chemistry.yaml') as fp:
    CHEMISTRY = yaml.safe_load(fp)
+
+# Diagnostics go through Snakemake's logger: in a dry-run that is stdout, in
+# order with the job listing; in a real run stderr plus .snakemake/log/. Build
+# the strings with str.format(), NOT f-strings: Snakemake's Snakefile tokenizer
+# re-spaces f-string contents ("Message:  key  not found").
+_diag_seen = set()
+
+def _diag(key, msg):
+  """Emit `msg` once per `key` (params lambdas are evaluated once per job)."""
+  if key in _diag_seen:
+    return
+  _diag_seen.add(key)
+  logger.warning(msg)
 
 def _validate_config():
   """Fail fast on invalid chemistry/platform before _get_config's empty-string
@@ -32,8 +46,8 @@ def _validate_config():
 
     if chemistry not in CHEMISTRY:
       errors.append(
-        f"sample '{sample}': chemistry '{chemistry}' not found in chemistry.yaml. "
-        f"Valid options: {sorted(CHEMISTRY)}"
+        "sample '{}': chemistry '{}' not found in chemistry.yaml. "
+        "Valid options: {}".format(sample, chemistry, sorted(CHEMISTRY))
       )
       continue  # platform check meaningless without valid chemistry
 
@@ -41,8 +55,8 @@ def _validate_config():
                  if isinstance(v, dict) and k not in meta_keys]
     if platform not in platforms:
       errors.append(
-        f"sample '{sample}': platform '{platform}' not found under chemistry "
-        f"'{chemistry}'. Valid options: {sorted(platforms)}"
+        "sample '{}': platform '{}' not found under chemistry '{}'. "
+        "Valid options: {}".format(sample, platform, chemistry, sorted(platforms))
       )
 
   if errors:
@@ -65,8 +79,8 @@ def _validate_modes():
     valid = plat_cfg.get("valid_modes")
     if not valid:
       errors.append(
-        f"sample '{sample}': chemistry '{chemistry}' platform '{platform}' "
-        f"defines no valid_modes in chemistry.yaml"
+        "sample '{}': chemistry '{}' platform '{}' defines no valid_modes in "
+        "chemistry.yaml".format(sample, chemistry, platform)
       )
       continue
     modes = cfg.get("alignments", DEFAULTS.get("alignments", []))
@@ -75,8 +89,9 @@ def _validate_modes():
     bad = [m for m in modes if m not in valid]
     if bad:
       errors.append(
-        f"sample '{sample}': alignment mode(s) {bad} not supported by "
-        f"chemistry '{chemistry}' platform '{platform}'. Valid: {sorted(valid)}"
+        "sample '{}': alignment mode(s) {} not supported by chemistry '{}' "
+        "platform '{}'. Valid: {}".format(sample, bad, chemistry, platform,
+                                          sorted(valid))
       )
   if errors:
     raise ValueError(
@@ -85,19 +100,26 @@ def _validate_modes():
 
 _validate_modes()
 
+# keys that are legitimately absent (rules treat "" as "off"); no diagnostic
+_OPTIONAL_KEYS = {"cutadapt_R1", "cutadapt_paired", "bc_cut", "bc_length1",
+                  "bam_strand", "bam_mate"}
+_OPTIONAL_SUFFIXES = ("_extra_args", "_polyA_filter", "_priming_offset")
+
 def _get_config(sample, item):
+  """Hierarchical lookup: sample -> chemistry.platform -> chemistry -> DEFAULTS
+  -> "" (with a one-time warning unless the key is optional)."""
   sample_cfg = SAMPLES[sample]
 
   try:
     chemistry = sample_cfg.get("chemistry", DEFAULTS["chemistry"])
   except KeyError:
-    sys.stderr.write("Error: Chemistry must be defined per sample and/or in Defaults.\n")
+    logger.error("Error: Chemistry must be defined per sample and/or in DEFAULTS.")
     raise
 
   try:
     platform = sample_cfg.get("platform", DEFAULTS["platform"])
   except KeyError:
-    sys.stderr.write("Error: Platform must be defined per sample and/or in Defaults.\n")
+    logger.error("Error: Platform must be defined per sample and/or in DEFAULTS.")
     raise
 
   if item in sample_cfg:
@@ -112,17 +134,182 @@ def _get_config(sample, item):
   if item in DEFAULTS:
     return DEFAULTS[item]
 
-  sys.stderr.write(
-    f"Message: {item} not found in config or chemistry "
-    f"for sample {sample}. Returning an empty string.\n"
-  )
+  if item not in _OPTIONAL_KEYS and not item.endswith(_OPTIONAL_SUFFIXES):
+    _diag(("missing", sample, item),
+          "Warning: '{}' not found in config.yaml or chemistry.yaml for sample "
+          "'{}' (chemistry '{}', platform '{}'); using an empty "
+          "string.".format(item, sample, chemistry, platform))
   return ""
 
-# assemble outputs for rule all
+# --- per-mode behaviour switches ----------------------------------------------
+# Per-mode keys ({mode} = R2 or bam), settable per sample / platform / chemistry
+# with defaults in config.yaml DEFAULTS:
+#   {mode}_polyA_filter   (bool) - require a poly(A)/poly(T) soft clip at the
+#                                  counted read end (filter_bam.py). Default
+#                                  true for R2, false for bam.
+#   {mode}_priming_offset (int)  - bp the priming site lies BEYOND the counted
+#                                  read end (transcript-3' direction), applied in
+#                                  featureCounts (--readShiftType) and the
+#                                  discovery pileup (pileup_sites.py --shift).
+#                                  Ultima FASTQs: 5. Default 0.
+# bam-mode only (pre-aligned BAM input, see rules/count.snake filter_bam):
+#   bam        (path) - input BAM (absolute, or relative to DATA). Required.
+#   bam_mate   (0|1|2, default 0) - 0: single-end BAM; 1/2: paired-end BAM, the
+#                                   mate carrying the priming site (kept from
+#                                   proper pairs, unpaired; the other mate dropped)
+#   bam_strand (same|reverse, default same) - read (or selected mate) strand vs
+#                                   transcript: same -> count the read 3' end
+#                                   (featureCounts -s 1 --read2pos 3, like R2);
+#                                   reverse -> count the read 5' end (-s 2
+#                                   --read2pos 5, like R1/paired)
+# The _get_config fallthrough ("" for configs predating these keys) must resolve
+# to the defaults, and YAML booleans must not reach the shell as "False".
+def _as_bool(val, default):
+  """YAML/CLI-robust truthiness: bool, '' (-> default), true/false, yes/no,
+  on/off, 1/0. Anything else is a config error."""
+  if isinstance(val, bool):
+    return val
+  if val is None:  # YAML null (key present, no value)
+    return default
+  s = str(val).strip().lower()
+  if s == "":
+    return default
+  if s in ("true", "yes", "on", "1"):
+    return True
+  if s in ("false", "no", "off", "0"):
+    return False
+  raise ValueError("expected a boolean, got " + repr(val))
+
+def _polya_filter(sample, mode, default):
+  """'true' / 'false' for the shell test in filter_{mode}: whether a
+  poly(A)/poly(T) soft clip is required at the counted read end."""
+  val = _get_config(sample, mode + "_polyA_filter")
+  return "true" if _as_bool(val, default) else "false"
+
+def _bam_strand(sample):
+  """'same' | 'reverse': strand of the counted read (or selected mate) relative
+  to the transcript, bam mode only. '' / None -> 'same'."""
+  val = _get_config(sample, "bam_strand")
+  s = "" if val is None else str(val).strip().lower()
+  if s == "":
+    return "same"
+  if s in ("same", "reverse"):
+    return s
+  raise ValueError(
+    "sample '{}': bam_strand must be 'same' or 'reverse', got {}".format(sample, val)
+  )
+
+def _bam_end(sample):
+  """Counted read end for bam mode: '3' when the read is on the transcript
+  strand (same), '5' when it is antisense (reverse)."""
+  return "3" if _bam_strand(sample) == "same" else "5"
+
+def _bam_mate(sample):
+  """0 (single-end BAM) or the mate (1|2) carrying the priming site in a
+  paired-end BAM. '' / None -> 0."""
+  val = _get_config(sample, "bam_mate")
+  if val is None or str(val).strip() == "":
+    return 0
+  try:
+    m = int(val)
+  except (TypeError, ValueError):
+    m = -1
+  if m not in (0, 1, 2):
+    raise ValueError(
+      "sample '{}': bam_mate must be 0, 1 or 2, got {}".format(sample, val)
+    )
+  return m
+
+# modes whose site-assignment rule applies the priming offset in featureCounts.
+# Other modes (R1, paired) have no shift wired into assign_sites_*, so their
+# offset is ignored everywhere (incl. discovery) to keep counts and beds in sync.
+_OFFSET_MODES = ("R2", "bam")
+
+def _priming_offset(sample, mode):
+  """Non-negative int bp shift of the {mode} priming end toward transcript 3'.
+  Looks up '{mode}_priming_offset'; '' (unset) -> 0. Only R2/bam are honoured."""
+  val = _get_config(sample, mode + "_priming_offset")
+  if val is None or str(val).strip() == "":
+    return 0
+  if mode not in _OFFSET_MODES:
+    return 0  # warned once at parse time by _validate_offsets()
+  n = int(val)
+  if n < 0:
+    raise ValueError(
+      "sample '{}': {}_priming_offset must be >= 0, got {}".format(sample, mode, n)
+    )
+  return n
+
+# featureCounts --readShiftType is read-strand-aware. A priming offset always
+# moves the counted end OUTWARD (past the read end): 'downstream' (toward the
+# read 3') for modes that count the 3' end (R2, bam/same) and 'upstream' for
+# modes that count the 5' end (R1, paired, bam/reverse). pileup_sites.py --shift
+# uses the same outward convention. Only R2 and bam honour an offset (see
+# _OFFSET_MODES); the discovery stranded_bed rule uses the same helper.
+def _fc_shift_type(sample, mode):
+  if mode == "bam":
+    return "downstream" if _bam_strand(sample) == "same" else "upstream"
+  return {"R2": "downstream", "R1": "upstream", "paired": "upstream"}[mode]
+
+def _fc_shift_args(sample, mode):
+  """featureCounts shift flags for {mode}, or '' when the offset is 0."""
+  n = _priming_offset(sample, mode)
+  if n == 0:
+    return ""
+  return "--readShiftType {} --readShiftSize {}".format(_fc_shift_type(sample, mode), n)
+
+def _sample_modes(sample):
+  modes = _get_config(sample, "alignments") or []
+  return [modes] if isinstance(modes, str) else list(modes)
+
+def _validate_bam_inputs():
+  """Fail fast for bam-mode samples: the input `bam` key must be present and the
+  bam_strand / bam_mate switches must be valid (the helpers raise)."""
+  errors = []
+  for sample in SAMPLES:
+    if "bam" not in _sample_modes(sample):
+      continue
+    cfg = SAMPLES[sample] or {}
+    if not cfg.get("bam"):
+      errors.append(
+        "sample '{}': alignment mode 'bam' requires a per-sample 'bam' key "
+        "(input BAM path, absolute or relative to DATA)".format(sample)
+      )
+    for fn in (_bam_strand, _bam_mate):
+      try:
+        fn(sample)
+      except ValueError as e:
+        errors.append(str(e))
+  if errors:
+    raise ValueError(
+      "Invalid bam-mode configuration:\n  - " + "\n  - ".join(errors)
+    )
+
+_validate_bam_inputs()
+
+def _validate_offsets():
+  """Warn once, at parse time, when a sample sets a priming offset for a mode
+  whose assign_sites rule applies none (lazy params are only evaluated for
+  scheduled jobs, so this is the one reliable place to say so)."""
+  for sample in SAMPLES:
+    for mode in ("R1", "paired"):
+      val = _get_config(sample, mode + "_priming_offset")
+      if val is not None and str(val).strip() not in ("", "0"):
+        logger.warning(
+          "Warning: {}_priming_offset is set for sample '{}' but only {} "
+          "support a priming offset; it is ignored.".format(
+            mode, sample, "/".join(_OFFSET_MODES)))
+
+_validate_offsets()
+
+# assemble outputs for rule all. The bam mode consumes a user-supplied BAM, so it
+# yields no *_Aligned.sortedByCoord.out.bam of its own.
 SAMPLE_OUTS = []
 for x in SAMPLES:
-  SAMPLE_OUTS.extend(expand("{results}/counts/{sample}_{alignments}_counts.tsv.gz", results = RESULTS, sample = x, alignments = _get_config(x, "alignments")))
-  SAMPLE_OUTS.extend(expand("{results}/{sample}/{sample}_{alignments}_Aligned.sortedByCoord.out.bam", results = RESULTS, sample = x, alignments = _get_config(x, "alignments")))
+  for mode in _sample_modes(x):
+    SAMPLE_OUTS.append("{}/counts/{}_{}_counts.tsv.gz".format(RESULTS, x, mode))
+    if mode != "bam":
+      SAMPLE_OUTS.append("{}/{}/{}_{}_Aligned.sortedByCoord.out.bam".format(RESULTS, x, x, mode))
 
 # --- discovery unit resolution (shared by output assembly and rules) ---------
 # A discovery "unit" is an aggregation of one or more (sample, mode) stranded
@@ -204,7 +391,8 @@ if DISCOVERY.get("enabled", False):
 
 # optionally add multiqc
 all_outputs = SAMPLE_OUTS + DISCOVERY_OUTS #+ expand("{results}/report/multiqc_report.html", results = RESULTS)
-print(all_outputs)
+# via the logger (never print()): stdout must stay clean for `snakemake --dag | dot`
+logger.info("targets: " + " ".join(all_outputs))
 
 rule all:
   input:

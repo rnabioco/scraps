@@ -35,32 +35,64 @@ chemistry. The divergence is intended, not a regression, and is uniform across
 R1/R2/paired: at each priming position the new output is <= the legacy output
 and introduces no new positions.
 
-End selection mirrors the original rules:
+End selection mirrors the legacy (removed) bed_* rules:
   R2     : read 3' end  (bed_R2:     genomecov -3)
   R1     : read 5' end, mapped reads only        (bed_R1:     -F 4, genomecov -5)
   paired : read 5' end, first-in-pair mate only  (bed_paired: -f 0x42, -5)
+  bam    : pre-aligned BAM already reduced to primary single-end records by
+           filter_bam; --end 3 or 5 follows the sample's bam_strand
+
+--shift N moves the selected end N bp OUTWARD past the read end (--end 3: the
+read's 3' direction, forward +N / reverse -N; --end 5: the read's 5' direction,
+forward -N / reverse +N) for chemistries whose priming site lies past the
+alignment end (Ultima FASTQs trim the 5 bp adjacent to the homopolymer ->
+--shift 5). It is the pileup-side twin of featureCounts --readShiftType
+downstream (3'-end modes) / upstream (5'-end modes), so the discovery bed and
+the count table agree on the site coordinate. --shift 0 (default) leaves
+output byte-identical to the unshifted pileup.
 
 Strand handling:
   --strand-split emits a 5-column stranded bed (chrom start end count strand)
   used by discovery. The printed strand is the TRANSCRIPT strand, supplied via
   --label-plus/--label-minus for reads aligned to the + / - strand respectively
   (genomecov -strand selects by aligned strand; the label is the corresponding
-  transcript strand). Without --strand-split a 4-column bed
-  (chrom start end count) is emitted, matching the bed_* rules.
+  transcript strand), interval [pos, pos+1). Without --strand-split a 4-column
+  bed (chrom start end count) is emitted using the LEGACY bed_* interval
+  [pos-1, pos) — one base left of the 0-based priming base (start may be -1 at
+  contig position 0) — which reproduces `genomecov -dz | awk '$2-1,$2'`. The
+  4-col form is retained for test parity only; the pipeline uses 5-col output.
 """
 
 
-def _end_position(read, end):
+def _end_position(read, end, shift=0, max_pos=None):
     """Single-base end coordinate (0-based) matching bedtools genomecov -5/-3.
 
     genomecov reports the 5' or 3' most base of the alignment in transcript-read
     orientation: for a forward read the 5' end is reference_start and the 3' end
     is reference_end-1; for a reverse read these swap.
+
+    `shift` moves the selected end N bp OUTWARD, i.e. past the read end in the
+    transcript-3' direction: for end 3 that is the read's 3' direction (forward
+    +N, reverse -N), for end 5 the read's 5' direction (forward -N, reverse +N).
+    This is the same operation as featureCounts `--readShiftType downstream`
+    (3'-end modes) / `upstream` (5'-end modes) with `--readShiftSize N`, so the
+    count and discovery arms stay coordinate-consistent. Used for chemistries
+    whose true priming site lies past the alignment end (Ultima FASTQs: +5 bp).
+    The result is clamped to [0, max_pos] when shifting.
     """
     if end == "5":
-        return read.reference_end - 1 if read.is_reverse else read.reference_start
+        pos = read.reference_end - 1 if read.is_reverse else read.reference_start
+        outward = -shift if not read.is_reverse else shift
     else:  # "3"
-        return read.reference_start if read.is_reverse else read.reference_end - 1
+        pos = read.reference_start if read.is_reverse else read.reference_end - 1
+        outward = shift if not read.is_reverse else -shift
+    if shift:
+        pos = pos + outward
+        if pos < 0:
+            pos = 0
+        if max_pos is not None and pos > max_pos:
+            pos = max_pos
+    return pos
 
 
 def _passes_mode(read, mode):
@@ -80,8 +112,9 @@ def _passes_mode(read, mode):
     proper-pair set is what feeds the pileup).
     """
     if mode == "R1":
-        # R1 libraries are aligned as pairs (soloBarcodeMate 1); the priming read
-        # is read1 of a proper pair, mirroring bed_R1's -f 0x42 usage downstream.
+        # R1 alignments are single-end (starsolo_R1 takes one FASTQ): keep
+        # mapped reads (legacy bed_R1: -F 4). If a paired BAM is supplied, use
+        # read1 of proper pairs.
         if read.is_paired:
             return read.is_read1 and read.is_proper_pair
         # genuinely single-end R1: keep mapped reads
@@ -89,6 +122,11 @@ def _passes_mode(read, mode):
     if mode == "paired":
         # bed_paired: read1 of a proper pair (first in pair, properly mapped)
         return read.is_paired and read.is_read1 and read.is_proper_pair
+    if mode == "bam":
+        # pre-aligned BAM (filter_bam already dropped 0x904 and unpaired any
+        # selected mate): primary, mapped records only
+        return not (read.is_unmapped or read.is_secondary
+                    or read.is_supplementary)
     # R2: single-end, no extra filter (unmapped dropped below anyway)
     return not read.is_unmapped
 
@@ -165,7 +203,7 @@ def _pileup_contig(job):
     buffer. Runs in a separate process (Pool), so all args are picklable.
     """
     (bam_path, contig, end, mode, strand_split, label_plus, label_minus,
-     sort_mem, sort_tmp, fragment_path) = job
+     shift, sort_mem, sort_tmp, fragment_path) = job
 
     sort_env = dict(os.environ)
     sort_env["LC_ALL"] = "C"
@@ -176,6 +214,8 @@ def _pileup_contig(job):
 
     wrote_any = False
     with pysam.AlignmentFile(bam_path, "rb") as bam:
+        # last valid 0-based position on this contig (clamp bound when shifting)
+        max_pos = bam.get_reference_length(contig) - 1
         for read in bam.fetch(contig=contig):
             if read.is_unmapped:
                 continue
@@ -188,7 +228,7 @@ def _pileup_contig(job):
                 continue
             if cb == "-" or ub == "-":
                 continue
-            pos = _end_position(read, end)
+            pos = _end_position(read, end, shift, max_pos)
             if strand_split:
                 strand = label_minus if read.is_reverse else label_plus
                 sorter.stdin.write(
@@ -212,7 +252,7 @@ def _pileup_contig(job):
 
 
 def pileup(bam_path, out_path, end, mode, strand_split, label_plus,
-           label_minus, threads=1, sort_mem="8G", sort_tmp=None):
+           label_minus, shift=0, threads=1, sort_mem="8G", sort_tmp=None):
     """Per-contig parallel UMI-deduplicated priming pileup (bounded memory).
 
     Each contig is processed independently in a worker process: stream surviving
@@ -245,9 +285,10 @@ def pileup(bam_path, out_path, end, mode, strand_split, label_plus,
     base = os.path.join(sort_tmp,
                         "%s.part" % re.sub(r"[^\w.-]", "_",
                                            os.path.basename(out_path)))
+    # NOTE: fragment_path must stay the LAST element (the finally: below uses j[-1])
     jobs = [
         (bam_path, contig, end, mode, strand_split, label_plus, label_minus,
-         per_worker_mem, sort_tmp, "%s.%d.bed.gz" % (base, i))
+         shift, per_worker_mem, sort_tmp, "%s.%d.bed.gz" % (base, i))
         for i, contig in enumerate(contigs)
     ]
 
@@ -296,14 +337,23 @@ def main():
                         help="output gzipped bed")
     parser.add_argument("--end", choices=["5", "3"], required=True,
                         help="read end to pile up (5' or 3')")
-    parser.add_argument("--mode", choices=["R1", "R2", "paired"], required=True,
-                        help="alignment mode (sets mate/flag filter)")
+    parser.add_argument("--mode", choices=["R1", "R2", "paired", "bam"],
+                        required=True,
+                        help="alignment mode (sets mate/flag filter); bam = "
+                             "pre-aligned single-end records (see filter_bam)")
     parser.add_argument("--strand-split", action="store_true",
                         help="emit 5-col stranded bed (discovery)")
     parser.add_argument("--label-plus", default="+",
                         help="transcript strand label for +-aligned reads")
     parser.add_argument("--label-minus", default="-",
                         help="transcript strand label for --aligned reads")
+    parser.add_argument("--shift", type=int, default=0,
+                        help="move the piled-up end N bp OUTWARD past the read "
+                             "end (--end 3: read 3' direction; --end 5: read 5' "
+                             "direction; clamped to the contig). Same operation "
+                             "as featureCounts --readShiftType downstream / "
+                             "upstream --readShiftSize N. Ultima FASTQs: "
+                             "priming site = R2 3' end + 5.")
     parser.add_argument("-t", "--threads", type=int, default=1,
                         help="worker processes (parallel over contigs); each "
                              "worker runs a single-threaded sort")
@@ -314,6 +364,8 @@ def main():
     parser.add_argument("--sort-tmp", default=None,
                         help="external sort tempdir (default: $TMPDIR or .)")
     args = parser.parse_args()
+    if args.shift < 0:
+        parser.error("--shift must be >= 0")
 
     # per-contig fetch requires a BAM index
     if not os.path.exists(args.inbam + ".bai") and not os.path.exists(
@@ -322,7 +374,7 @@ def main():
 
     pileup(args.inbam, args.out, args.end, args.mode,
            args.strand_split, args.label_plus, args.label_minus,
-           threads=args.threads, sort_mem=args.sort_mem,
+           shift=args.shift, threads=args.threads, sort_mem=args.sort_mem,
            sort_tmp=args.sort_tmp)
 
 

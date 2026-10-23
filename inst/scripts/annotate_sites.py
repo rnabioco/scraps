@@ -62,8 +62,12 @@ def parse_args():
                         help="max distance (bp) a summit may lie DOWNSTREAM "
                              "(transcript orientation) of a polyAdb cleavage "
                              "point to call a match (default 5)")
-    parser.add_argument('--saf-slop-up', type=int, default=10)
-    parser.add_argument('--saf-slop-down', type=int, default=5)
+    parser.add_argument('--saf-slop-up', type=int, default=10,
+                        help="de novo SAF window: bp upstream (transcript 5') "
+                             "of the summit (default 10)")
+    parser.add_argument('--saf-slop-down', type=int, default=5,
+                        help="de novo SAF window: bp downstream (transcript 3') "
+                             "of the summit (default 5)")
     parser.add_argument('--pas-start', type=int, default=-40,
                         help="upstream PAS window start (bp rel. to summit)")
     parser.add_argument('--pas-end', type=int, default=0,

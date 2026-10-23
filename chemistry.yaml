@@ -3,11 +3,46 @@
 # Example:
 #
 # chemistry1:
-#   platform_agnostic_option1: ...
+#   platform_agnostic_option1: ...   # e.g. bc_whitelist, bc_cut, bc_length1
 #   platform_agnostic_option2: ...
 #   name_of_platform1:
-#     STAR_R1: ...
-#     STAR_R2: ...
+#     valid_modes: [R1, R2, paired]  # alignment modes this platform supports
+#     cutadapt_R1 / cutadapt_paired: ...   # omit a key to skip trimming
+#     STAR_R1 / STAR_R2 / STAR_paired: ...
+#     STAR_R1_extra_args: ...        # optional; appended to the STAR command
+#     R2_polyA_filter: true          # optional; false skips the soft-clipped
+#                                    #   poly(A) requirement in filter_R2
+#     R2_priming_offset: 0           # optional; bp to move the R2 3' end toward
+#                                    #   transcript 3' before site assignment
+#                                    #   (featureCounts --readShiftType) and
+#                                    #   pileup (pileup_sites.py --shift)
+#     bam_strand / bam_polyA_filter / bam_mate / bam_priming_offset
+#                                    # optional; bam-mode switches (usually set
+#                                    #   per sample; see config.yaml DEFAULTS)
+#
+# Lookup order per sample: SAMPLES.<sample> -> chemistry.platform -> chemistry
+# -> config.yaml DEFAULTS. Keys absent at every level resolve to "" (i.e. "off":
+# no trimming, filter on, offset 0).
+#
+# Ultima Genomics platforms:
+#   ultima_cram  - reads converted from Ultima CRAM: one long read carrying
+#                  adapter + CB + UMI + cDNA. R1 arm, no cutadapt.
+#   ultima_fastq - FASTQs delivered by Ultima for 10x libraries: pseudo-paired,
+#                  R1 = 16 bp CB + 9 bp UMI, R2 = cDNA. R2 arm. Ultima trims
+#                  the 5 bp adjacent to the poly(A) homopolymer, so there is no
+#                  soft-clipped A tail (R2_polyA_filter: false) and the priming
+#                  site is 5 bp downstream of the R2 alignment end
+#                  (R2_priming_offset: 5).
+#
+# generic platform (valid_modes: [bam]): pre-aligned, CB/UB-tagged BAM input
+# (ONT / PacBio long reads, or any compatible single- or paired-end BAM); no
+# STAR step, so no cutadapt_*/STAR_* keys. The sample sets `bam:` (input path)
+# and the switches bam_strand (same|reverse), bam_polyA_filter, bam_mate
+# (0|1|2) and bam_priming_offset; see config.yaml DEFAULTS for the four
+# supported classes. Assumed, not enforced: full-length molecules, CB/UB tags,
+# accurate strand assignment. `generic` is defined under chromiumV3/V4/V2 only;
+# bam samples must use one of those chemistries (the chemistry is otherwise
+# unused in bam mode).
 
 chromiumV3:
   bc_whitelist: ref/3M-february-2018.txt
@@ -25,10 +60,42 @@ chromiumV3:
     STAR_R1: --soloUMIlen 12 --clip5pNbases 48 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
     STAR_paired: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --alignEndsProtrude 58 ConcordantPair
     STAR_R2: --soloUMIlen 12
-  ultima:
+  ultima_cram:
     valid_modes: [R1]
-    cutadapt_R1: -a 'CTACACGACGCTCTTCCGATCT;max_error_rate=0.2;min_overlap=10;required...AGATCGGAAGAGCACACGTCTG;max_error_rate=0.2;min_overlap=6' -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -n 2 -m 68 -q 20
     STAR_R1: --soloUMIlen 9 --clip5pNbases 38 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
+  ultima_fastq:
+    valid_modes: [R2]
+    STAR_R2: --soloUMIlen 9
+    R2_polyA_filter: false
+    R2_priming_offset: 5
+  generic:
+    valid_modes: [bam]
+chromiumV4:
+  bc_whitelist: ref/3M-3pgex-may-2023_TRU.txt
+  illumina:
+    valid_modes: [R1, R2, paired]
+    cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 --nextseq-trim=20
+    cutadapt_R1: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -n 2 -m 75 -l 300 --nextseq-trim=20
+    STAR_R1: --soloUMIlen 12 --clip5pNbases 48 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
+    STAR_paired: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
+    STAR_R2: --soloUMIlen 12
+  element:
+    valid_modes: [R1, R2, paired]
+    cutadapt_paired: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A polya_R2=A{30} -G TSO_R2=XAAGCAGTGGTATCAACGCAGAGTACATGGG -n 4 -m 75:17 -q 20
+    cutadapt_R1: -a TSO_R1=CCCATGTACTCTGCGTTGATACCACTGCTT -a TruSeq_R1=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -n 2 -m 75 -l 300 -q 20
+    STAR_R1: --soloUMIlen 12 --clip5pNbases 48 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
+    STAR_paired: --soloUMIlen 12 --clip5pNbases 48 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --alignEndsProtrude 58 ConcordantPair
+    STAR_R2: --soloUMIlen 12
+  ultima_cram:
+    valid_modes: [R1]
+    STAR_R1: --soloUMIlen 9 --clip5pNbases 38 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17
+  ultima_fastq:
+    valid_modes: [R2]
+    STAR_R2: --soloUMIlen 9
+    R2_polyA_filter: false
+    R2_priming_offset: 5
+  generic:
+    valid_modes: [bam]
 chromiumV2:
   bc_whitelist: ref/737K-august-2016.txt
   illumina:
@@ -37,6 +104,8 @@ chromiumV2:
     STAR_R1: --soloUMIlen 10 --clip5pNbases 46 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2
     STAR_paired: --soloUMIlen 10 --clip5pNbases 46 0 --soloCBstart 1 --soloCBlen 16 --soloUMIstart 17 --outFilterMultimapNmax 1  --outFilterMismatchNmax 999  --outFilterMismatchNoverReadLmax 0.2 --alignEndsProtrude 58 ConcordantPair
     STAR_R2: --soloUMIlen 10
+  generic:
+    valid_modes: [bam]
 ddseq:
   bc_whitelist: None
   bc_cut: TATGCATGAC...CAGTCAGTCA

@@ -17,12 +17,14 @@ STAR_INDEX:
   "ref/cr2020A_star/"
 
 POLYA_SITES:
-# polya_db 3 on GRCh38. The provided SAF references carry -10/+5 transcript
-# slop around the annotated cleavage site (genomic Start = pos - 5,
-# End = pos + 10 on the minus strand, mirrored on the plus strand), i.e. 10 bp
-# upstream and 5 bp downstream of the cleavage site in the direction of
-# transcription. The single-base cleavage position is encoded in field 5 of the
-# ';'- (hg38) or '_'- (mm10) delimited GeneID.
+# polya_db 3 on GRCh38. The provided SAF references (and anything written by the
+# converters in inst/scripts/polyadb/) carry -10/+5 transcript slop around the
+# annotated cleavage site (genomic Start = pos - 5, End = pos + 10 on the minus
+# strand, mirrored on the plus strand), i.e. 10 bp upstream and 5 bp downstream
+# of the cleavage site in the direction of transcription (16 bases inclusive).
+# The single-base cleavage position is encoded in field 5 of the ';'- (hg38) or
+# '_'- (mm10) delimited GeneID. A file not ending in .saf/.saf.gz is passed to
+# featureCounts as GTF.
   "ref/polyadb32.hg38.saf.gz"
    
 #POLYA_FORMAT:
@@ -33,7 +35,7 @@ GENOME_FASTA:
 # Genome FASTA (with .fai index) matching the alignment reference.
 # Required ONLY when DISCOVERY.enabled is true; used for sequence-context
 # annotation (PAS motif scan, downstream A-content) of RT priming sites.
-# Chromosome names must match those in the bedgraph / BAM outputs.
+# Chromosome names must match those in the alignment BAMs / discovery beds.
 #   "ref/genome.fa"
 
 DISCOVERY:
@@ -51,7 +53,7 @@ DISCOVERY:
 # See docs/discovery.md for full details.
   enabled: false
   # Which alignment mode(s)' priming beds feed discovery. Accepts a single mode
-  # (R1, R2, or paired) OR a list; each sample runs only the modes it was
+  # (R1, R2, paired, or bam) OR a list; each sample runs only the modes it was
   # actually aligned in (intersected with its `alignments`). Per-sample override
   # via SAMPLES.<name>.discovery_read. If `read` is unset, a sample's own
   # `alignments` are used. Each (sample, mode) yields a separate discovery track
@@ -131,19 +133,51 @@ DEFAULTS:
   alignments:
     - R2
     - paired
+  # R2-arm behaviour (platform blocks in chemistry.yaml override these):
+  #   R2_polyA_filter   - require a soft-clipped poly(A) tail on R2 alignments
+  #                       (inst/scripts/filter_bam.py). false for chemistries
+  #                       whose reads cannot carry one (ultima_fastq).
+  #   R2_priming_offset - bp to move the R2 3' end in the transcript-3'
+  #                       direction before site assignment and pileup
+  #                       (featureCounts --readShiftType downstream /
+  #                       pileup_sites.py --shift). 5 for ultima_fastq.
+  R2_polyA_filter: true
+  R2_priming_offset: 0
+  # bam mode (pre-aligned, CB/UB-tagged BAM input; `alignments: [bam]`,
+  # platform `generic`). Four supported classes, by read strand vs transcript
+  # and the required soft clip at the counted end:
+  #   bam_strand: same    + bam_polyA_filter: false  (1) count read 3' end
+  #   bam_strand: same    + bam_polyA_filter: true   (2) ... + 3' poly(A) clip required
+  #   bam_strand: reverse + bam_polyA_filter: false  (3) count read 5' end
+  #   bam_strand: reverse + bam_polyA_filter: true   (4) ... + 5' poly(T) clip required
+  # bam_mate: 0 for single-end BAMs; 1 or 2 for paired-end BAMs = the mate that
+  # carries the priming site (bam_strand/bam_polyA_filter describe that mate;
+  # proper pairs only, the other mate is dropped, positions are per fragment).
+  # bam_priming_offset: bp the priming site lies beyond the counted read end.
+  # ASSUMED, not enforced: full-length molecules, CB/UB tags, accurate strand.
+  bam_mate: 0
+  bam_strand: same
+  bam_polyA_filter: false
+  bam_priming_offset: 0
 
 SAMPLES:
 # per-sample labels, FASTQ basenames, and config options
-# required:
-#   basename
-# optional:
-#   chemistry
+# required (FASTQ modes R1/R2/paired):
+#   basename  (FASTQ prefix under DATA, globbed as {basename}*R1*; may be a list)
+# required (bam mode):
+#   bam       (input BAM, absolute or relative to DATA)
+# optional (any chemistry/platform key may also be overridden per sample):
+#   chemistry, platform
 #   alignments
-#   cutadapt_args
-#   star_args (STAR_R1, STAR_R2, STAR_paired)
+#   discovery_read (per-sample override of DISCOVERY.read)
+#   bam_mate, bam_strand, bam_polyA_filter, bam_priming_offset - see DEFAULTS
+#   bc_whitelist, bc_cut, bc_length1
+#   cutadapt_R1, cutadapt_paired (cutadapt arguments; empty -> no trimming)
+#   STAR_R1, STAR_R2, STAR_paired
 #     STAR_R1 is single-mate: --clip5pNbases takes ONE value.
 #     STAR_paired is two-mate: --clip5pNbases takes TWO values (<R1clip> 0).
-#   extra star_args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
+#   extra STAR args (STAR_R1_extra_args, STAR_R2_extra_args, STAR_paired_extra_args)
+#   R2_polyA_filter (true/false), R2_priming_offset (int bp) - see DEFAULTS
   chromiumv2_test:
     basename: sample-
     platform: illumina
@@ -159,13 +193,51 @@ SAMPLES:
     platform: illumina
     chemistry: microwellseq
   chromiumv3_ultima_test:
+    # CRAM-derived Ultima reads: one long read (adapter+CB+UMI+cDNA), R1 arm
     basename: ultima
-    platform: ultima
+    platform: ultima_cram
     chemistry: chromiumV3
     alignments:
       - R1
+  chromiumv3_ultima_fastq_test:
+    # Ultima-delivered pseudo-paired FASTQs (R1 = CB+UMI, R2 = cDNA), R2 arm.
+    # Dry-run fixture only (no FASTQs in sample_data). The basename must not
+    # start with "ultima": chromiumv3_ultima_test globs ultima*R1*.
+    basename: ugfastq
+    platform: ultima_fastq
+    chemistry: chromiumV3
+    alignments:
+      - R2
+  # pre-aligned BAM fixtures (bam mode). All point at one tiny synthetic BAM
+  # shipped in sample_data so the dry-run DAG resolves; content is irrelevant.
+  bam_sense_test:
+    # class 1, single-end: read on the transcript strand, count 3' end, no clip filter
+    bam: synthetic_longread.bam
+    platform: generic
+    chemistry: chromiumV3
+    alignments:
+      - bam
+  bam_antisense_test:
+    # class 4, single-end: antisense read, count 5' end, 5' poly(T) clip required
+    bam: synthetic_longread.bam
+    platform: generic
+    chemistry: chromiumV3
+    alignments:
+      - bam
+    bam_strand: reverse
+    bam_polyA_filter: true
+  bam_paired_test:
+    # class 3 on mate 1 of a paired-end BAM (10x-like: read1 5' end is the site)
+    bam: synthetic_longread.bam
+    platform: generic
+    chemistry: chromiumV3
+    alignments:
+      - bam
+    bam_mate: 1
+    bam_strand: reverse
 
-# for multiqc report
+# multiqc section order: used only by rule qc_check (rules/qc.snake), which is
+# not part of the default `all` target
 report_section_order:
   cutadapt:
     order: 1000

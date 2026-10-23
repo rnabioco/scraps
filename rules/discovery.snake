@@ -34,8 +34,25 @@ DISC_A_WINDOW = DISCOVERY.get("a_content_window", [1, 20])
 DISC_A_MAX = DISCOVERY.get("a_content_max", 0.7)
 
 # priming-site end per alignment mode (passed to pileup_sites.py --end):
-# R1 priming site = read 5' end; R2 = read 3' end; paired = R2-of-pair 5' end.
+# R1 priming site = read 5' end; R2 = read 3' end; paired = read1 (first-in-pair)
+# 5' end. A per-(sample, mode) `{mode}_priming_offset` (Snakefile
+# _priming_offset; honoured for R2 and bam only, e.g. R2_priming_offset: 5 for
+# Ultima FASTQs) is then applied via --shift, moving the selected end N bp
+# OUTWARD past the read end (read 3' direction for 3'-end modes, read 5'
+# direction for 5'-end modes), matching the featureCounts --readShiftType
+# downstream/upstream used in assign_sites_R2 / assign_sites_bam.
 _DISC_END = {"R1": "5", "R2": "3", "paired": "5"}
+
+# bam mode (pre-aligned BAM): end and strand labels follow the sample's
+# bam_strand (Snakefile _bam_strand): 'same' behaves like R2 (3' end, identity
+# labels), 'reverse' like R1/paired (5' end, flipped labels).
+def _disc_end(sample, mode):
+  return _bam_end(sample) if mode == "bam" else _DISC_END[mode]
+
+def _disc_labels(sample, mode):
+  if mode == "bam":
+    return ("+", "-") if _bam_strand(sample) == "same" else ("-", "+")
+  return _DISC_STRAND_LABEL[mode]
 
 # read-alignment strand -> TRANSCRIPT strand, per alignment mode. The emitted
 # bed must carry the transcript strand (as consumed strand-aware by kde_peaks /
@@ -67,23 +84,26 @@ rule stranded_bed:
   # single-base pileup in one pass (inst/scripts/pileup_sites.py), replacing
   # umi_tools dedup + bedtools genomecov. Dedup is keyed on (cell, UMI, priming
   # position); the opposite-end/fragmentation coordinate is ignored (see the
-  # bed_* note in count.snake), so counts collapse PCR duplicates by molecule.
-  # {read} is the alignment mode (R1|R2|paired); a discovery unit may aggregate
+  # priming-pileup NOTE at the end of rules/count.snake), so counts collapse PCR
+  # duplicates by molecule.
+  # {read} is the alignment mode (R1|R2|paired|bam); a discovery unit may aggregate
   # several of these beds across samples and/or modes (see pool_beds).
   input:
     "{results}/temp/{sample}_{read}_assigned.bam"
   output:
     "{results}/discovery/beds/{sample}_{read}.stranded.bed.gz"
   wildcard_constraints:
-    read = "R1|R2|paired"
+    read = "R1|R2|paired|bam"
   params:
     job_name = "stranded_bed",
-    # end to pile up per mode: R1/paired -> 5' end, R2 -> 3' end
-    end = lambda wc: _DISC_END[wc.read],
+    # end to pile up per mode: R1/paired -> 5' end, R2 -> 3' end, bam -> by bam_strand
+    end = lambda wc: _disc_end(wc.sample, wc.read),
     mode = lambda wc: wc.read,
     # transcript strand to label reads on the +/- aligned strand (see above)
-    label_plus = lambda wc: _DISC_STRAND_LABEL[wc.read][0],
-    label_minus = lambda wc: _DISC_STRAND_LABEL[wc.read][1],
+    label_plus = lambda wc: _disc_labels(wc.sample, wc.read)[0],
+    label_minus = lambda wc: _disc_labels(wc.sample, wc.read)[1],
+    # bp shift of the piled-up end toward the read's 3' (0 = none)
+    shift = lambda wc: _priming_offset(wc.sample, wc.read),
     sort_tmp = "{results}/temp"
   log:
     "{results}/logs/stranded_bed_{sample}_{read}.txt"
@@ -102,14 +122,15 @@ rule stranded_bed:
     # TRANSCRIPT strand (read-align strand converted per mode; see comment above
     # the rule). The only consumers (pool_beds, kde_peaks) re-sort, so line order
     # need not match the previous genomecov per-strand block layout.
+    exec > {log} 2>&1
     mkdir -p {params.sort_tmp}
     python3 inst/scripts/pileup_sites.py \
       -i {input} -o {output} \
       --end {params.end} --mode {params.mode} \
+      --shift {params.shift} \
       --strand-split \
       --label-plus {params.label_plus} --label-minus {params.label_minus} \
-      -t {threads} --sort-mem 8G --sort-tmp {params.sort_tmp} \
-      2> {log}
+      -t {threads} --sort-mem 8G --sort-tmp {params.sort_tmp}
     """
 
 
@@ -137,11 +158,12 @@ rule pool_beds:
     # bound the GNU sort: -S in-RAM buffer (under mem_mb) to limit temp spill,
     # --parallel over threads, and -T pinned to the results volume (not the
     # default /tmp, which may be small on shared clusters)
+    exec > {log} 2>&1
     mkdir -p {params.sort_tmp}
     gunzip -c {input} \
       | awk 'BEGIN {{ OFS = "\t" }} {{ c[$1"\t"$2"\t"$3"\t"$5] += $4 }} END {{ for (k in c) {{ split(k, a, "\t"); print a[1], a[2], a[3], c[k], a[4] }} }}' - \
       | sort -k1,1 -k2,2n -S 12G --parallel={threads} -T {params.sort_tmp} \
-      | gzip -c > {output} 2> {log}
+      | gzip -c > {output}
     """
 
 
@@ -172,6 +194,7 @@ rule kde_peaks:
     mem_mb = 32000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/kde_peaks.py \
       -i {input} \
       -o {output} \
@@ -181,8 +204,7 @@ rule kde_peaks:
       --min-umi {params.min_umi} \
       --min-umi-frac {params.min_umi_frac} \
       --summit-method {params.summit_method} \
-      --summit-frac {params.summit_frac} \
-      > {log} 2>&1
+      --summit-frac {params.summit_frac}
     """
 
 
@@ -215,6 +237,7 @@ rule annotate_sites:
     mem_mb = 16000
   shell:
     r"""
+    exec > {log} 2>&1
     python3 inst/scripts/annotate_sites.py \
       --peaks {input.peaks} \
       --polya {input.polya} \
@@ -230,6 +253,5 @@ rule annotate_sites:
       --pas-end {params.pas_end} \
       --a-start {params.a_start} \
       --a-end {params.a_end} \
-      --a-content-max {params.a_max} \
-      > {log} 2>&1
+      --a-content-max {params.a_max}
     """

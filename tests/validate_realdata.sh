@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
-# End-to-end bit-exactness validation on REAL data. Runs the pipeline twice from
-# the same FASTQs -- once with the original umi_tools code path, once with the
-# new pysam scripts -- into separate results dirs, then diffs every count table,
-# bed, and discovery stranded bed.
+# End-to-end validation on REAL data. Runs the pipeline twice from the same
+# FASTQs -- once with the original umi_tools code path, once with the new pysam
+# scripts -- into separate results dirs, then compares count tables (bit-exact)
+# and discovery stranded beds (directional: every legacy position still present,
+# total signal <= old). Count-arm bed tracks no longer exist and are not compared.
 #
-# The original (umi_tools) path is obtained from git: this script stashes the
-# working tree, checks out the pre-change rules into a scratch worktree, runs it,
-# then restores and runs the new code. It assumes a configured config.yaml with a
-# valid STAR_INDEX and DATA, and that `snakemake` + tools are on PATH.
+# The original (umi_tools) path is obtained from git: the old ref is checked out
+# into a scratch git worktree (the current working tree is untouched) and run
+# there; the new code runs in the current tree. Assumptions:
+#   - a configured config.yaml with a valid STAR_INDEX and DATA, and `snakemake`
+#     + tools on PATH;
+#   - DISCOVERY.enabled: true in that config, otherwise no stranded beds exist
+#     and the bed comparison silently matches nothing;
+#   - no bam-mode / Ultima-FASTQ / data-less fixture samples in SAMPLES (the old
+#     ref cannot run them); the default config.yaml contains such fixtures.
 #
 # Usage:
 #   OLD_REF=<git-ref-before-change> tests/validate_realdata.sh
-# where OLD_REF is a commit/branch/tag containing the umi_tools rules (default:
-# HEAD~1). RESULTS_old / RESULTS_new are created under a scratch dir.
+# where OLD_REF is a commit/branch/tag containing the umi_tools rules. Default:
+# d335350, the last commit before the pysam replacement (05cbc3f).
+# RESULTS_old / RESULTS_new are created under a scratch dir.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 
-OLD_REF="${OLD_REF:-HEAD~1}"
+OLD_REF="${OLD_REF:-d335350}"
 CONFIG="${CONFIG:-config.yaml}"
 CORES="${CORES:-8}"
 SCRATCH="${SCRATCH:-$REPO/.validate_realdata}"

@@ -44,11 +44,11 @@ def _get_chem_version(sample, alignment):
 def _get_chem_version_R2(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_R2")
 
-""" Extract per-capture chemistry (R1/paired) """
+""" Extract per-capture chemistry (R1) """
 def _get_chem_version_R1(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_R1")
 
-""" Extract per-capture extra arguments for paired alignments """
+""" Extract per-capture chemistry (paired) """
 def _get_chem_version_paired(wildcards):
     return _get_chem_version(wildcards.sample, "STAR_paired")
     
