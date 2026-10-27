@@ -65,7 +65,11 @@ snakemake --snakefile Snakefile \
 
 [DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf) (rule graph of all four alignment modes with discovery enabled)
 
-[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/v7.32.3/executing/cluster.html) (Snakemake 7 docs; scraps requires Snakemake < 8)
+**Cluster execution (SLURM)**: either run the whole pipeline inside one batch allocation with the command above, or submit each rule as its own SLURM job with the bundled profile (set your account and partition in [`profiles/slurm/config.v8+.yaml`](profiles/slurm/) first):
+```
+snakemake --profile profiles/slurm --configfile config.yaml
+```
+See [profiles/slurm/README.md](profiles/slurm/README.md) and the [SLURM executor plugin docs](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html). Other schedulers use their own [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/index.html) (`--executor <name>`); Snakemake 8+ no longer has `--cluster`/`--drmaa`.
 
 Notes: each STAR alignment job (one per sample × alignment mode) uses `total_impact=5`; `--resources total_impact=5*N` allows N concurrent STAR jobs.
 
