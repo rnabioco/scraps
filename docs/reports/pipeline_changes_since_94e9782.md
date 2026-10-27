@@ -277,3 +277,12 @@ also occur in genomic A-tracts (3'READS+), so A-richness marks a site as ambiguo
 an artifact to exclude. Unmatched sites with neither an A-rich signature nor a PAS motif,
 previously lumped into that label, are now `potential_novel_no_pas` (lower-confidence novel
 candidates). `inst/scripts/R/discovery.R` maps the old label on read.
+
+## Addendum: Snakemake 9
+
+The `snakemake <8` pin is gone: the environment requires Snakemake >= 9 (< 10) and Python
+>= 3.11, and the Snakefile declares `min_version("9.0")`. Snakemake 8 removed `-r/--reason`
+(so documented commands use `-np`) and the `--cluster`/`--drmaa` options; per-rule SLURM
+submission now uses the tracked `profiles/slurm` profile and the SLURM executor plugin. On
+an empty results directory, Snakemake 9.27.1 schedules the same 38 dry-run jobs with the
+same rendered shell commands as 7.32.4, and the synthetic and kde_peaks suites pass.

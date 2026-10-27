@@ -65,7 +65,11 @@ snakemake --snakefile Snakefile \
 
 [DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf) (rule graph of all four alignment modes with discovery enabled)
 
-[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/v7.32.3/executing/cluster.html) (Snakemake 7 docs; scraps requires Snakemake < 8)
+**Cluster execution (SLURM)**: either run the whole pipeline inside one batch allocation with the command above, or submit each rule as its own SLURM job with the bundled profile (set your account and partition in [`profiles/slurm/config.v8+.yaml`](profiles/slurm/) first):
+```
+snakemake --profile profiles/slurm --configfile config.yaml
+```
+See [profiles/slurm/README.md](profiles/slurm/README.md) and the [SLURM executor plugin docs](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html). Other schedulers use their own [executor plugins](https://snakemake.github.io/snakemake-plugin-catalog/index.html) (`--executor <name>`); Snakemake 8+ no longer has `--cluster`/`--drmaa`.
 
 Notes: each STAR alignment job (one per sample × alignment mode) uses `total_impact=5`; `--resources total_impact=5*N` allows N concurrent STAR jobs.
 
@@ -331,13 +335,13 @@ SAMPLES:
 
 ```bash
 # Dry-run to check configuration (also validates chemistry/platform/mode and bam-mode keys)
-snakemake -npr
+snakemake -np
 
 # Run pipeline (--cores/-j is required by Snakemake for local execution)
 snakemake -j 24 --resources total_impact=5 --keep-going
 
 # Dry-run a single target (target BEFORE any --configfile flag)
-snakemake -npr results/counts/chromiumv2_test_R2_counts.tsv.gz
+snakemake -np results/counts/chromiumv2_test_R2_counts.tsv.gz
 ```
 
 Sample test results from an earlier version can be found at [inst/test_output/](inst/test_output/) (legacy `_`-delimited GeneIDs and bed tracks).
@@ -348,8 +352,9 @@ ___
 
 scraps requires the following executables in your PATH and Python packages in the running environment (all in `scraps_conda.yml`):
 
-  - <a href="https://www.python.org">Python 3</a> (>= 3.7)
-  - <a href="https://snakemake.readthedocs.io">Snakemake</a> (>= 5.3.0, < 8.0)
+  - <a href="https://www.python.org">Python 3</a> (>= 3.11, required by Snakemake 9)
+  - <a href="https://snakemake.readthedocs.io">Snakemake</a> (>= 9, < 10; the Snakefile enforces `min_version("9.0")`)
+  - <a href="https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html">snakemake-executor-plugin-slurm</a> (only for the SLURM profile in `profiles/slurm/`)
   - <a href="https://cutadapt.readthedocs.io">cutadapt</a> (>= 3.4)
   - <a href="https://github.com/alexdobin/STAR">STAR</a> (>= 2.7.9a)
   - <a href="https://www.htslib.org">Samtools</a> (>= 1.15; `>= 1.16` for the tag-filter expressions to drop untagged reads)
@@ -357,7 +362,6 @@ scraps requires the following executables in your PATH and Python packages in th
   - <a href="https://pysam.readthedocs.io">pysam</a> (>= 0.16.0) and <a href="https://github.com/CGATOxford/UMI-tools">UMI-tools</a> (>= 1.1.2; used as a Python library for directional UMI collapsing, not as a CLI)
   - numpy, pandas, scipy, scikit-learn (pandas is imported by the rules; the others by the de novo discovery scripts)
   - <a href="https://multiqc.info">MultiQC</a> (>= 1.6; only for the optional, disabled-by-default `qc_check` rule)
-  - <a href="https://github.com/drmaa-python/drmaa-python">drmaa</a> (>= 0.7.9, for cluster execution)
   - zsh (shell used for pipeline execution)
   - Bedtools is no longer called by the pipeline (the pileup is done with pysam) but remains in the conda environment; R (and the scrapR package) is optional, for the downstream helpers in `inst/scripts/R/`
   

@@ -2,6 +2,9 @@ shell.executable("zsh")
 
 """ Snakemake pipeline for single-cell RNA-seq 3' end counting """
 
+from snakemake.utils import min_version
+min_version("9.0")
+
 configfile: "config.yaml"
 
 DATA = config["DATA"]
@@ -21,10 +24,11 @@ from snakemake.logging import logger
 with open('chemistry.yaml') as fp:
    CHEMISTRY = yaml.safe_load(fp)
 
-# Diagnostics go through Snakemake's logger: in a dry-run that is stdout, in
-# order with the job listing; in a real run stderr plus .snakemake/log/. Build
-# the strings with str.format(), NOT f-strings: Snakemake's Snakefile tokenizer
-# re-spaces f-string contents ("Message:  key  not found").
+# Diagnostics go through Snakemake's logger (verified on Snakemake 9): in a
+# dry-run that is stdout, in order with the job listing; otherwise stderr plus
+# .snakemake/log/, so `--dag`/`--rulegraph` stdout stays clean DOT. Strings are
+# built with str.format() for consistency (Snakemake 7's tokenizer re-spaced
+# f-string contents; fixed in 8+).
 _diag_seen = set()
 
 def _diag(key, msg):

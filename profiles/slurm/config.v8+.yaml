@@ -1,0 +1,37 @@
+# scraps SLURM profile (Snakemake >= 9, snakemake-executor-plugin-slurm).
+# Each rule becomes its own SLURM job; Snakemake runs on the login/head node.
+#   snakemake --profile profiles/slurm --configfile config.yaml
+# Edit slurm_account / slurm_partition (and runtimes) for your cluster first.
+# Per-rule `threads` -> --cpus-per-task and `mem_mb` -> --mem come from the rules.
+executor: slurm
+jobs: 50                     # max SLURM jobs queued/running at once
+latency-wait: 60             # seconds to wait for outputs on shared filesystems
+keep-going: true
+printshellcmds: true
+rerun-incomplete: true
+
+default-resources:
+  - slurm_account="CHANGE_ME"
+  - slurm_partition="CHANGE_ME"
+  - runtime=240              # minutes
+  - mem_mb=8000              # rules that declare mem_mb override this
+
+# Global limit on the custom STAR resource: each STAR job claims total_impact=5,
+# so 50 allows 10 concurrent STAR alignments (raise/lower for your filesystem).
+resources:
+  - total_impact=50
+
+# Longer walltimes for the heavy rules (minutes).
+set-resources:
+  starsolo_R1:
+    runtime: 1440
+  starsolo_R2:
+    runtime: 1440
+  starsolo_paired:
+    runtime: 1440
+  cutadapt_R1:
+    runtime: 720
+  cutadapt_paired:
+    runtime: 720
+  assign_sites_bam:
+    runtime: 720

@@ -16,5 +16,8 @@ RUN /opt/conda/bin/conda config --add channels defaults && \
     mamba env update -n base -f scraps_conda.yml && \
     conda clean -afy
 
+# fail the build if the solve did not produce Snakemake 9 (scraps needs >= 9, Python >= 3.11)
+RUN snakemake --version && python -c "import sys; assert sys.version_info >= (3, 11), sys.version"
+
 RUN R -e 'BiocManager::install("rnabioco/scrapR")'
 WORKDIR /home/rstudio
