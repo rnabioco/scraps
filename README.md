@@ -15,7 +15,7 @@ changes in single-cell RNA-seq data.
 
 For additional discussions and usage cases, please see [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2022.08.22.504859v1).
 
-<img src="inst/flow.png" width="400" align="right">
+<img src="inst/flow.png" width="560" align="right">
 
 ---
 -   [Example usage](#example-usage)
@@ -235,14 +235,22 @@ pseudobulked, UMI-deduplicated, strand-aware single-base priming positions
 and classifies each as:
 
 - **`known_pas`** — matches a validated polyAdb cleavage/polyA site
-- **`likely_internal_priming`** — downstream genomic A-content/A-run indicates
-  an artifact (should be excluded)
-- **`potential_novel_pas`** — no internal-priming signature plus a canonical
-  poly(A) signal (PAS) motif upstream (a *candidate* requiring validation)
+- **`suspected_internal_priming`** — the genomic sequence just downstream is
+  A-rich. This is the signature of oligo-dT priming off a templated A-stretch,
+  but genuine cleavage/polyadenylation sites also occur in and next to genomic
+  A-tracts (as 3'READS+, which avoids internal priming, shows), so these sites
+  cannot be resolved computationally
+- **`potential_novel_pas`** — no A-rich signature plus a canonical poly(A)
+  signal (PAS) motif upstream (a *candidate* requiring validation)
+- **`potential_novel_no_pas`** — no A-rich signature and no PAS motif (a
+  lower-confidence candidate)
 
 > **Note:** discovered sites are for hypothesis generation. For quantitative
-> analyses, use validated poly(A) sites; `potential_novel_pas` sites require
-> orthogonal validation and `likely_internal_priming` sites should be excluded.
+> analyses, use validated poly(A) sites. Both novel classes require orthogonal
+> validation. `suspected_internal_priming` sites are ambiguous rather than
+> artifacts: interpret them with caution, report results with and without them
+> where it matters, and confirm with an orthogonal method before treating them
+> as real sites.
 
 Enable it by setting `GENOME_FASTA` and `DISCOVERY.enabled: true` in
 `config.yaml`. Outputs are written to `{RESULTS}/discovery/` (annotated TSV, BED,

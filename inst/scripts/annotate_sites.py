@@ -1,15 +1,22 @@
 """ Annotate de novo RT priming sites.
 
 Takes KDE-called RT priming site summits (from kde_peaks.py) and classifies
-each into one of three categories:
+each into one of four categories:
 
-    known_pas               summit falls within the strand-aware, asymmetric
-                            transcript-oriented match window (--match-up /
-                            --match-down) of a validated polyAdb cleavage point
-    likely_internal_priming downstream genomic A-content/A-run suggests priming
-                            off a genomic poly(A) stretch (artifact)
-    potential_novel_pas     no internal-priming signature and a canonical
-                            poly(A) signal (PAS) motif is present upstream
+    known_pas                  summit falls within the strand-aware, asymmetric
+                               transcript-oriented match window (--match-up /
+                               --match-down) of a validated polyAdb cleavage point
+    suspected_internal_priming unmatched; the genomic sequence downstream of the
+                               summit is A-rich (--a-content-max / --a-run-min),
+                               the signature of oligo-dT priming off a templated
+                               A-stretch. Genuine cleavage/polyadenylation sites
+                               also occur in and next to genomic A-tracts (e.g.
+                               3'READS+ data), so these cannot be resolved
+                               computationally: ambiguous, not artifacts per se.
+    potential_novel_pas        unmatched, no A-rich signature, canonical poly(A)
+                               signal (PAS) motif upstream
+    potential_novel_no_pas     unmatched, no A-rich signature, no PAS motif: a
+                               lower-confidence novel candidate
 
 Known-site matching is point-based against the polyAdb single-base cleavage
 position, which is read from field 5 of the ';'- (hg38) or '_'- (mm10)
@@ -17,9 +24,9 @@ delimited SAF GeneID (gene;genbank;id;chrom;pos;strand;class). A SAF that does
 not follow this encoding will not annotate any known sites. See docs/discovery.md.
 
 IMPORTANT: validated poly(A) sites (polyAdb) remain the recommended reference
-for downstream quantitative analyses. potential_novel_pas sites are candidates
-that require orthogonal validation; likely_internal_priming sites should be
-excluded, not quantified.
+for downstream quantitative analyses. Both novel classes are candidates that
+require orthogonal validation; suspected_internal_priming sites should be
+interpreted with caution rather than discarded by default.
 
 Outputs:
   --out-tsv  full annotation table (gzipped)
@@ -77,10 +84,12 @@ def parse_args():
     parser.add_argument('--a-end', type=int, default=20,
                         help="downstream A-content window end (bp)")
     parser.add_argument('--a-content-max', type=float, default=0.7,
-                        help="downstream A fraction to flag internal priming")
+                        help="downstream A fraction at/above which a site is "
+                             "flagged suspected_internal_priming")
     parser.add_argument('--a-run-min', type=int, default=8,
-                        help="contiguous downstream A-run length to flag "
-                             "internal priming (default 8)")
+                        help="contiguous downstream A-run length at/above which a "
+                             "site is flagged suspected_internal_priming "
+                             "(default 8)")
     return parser.parse_args()
 
 
@@ -335,13 +344,15 @@ def seq_context(fasta, chrom, summit0, strand, args):
 def classify(matched, a_content, a_run, pas_motif, args):
     if matched:
         return "known_pas"
-    internal = (a_content >= args.a_content_max) or (a_run >= args.a_run_min)
-    if internal:
-        return "likely_internal_priming"
+    a_rich = (a_content >= args.a_content_max) or (a_run >= args.a_run_min)
+    if a_rich:
+        # oligo-dT priming off a genomic A-stretch, or a genuine site in an
+        # A-tract: not distinguishable from sequence
+        return "suspected_internal_priming"
     if pas_motif != "NA":
         return "potential_novel_pas"
-    # no PAS signal and no strong internal-priming signature: conservative call
-    return "likely_internal_priming"
+    # no A-rich signature and no PAS: novel candidate, lower confidence
+    return "potential_novel_no_pas"
 
 
 def main():
@@ -350,8 +361,8 @@ def main():
     fasta = pysam.FastaFile(args.fasta)
 
     opener = gzip.open if args.peaks.endswith('.gz') else open
-    counts = {"known_pas": 0, "likely_internal_priming": 0,
-              "potential_novel_pas": 0}
+    counts = {"known_pas": 0, "suspected_internal_priming": 0,
+              "potential_novel_pas": 0, "potential_novel_no_pas": 0}
 
     with opener(args.peaks, 'rt') as fh, \
             gzip.open(args.out_tsv, 'wt') as tsv, \
@@ -410,8 +421,9 @@ def main():
 
     sys.stderr.write(
         "annotate_sites: {known_pas} known_pas, "
-        "{likely_internal_priming} likely_internal_priming, "
-        "{potential_novel_pas} potential_novel_pas\n".format(**counts))
+        "{suspected_internal_priming} suspected_internal_priming, "
+        "{potential_novel_pas} potential_novel_pas, "
+        "{potential_novel_no_pas} potential_novel_no_pas\n".format(**counts))
 
 
 if __name__ == '__main__':

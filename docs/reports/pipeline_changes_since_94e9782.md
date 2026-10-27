@@ -269,3 +269,11 @@ occupied-base island, split at the density valley between neighbouring clusters)
 `umi_support` sums the extent and the summit is searched within it. Support can only
 increase, so more peaks pass the same `min_umi`; the called site set differs from the
 numbers quoted above. Regression checks: `tests/validate_kde_peaks.sh`.
+
+## Addendum: discovery class labels
+
+`likely_internal_priming` is renamed `suspected_internal_priming`: genuine cleavage sites
+also occur in genomic A-tracts (3'READS+), so A-richness marks a site as ambiguous, not as
+an artifact to exclude. Unmatched sites with neither an A-rich signature nor a PAS motif,
+previously lumped into that label, are now `potential_novel_no_pas` (lower-confidence novel
+candidates). `inst/scripts/R/discovery.R` maps the old label on read.

@@ -43,13 +43,17 @@ DISCOVERY:
 # Identifies RT priming sites via kernel density estimation (KDE) on
 # pseudobulked, UMI-deduplicated, strand-aware single-base priming positions,
 # then annotates each site as one of:
-#   known_pas               - matches a validated polyAdb cleavage/polyA site
-#   likely_internal_priming - downstream genomic A-content/A-run (artifact)
-#   potential_novel_pas     - no internal-priming signature + upstream PAS motif
+#   known_pas                  - matches a validated polyAdb cleavage/polyA site
+#   suspected_internal_priming - downstream genomic A-content/A-run; may be
+#                                oligo-dT internal priming OR a genuine site in
+#                                an A-tract (not resolvable from sequence)
+#   potential_novel_pas        - no A-rich signature + upstream PAS motif
+#   potential_novel_no_pas     - no A-rich signature, no PAS (lower confidence)
 # NOTE: validated poly(A) sites (POLYA_SITES / polyAdb) remain the recommended
 # reference for downstream QUANTITATIVE analyses. Discovered sites are
 # candidates for hypothesis generation and require orthogonal validation;
-# likely_internal_priming sites should be excluded, not quantified.
+# suspected_internal_priming sites are ambiguous: interpret with caution rather
+# than discarding them by default.
 # See docs/discovery.md for full details.
   enabled: false
   # Which alignment mode(s)' priming beds feed discovery. Accepts a single mode
@@ -123,7 +127,7 @@ DISCOVERY:
   pas_window: [-40, 0]
   # downstream window [start, end] (bp, relative to summit) for A-content
   a_content_window: [1, 20]
-  # downstream A fraction at/above which a site is flagged internal priming
+  # downstream A fraction at/above which a site is flagged suspected_internal_priming
   a_content_max: 0.7
 
 DEFAULTS:
