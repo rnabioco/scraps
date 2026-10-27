@@ -10,24 +10,30 @@ jobs:
 
     steps:
     - name: Checkout Project
-      uses: actions/checkout@v3
-  
-    - uses: conda-incubator/setup-miniconda@v2
+      uses: actions/checkout@v4
+
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        mamba-version: "*"
-        channels: bioconda,conda-forge,defaults
-        channel-priority: true
+        miniforge-version: latest
+        channels: conda-forge,bioconda
+        channel-priority: strict
         auto-activate-base: false
-        use-mamba: true
 
     - name: Create conda environment
       shell: bash -el {0}
       run: |
-        mamba env create -f scraps_conda.yml
+        conda env create -f scraps_conda.yml
 
-    - name: Run Snakemake
+    - name: Dry-run (local execution)
       shell: bash -el {0}
       run: |
         conda activate scraps_conda
         conda info
+        snakemake --version
         snakemake -np --configfile config.yaml
+
+    - name: Dry-run (SLURM profile)
+      shell: bash -el {0}
+      run: |
+        conda activate scraps_conda
+        snakemake -n --profile profiles/slurm --configfile config.yaml

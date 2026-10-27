@@ -7,7 +7,9 @@
 #
 # The original (umi_tools) path is obtained from git: the old ref is checked out
 # into a scratch git worktree (the current working tree is untouched) and run
-# there; the new code runs in the current tree. Assumptions:
+# there; the new code runs in the current tree. Both runs use the snakemake on
+# PATH (Snakemake 9; the legacy commit d335350 dry-runs fine under it). The
+# umi_tools CLI must be installed for the legacy side. Assumptions:
 #   - a configured config.yaml with a valid STAR_INDEX and DATA, and `snakemake`
 #     + tools on PATH;
 #   - DISCOVERY.enabled: true in that config, otherwise no stranded beds exist

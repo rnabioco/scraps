@@ -26,8 +26,8 @@ snakemake -np --configfile config.yaml
 # uses total_impact=5, so --resources total_impact=5 runs one STAR job at a time)
 snakemake -j 8 --configfile config.yaml --resources total_impact=5 --keep-going
 
-# Generate DAG visualization (the Snakefile prints its target list to stderr,
-# so stdout is clean DOT)
+# Generate DAG visualization (the Snakefile's logger output goes to stderr outside
+# dry-runs, so stdout is clean DOT)
 snakemake --dag --configfile config.yaml | dot -Tpdf > dag.pdf
 
 # Regenerate the README's inst/dag.pdf: rule graph with every arm and discovery on.
@@ -39,7 +39,16 @@ snakemake --rulegraph --configfile config.yaml dag_override.yaml | dot -Tpdf > i
 
 `--configfile other.yaml` is deep-merged over the hardcoded `config.yaml`
 (Snakemake `update_config`), so `SAMPLES` from both files are unioned unless the
-override redefines every key.
+override redefines every key. Add `--replace-workflow-config` (Snakemake 9) to use
+only the given file instead.
+
+**Cluster (SLURM)**: submit one job per rule with the bundled profile, after setting
+the account and partition (see `profiles/slurm/README.md`); `--cluster`/`--drmaa` no
+longer exist in Snakemake 8+.
+
+```bash
+snakemake --profile profiles/slurm --configfile config.yaml
+```
 
 ### Testing Changes
 
@@ -119,7 +128,8 @@ scraps/
 ├── ref/                   # polyadb32.{hg38,mm10} + polyadb4.{hg38,mm10}.{main,max} SAFs (converter output); STAR index + whitelists go here
 ├── sample_data/raw_data/  # Test FASTQs + synthetic_longread.bam (bam-mode fixture)
 ├── inst/test_output/, inst/dag.pdf, inst/notebooks/, man/figures/   # legacy examples, figures
-├── .github/workflows/snakemake_run.yml   # CI: dry-run only
+├── profiles/slurm/        # SLURM executor profile (config.v8+.yaml) + README
+├── .github/workflows/snakemake_run.yml   # CI: dry-runs (local + SLURM profile)
 └── results/               # Pipeline outputs (generated)
 ```
 
@@ -314,9 +324,9 @@ validators' warnings, the target list) go through **Snakemake's logger**
 (`from snakemake.logging import logger`; `logger.warning` / `logger.info`), never
 `print()` or `sys.stderr.write`. The logger follows Snakemake's stream choice (stdout in
 a dry-run, in order with the job listing; stderr for real runs and for `--dag`, so DOT
-output stays clean) and lands in `.snakemake/log/`. Two rules: build the strings with
-`str.format()` rather than f-strings (Snakemake's Snakefile tokenizer re-spaces f-string
-contents, producing `Message:  key  not found`), and emit each message once via `_diag`
+output stays clean) and lands in `.snakemake/log/` (verified on Snakemake 9). Two rules:
+build the strings with `str.format()` for consistency (Snakemake 7's tokenizer re-spaced
+f-string contents; fixed in 8+), and emit each message once via `_diag`
 (params lambdas run once per job). `_get_config` stays silent for keys that are
 legitimately optional (`_OPTIONAL_KEYS` / `_OPTIONAL_SUFFIXES`: `cutadapt_*`, `bc_cut`,
 `bc_length1`, `*_extra_args`, `*_polyA_filter`, `*_priming_offset`, `bam_*`); any other
@@ -558,8 +568,10 @@ snakemake -j 8 --forcerun rulename   # preview first with -n
 ## Dependencies and Tools
 
 **Core requirements** (installed via conda):
-- Python >= 3.7
-- Snakemake >= 5.3.0, < 8
+- Python >= 3.11 (required by Snakemake 9)
+- Snakemake >= 9, < 10 (`min_version("9.0")` in the Snakefile; Snakemake 8 removed
+  `-r/--reason`, `--cluster` and `--drmaa`)
+- snakemake-executor-plugin-slurm (only for `profiles/slurm/`)
 - STAR >= 2.7.9a (RNA-seq aligner)
 - cutadapt >= 3.4 (adapter trimming; zsh `=(...)` process substitution, so zsh is required)
 - samtools >= 1.15 (BAM manipulation; >= 1.16 for `[CB]!="-"` to drop untagged reads)
@@ -570,7 +582,7 @@ snakemake -j 8 --forcerun rulename   # preview first with -n
   scipy and scikit-learn are in `scraps_conda.yml` but currently unused
 - MultiQC >= 1.6 (only for the disabled `qc_check` rule)
 - bedtools >= 2.30.0 (no longer called by any rule; `tests/validate_synthetic.sh` only)
-- drmaa >= 0.7.9 (cluster execution), zsh
+- zsh
 
 **Version checking**: `snakemake -j 1 results/check_versions.txt --configfile config.yaml`
 (rule `check`, not part of `rule all`; checks python, snakemake, pysam/umi_tools import,
