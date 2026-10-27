@@ -331,13 +331,13 @@ SAMPLES:
 
 ```bash
 # Dry-run to check configuration (also validates chemistry/platform/mode and bam-mode keys)
-snakemake -npr
+snakemake -np
 
 # Run pipeline (--cores/-j is required by Snakemake for local execution)
 snakemake -j 24 --resources total_impact=5 --keep-going
 
 # Dry-run a single target (target BEFORE any --configfile flag)
-snakemake -npr results/counts/chromiumv2_test_R2_counts.tsv.gz
+snakemake -np results/counts/chromiumv2_test_R2_counts.tsv.gz
 ```
 
 Sample test results from an earlier version can be found at [inst/test_output/](inst/test_output/) (legacy `_`-delimited GeneIDs and bed tracks).

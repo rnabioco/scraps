@@ -30,4 +30,4 @@ jobs:
       run: |
         conda activate scraps_conda
         conda info
-        snakemake -npr --configfile config.yaml
+        snakemake -np --configfile config.yaml

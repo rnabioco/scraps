@@ -19,7 +19,7 @@ barcode-tagged BAMs, at near-nucleotide resolution
 
 ```bash
 # Dry-run to validate pipeline (recommended before any changes)
-snakemake -npr --configfile config.yaml
+snakemake -np --configfile config.yaml
 
 # Run pipeline (--cores/-j is mandatory for a real run; needs the STAR index and
 # whitelists from the README Setup section, which are not bundled; each STAR job
@@ -45,17 +45,16 @@ override redefines every key.
 
 ```bash
 # Always dry-run first to validate Snakemake syntax
-snakemake -npr --configfile config.yaml
+snakemake -np --configfile config.yaml
 
 # Test specific rule (target BEFORE --configfile: that flag takes multiple files,
 # so a trailing target would be read as another config file)
-snakemake -npr results/counts/chromiumv2_test_R2_counts.tsv.gz --configfile config.yaml
+snakemake -np results/counts/chromiumv2_test_R2_counts.tsv.gz --configfile config.yaml
 
 # List all rules
-snakemake --list
+snakemake --list-rules
 
-# Show reason for rule execution
-snakemake -npr --reason --configfile config.yaml
+# Job reasons are always printed in Snakemake 9 (-r/--reason no longer exist)
 ```
 
 There is no unit-test suite; CI (`.github/workflows/snakemake_run.yml`) only dry-runs.
@@ -454,7 +453,7 @@ gene_symbol{D}refseq_gene_id{D}ensembl_id{D}chrom{D}pos{D}strand{D}pas_type
 3. Add to workflow: per-(sample, mode) targets go inside the `for mode in
    _sample_modes(x)` loop that builds `SAMPLE_OUTS` (Snakefile; note the `bam` mode
    yields no `*_Aligned.sortedByCoord.out.bam`); discovery targets go in `DISCOVERY_OUTS`
-4. Test with dry-run: `snakemake -npr`
+4. Test with dry-run: `snakemake -np`
 
 ### Modifying Chemistry Configuration
 
@@ -499,7 +498,7 @@ Optional module (off by default); see `docs/discovery.md` for full details.
   set as `POLYA_SITES` to re-quantify (filter artifacts first).
 - Outputs under `{results}/discovery/`: `<unit>_sites.tsv.gz`,
   `<unit>_sites.bed.gz`, `<unit>_denovo.saf.gz` (unit = group name or sample).
-- Validate with `snakemake -npr` after setting `DISCOVERY.enabled: true`.
+- Validate with `snakemake -np` after setting `DISCOVERY.enabled: true`.
 
 ### Generating/converting polyAdb references
 
@@ -538,14 +537,14 @@ above).
 
 **Common issues**:
 - Missing conda dependencies → check `scraps_conda.yml`
-- YAML syntax errors → validate with `snakemake -npr`
+- YAML syntax errors → validate with `snakemake -np`
 - Missing input files → check `DATA` path in config.yaml
 - Resource exhaustion → adjust `mem_mb` or `threads` in rules
 
 **Debugging Snakemake**:
 ```bash
 # Show detailed execution plan
-snakemake -npr --verbose
+snakemake -np --verbose
 
 # Print shell commands without execution
 snakemake -np --printshellcmds
@@ -581,7 +580,7 @@ cutadapt, samtools, featureCounts, STAR, multiqc)
 
 ## Notes for coding agents
 
-- **Always dry-run first**: Use `snakemake -npr` before any pipeline changes
+- **Always dry-run first**: Use `snakemake -np` before any pipeline changes
 - **Respect shell choice**: Pipeline explicitly uses `zsh`, not bash (the cutadapt rules
   use zsh `=(...)` process substitution)
 - **Preserve temp files**: Snakemake manages cleanup via `temp()` directive

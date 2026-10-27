@@ -304,8 +304,8 @@ samtools faidx ref/genome.fa
 Then run as usual; discovery targets are added automatically:
 
 ```bash
-snakemake -npr --configfile config.yaml          # validate
-snakemake --configfile config.yaml --keep-going  # run
+snakemake -np --configfile config.yaml          # validate
+snakemake -j 24 --configfile config.yaml --keep-going  # run (-j/--cores is required)
 ```
 
 ## Outputs
