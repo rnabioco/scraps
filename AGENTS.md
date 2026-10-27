@@ -29,6 +29,12 @@ snakemake -j 8 --configfile config.yaml --resources total_impact=5 --keep-going
 # Generate DAG visualization (the Snakefile prints its target list to stderr,
 # so stdout is clean DOT)
 snakemake --dag --configfile config.yaml | dot -Tpdf > dag.pdf
+
+# Regenerate the README's inst/dag.pdf: rule graph with every arm and discovery on.
+# dag_override.yaml contains:
+#   GENOME_FASTA: "ref/genome.fa"
+#   DISCOVERY: {enabled: true, read: [R1, R2, paired, bam]}
+snakemake --rulegraph --configfile config.yaml dag_override.yaml | dot -Tpdf > inst/dag.pdf
 ```
 
 `--configfile other.yaml` is deep-merged over the hardcoded `config.yaml`
