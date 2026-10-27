@@ -63,9 +63,9 @@ snakemake --snakefile Snakefile \
 ```
 `config.yaml` is read automatically (`configfile:` in the Snakefile). To pass a different one, use `--configfile other.yaml`; put any explicit target *before* that flag, because `--configfile` accepts multiple files.
 
-[DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf) (from an earlier version, before the discovery and `bam` arms)
+[DAG steps illustration](https://raw.githack.com/rnabioco/scraps/master/inst/dag.pdf) (rule graph of all four alignment modes with discovery enabled)
 
-[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/stable/executing/cluster.html)
+[submit jobs in cluster mode](https://snakemake.readthedocs.io/en/v7.32.3/executing/cluster.html) (Snakemake 7 docs; scraps requires Snakemake < 8)
 
 Notes: each STAR alignment job (one per sample × alignment mode) uses `total_impact=5`; `--resources total_impact=5*N` allows N concurrent STAR jobs.
 
