@@ -484,7 +484,11 @@ Optional module (off by default); see `docs/discovery.md` for full details.
   chrom, start, end, UMI count, transcript strand); `discovery/beds/{unit}.pooled.bed.gz`
   and `discovery/{unit}_peaks.tsv.gz` are `temp()`.
 - Annotation classes/SAF `class` values: `known_pas`,
-  `likely_internal_priming`, `potential_novel_pas`. The de novo SAF reuses the
+  `suspected_internal_priming` (downstream A-rich: internal priming or a genuine
+  site in an A-tract, not resolvable from sequence; not to be dropped by
+  default), `potential_novel_pas`, `potential_novel_no_pas` (no A-rich
+  signature, no PAS; lower confidence). `inst/scripts/R/discovery.R` reads the
+  legacy `likely_internal_priming` label as `suspected_internal_priming`. The de novo SAF reuses the
   standard `gene;genbank;id;chrom;pos;strand;class` GeneID encoding so it can be
   set as `POLYA_SITES` to re-quantify (filter artifacts first).
 - Outputs under `{results}/discovery/`: `<unit>_sites.tsv.gz`,

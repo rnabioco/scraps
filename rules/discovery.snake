@@ -215,7 +215,8 @@ rule kde_peaks:
 
 
 rule annotate_sites:
-  # annotate RT priming sites: known_pas / likely_internal_priming / potential_novel_pas
+  # annotate RT priming sites: known_pas / suspected_internal_priming /
+  # potential_novel_pas / potential_novel_no_pas
   input:
     peaks = "{results}/discovery/{unit}_peaks.tsv.gz",
     polya = POLYA_SITES,

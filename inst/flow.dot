@@ -1,0 +1,70 @@
+// scraps pipeline overview. Render (repo root):
+//   dot -Tpng -Gdpi=150 inst/flow.dot -o inst/flow.png
+// One colour per input arm (= alignment mode), gold = shared steps, grey = optional.
+digraph scraps {
+  graph [rankdir=TB, nodesep=0.35, ranksep=0.45, fontname="Helvetica", bgcolor="white",
+         pad=0.25, newrank=true];
+  node  [shape=box, style="filled", fontname="Helvetica", fontsize=13, penwidth=1.2,
+         margin="0.18,0.10"];
+  edge  [color="#9a9a9a", fontname="Helvetica", fontsize=12, penwidth=1.3, arrowsize=0.8];
+
+  // ---- inputs ---------------------------------------------------------------
+  fastq [label="3' poly(A)-capture scRNA-seq\nFASTQs (Read1: barcode + UMI, Read2: cDNA)",
+         fillcolor="#5aa078", fontcolor="white"];
+  bamin [label="Pre-aligned, CB/UB-tagged BAM\n(ONT, PacBio, other)",
+         fillcolor="#5aa078", fontcolor="white"];
+
+  // ---- paired arm (long Read1) ----------------------------------------------
+  p_trim  [label="Trim reads, stitch complex barcodes\n\ncutadapt, cut_paste_fastq.py", fillcolor="#e05a4f", fontcolor="white"];
+  p_align [label="Align Read1 + Read2\n\nSTARsolo", fillcolor="#e05a4f", fontcolor="white"];
+
+  // ---- R1 arm (long Read1 only, e.g. Ultima CRAM) ----------------------------
+  r1_trim  [label="Trim Read1\n\ncutadapt", fillcolor="#e8a23b"];
+  r1_align [label="Align Read1\n\nSTARsolo", fillcolor="#e8a23b"];
+
+  // ---- R2 arm (short Read1) ---------------------------------------------------
+  r2_align  [label="Align Read2\n\nSTARsolo", fillcolor="#7ab3e3"];
+  r2_filter [label="Keep reads with a soft-clipped\npoly(A) tail (off for Ultima FASTQ)\n\nfilter_bam.py", fillcolor="#7ab3e3"];
+
+  // ---- bam arm ----------------------------------------------------------------
+  b_filter [label="Drop secondary/untagged reads,\nselect priming mate, optional\npoly(A)/poly(T) clip filter\n\nsamtools, filter_bam.py", fillcolor="#b39ddb"];
+
+  // ---- shared -------------------------------------------------------------------
+  assign [label="Assign reads to poly(A) sites at the priming end\n(Read1 5' | Read2 3' (+ offset) | BAM 3' or 5')\n\nfeatureCounts vs polyAdb SAF", fillcolor="#d4a12a"];
+  count  [label="Directional UMI collapse per cell x site\n\ncount_sites.py (umi_tools library)", fillcolor="#d4a12a"];
+  matrix [label="Cell x site count tables\n\ncounts/<sample>_<mode>_counts.tsv.gz", fillcolor="#d4a12a"];
+  rpkg   [label="Downstream analysis\n\nR helpers (Seurat, DEXSeq)", fillcolor="#d4a12a"];
+
+  // ---- optional -----------------------------------------------------------------
+  qc [label="QC report (optional, off by default)\n\nMultiQC", fillcolor="#e6e6e6", style="filled,dashed"];
+
+  subgraph cluster_disc {
+    label="De novo RT priming site discovery (optional)";
+    fontname="Helvetica"; fontsize=13; style="rounded,dashed"; color="#9a9a9a";
+    pileup [label="Strand-aware single-base priming pileup\n\npileup_sites.py", fillcolor="#e6e6e6"];
+    pool   [label="Pool samples / modes per unit", fillcolor="#e6e6e6"];
+    kde    [label="Call priming-site clusters and summits\n\nkde_peaks.py (KDE)", fillcolor="#e6e6e6"];
+    annot  [label="Annotate: known_pas, potential_novel_pas,\npotential_novel_no_pas, suspected_internal_priming\n\nannotate_sites.py (polyAdb match, PAS motif, A-content)", fillcolor="#e6e6e6"];
+    denovo [label="Site tables, BED, de novo SAF", fillcolor="#e6e6e6"];
+    pileup -> pool -> kde -> annot -> denovo;
+  }
+
+  // ---- edges ----------------------------------------------------------------------
+  fastq -> p_trim  [label=" long Read1\n paired "];
+  fastq -> r1_trim [label=" long Read1\n R1 only "];
+  fastq -> r2_align [label=" short Read1\n R2 "];
+  bamin -> b_filter [label=" bam "];
+
+  p_trim  -> p_align  -> assign;
+  r1_trim -> r1_align -> assign;
+  r2_align -> r2_filter -> assign;
+  b_filter -> assign;
+
+  assign -> count -> matrix -> rpkg;
+  matrix -> qc [style=dashed];
+  assign -> pileup [style=dashed, label=" assigned BAM "];
+  denovo -> assign [style=dashed, constraint=false, label=" optional\n re-quantification "];
+
+  {rank=same; fastq; bamin;}
+  {rank=same; p_align; r1_align; r2_filter; b_filter;}
+}

@@ -6,8 +6,8 @@
 > (per-cell counting, PSI, differential poly(A) usage). The discovery module
 > described here is for **hypothesis generation and novel-site nomination**. Its
 > output is a set of *candidate* sites that require orthogonal validation, and
-> includes sites flagged as likely artifacts that should be **excluded**, not
-> quantified.
+> includes sites with a possible internal-priming signature that cannot be
+> resolved computationally and should be interpreted with caution.
 
 ## Motivation
 
@@ -125,8 +125,9 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
    | Status | Meaning | Use |
    |:--|:--|:--|
    | `known_pas` | Summit falls within the strand-aware `match_window` of a validated polyAdb cleavage point | Validated |
-   | `likely_internal_priming` | Downstream genomic A-content / A-run indicates priming off a genomic poly(A) stretch, **or** an unmatched site with no upstream PAS motif (conservative default) | **Exclude (artifact)** |
-   | `potential_novel_pas` | No internal-priming signature **and** a canonical poly(A) signal (PAS) motif present upstream | Candidate — validate before use |
+   | `suspected_internal_priming` | Downstream genomic A-content / A-run: either oligo-dT priming off a templated A-stretch or a genuine cleavage site in an A-tract (indistinguishable from sequence) | **Ambiguous** — interpret with caution; do not discard by default |
+   | `potential_novel_pas` | No A-rich signature **and** a canonical poly(A) signal (PAS) motif present upstream | Candidate — validate before use |
+   | `potential_novel_no_pas` | No A-rich signature and no PAS motif upstream | Lower-confidence candidate — validate before use |
 
 ## How sites are classified
 
@@ -161,19 +162,26 @@ each one, separating validated/candidate C/PA sites from likely artifacts.
 - **Internal-priming signature (novel sites):** the genomic sequence
   *downstream* of the summit on the sense strand (window `a_content_window`,
   default 1–20 bp) is scored for A-content. A site is flagged
-  `likely_internal_priming` if the A fraction is ≥ `a_content_max` (default 0.7)
-  **or** it contains a contiguous A-run ≥ `--a-run-min` (default 8). This is the
-  same biology that motivates using validated sites in the first place: a true
-  poly(A) tail is added post-transcriptionally and is *not* templated, so a
-  genomic A-stretch immediately downstream is the hallmark of an artifact.
+  `suspected_internal_priming` if the A fraction is ≥ `a_content_max` (default
+  0.7) **or** it contains a contiguous A-run ≥ `--a-run-min` (default 8). A
+  genomic A-stretch immediately downstream is the template oligo-dT can anneal
+  to, so it is the signature of internal priming. It is **not** proof of an
+  artifact: genuine cleavage/polyadenylation sites are frequently located in or
+  next to genomic A-tracts, and methods that avoid oligo-dT internal priming
+  (e.g. Bin Tian's 3'READS+) recover many such sites. From 3' scRNA-seq reads
+  and genome sequence alone the two cannot be told apart, so these sites are
+  labelled *suspected* rather than discarded: interpret them with caution,
+  report key results with and without them, and confirm with an orthogonal
+  method (3'READS+, PAS-seq, or polyAdb support) before treating them as real.
 
 - **PAS motif (novel sites):** the sequence *upstream* of the summit
   (window `pas_window`, default −40–0 bp, sense strand) is scanned for the
   canonical poly(A) signal `AATAAA` and common single-base variants. A novel
-  site with no internal-priming signature and a detectable PAS is labeled
-  `potential_novel_pas`. A novel site with neither a PAS nor a strong
-  internal-priming signature is conservatively labeled
-  `likely_internal_priming`.
+  site with no A-rich signature and a detectable PAS is labeled
+  `potential_novel_pas`. A novel site with neither a PAS nor an A-rich
+  signature is labeled `potential_novel_no_pas`: still a novel candidate, but
+  with lower confidence, since many real sites use non-canonical signals and
+  some RT priming events at non-A-rich sequence are noise.
 
 ## Reference SAF format
 
@@ -223,9 +231,11 @@ liftOver) and polyAdb 4 (`*.PAS.{main,max}.tsv`) live in
 
 ### Caveats and limitations
 
-- **Internal priming cannot be perfectly called by sequence alone.** The
-  A-content heuristic will both miss some artifacts (false negatives) and flag
-  some genuine sites near A-rich 3' UTRs (false positives). Thresholds are
+- **Internal priming cannot be called by sequence alone.** The A-content
+  heuristic will both miss some internal-priming events (false negatives) and
+  flag genuine sites that lie in or next to genomic A-tracts (false positives);
+  this is why the class is `suspected_internal_priming` and not an exclusion
+  list. Thresholds are
   exposed in config and should be tuned per dataset.
 - **PAS presence is suggestive, not definitive.** Many real sites use
   non-canonical signals; some artifact sites have an incidental upstream PAS.
@@ -335,8 +345,10 @@ discovered sites — no code changes required:
 POLYA_SITES: "results/discovery/groupA_R2_denovo.saf.gz"   # units are mode-suffixed
 ```
 
-> **Before doing this, filter the SAF.** Drop `likely_internal_priming`
-> features, and treat `potential_novel_pas` features as unvalidated. For any
+> **Before doing this, decide how to treat each class.** Keep or drop
+> `suspected_internal_priming` features deliberately (ideally run both and
+> compare), and treat `potential_novel_pas` and `potential_novel_no_pas`
+> features as unvalidated. For any
 > publication-grade quantitative analysis, prefer the curated polyAdb reference.
 > Re-quantifying against de novo sites is appropriate for exploratory work and
 > for evaluating nominated novel sites, not as a default replacement for
