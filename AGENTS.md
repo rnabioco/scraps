@@ -391,7 +391,12 @@ the `meta_keys` set of `_validate_config` so they are not mistaken for platforms
 discovery's `stranded_bed` (`pileup_sites.py`), so the count table and the discovery bed
 agree on the site coordinate. The Ultima platforms use them: `ultima_cram` (CRAM-derived
 single long read, R1 mode, no cutadapt) vs `ultima_fastq` (delivered pseudo-paired FASTQs,
-R2 mode, `R2_polyA_filter: false`, `R2_priming_offset: 5`). The offset key is per mode
+R2 mode, `R2_polyA_filter: false`, `R2_priming_offset: 5`; reads must NOT be required
+to carry a poly(A) anywhere: Ultima trims the homopolymer, `filter_R2` then keeps every
+CB/UB-tagged read, and `starsolo_R2`'s `--clipAdapterType CellRanger4` was checked on
+simulated Ultima reads and leaves their 3' ends exact, including reads ending just before
+or a few bases into a genomic A-run; it only clips reads ending in a ~30-A tract, which
+Ultima trimming does not produce). The offset key is per mode
 (`{read}_priming_offset`), but only R2 and bam honour it (`_OFFSET_MODES`): the R1/paired
 count rules apply no shift, so `_priming_offset` ignores (with a warning) any
 `R1_`/`paired_priming_offset`, keeping discovery beds and count tables in sync.
