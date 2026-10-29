@@ -22,6 +22,8 @@ rule assign_sites_R1:
     sort_tmp = "{results}/temp/{sample}_R1_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_R1.txt"
+  benchmark:
+    "{results}/benchmarks/assign_sites_{sample}_R1.tsv"
   threads:
     12
   resources:
@@ -75,6 +77,8 @@ rule assign_sites_R2:
     shift = lambda wc: _fc_shift_args(wc.sample, "R2")
   log:
     "{results}/logs/assign_sites_{sample}_R2.txt"
+  benchmark:
+    "{results}/benchmarks/assign_sites_{sample}_R2.tsv"
   threads:
     12
   resources:
@@ -122,6 +126,8 @@ rule assign_sites_paired:
     sort_tmp = "{results}/temp/{sample}_paired_sortstage"
   log:
     "{results}/logs/assign_sites_{sample}_paired.txt"
+  benchmark:
+    "{results}/benchmarks/assign_sites_{sample}_paired.tsv"
   threads:
     12
   resources:
@@ -172,6 +178,8 @@ rule filter_R2:
     polya_filter = lambda wc: _polya_filter(wc.sample, "R2", True)
   log:
     "{results}/logs/filter_{sample}_R2.txt"
+  benchmark:
+    "{results}/benchmarks/filter_{sample}_R2.tsv"
   threads:
     4
   resources:
@@ -225,6 +233,8 @@ rule filter_bam:
                             else "--no-clip-filter")
   log:
     "{results}/logs/filter_{sample}_bam.txt"
+  benchmark:
+    "{results}/benchmarks/filter_{sample}_bam.tsv"
   threads:
     4
   resources:
@@ -264,6 +274,8 @@ rule assign_sites_bam:
     shift = lambda wc: _fc_shift_args(wc.sample, "bam")
   log:
     "{results}/logs/assign_sites_{sample}_bam.txt"
+  benchmark:
+    "{results}/benchmarks/assign_sites_{sample}_bam.tsv"
   threads:
     12
   resources:
@@ -314,6 +326,8 @@ rule count:
     job_name = "count"
   log:
     "{results}/logs/count_{sample}_{read}.txt"
+  benchmark:
+    "{results}/benchmarks/count_{sample}_{read}.tsv"
   threads:
     4
   resources:

@@ -73,6 +73,7 @@ rule cutadapt_R1:
       info = "{results}/cutadapt/temp_{sample}_R1.info",
       temp = "{results}/cutadapt/temp_{sample}_R1_trimmed.R1.fastq.gz"
     log: "{results}/logs/cutadapt_{sample}_R1.txt"
+    benchmark: "{results}/benchmarks/cutadapt_{sample}_R1.tsv"
     threads: 24
     resources:
       mem_mb = 32000
@@ -106,6 +107,7 @@ rule cutadapt_paired:
       temp = "{results}/cutadapt/temp_{sample}_paired_trimmed.R1.fastq.gz",
       temp2 = "{results}/cutadapt/temp_{sample}_paired_trimmed.R2.fastq.gz"
     log: "{results}/logs/cutadapt_{sample}_paired.txt"
+    benchmark: "{results}/benchmarks/cutadapt_{sample}_paired.tsv"
     threads: 24
     resources:
       mem_mb = 32000
@@ -158,6 +160,7 @@ rule starsolo_R1:
       out_dir = "{results}/{sample}/{sample}_R1_",
       job_name = "star_R1"
     log: "{results}/logs/starsolo_{sample}_R1.txt"
+    benchmark: "{results}/benchmarks/starsolo_{sample}_R1.tsv"
     resources:
       total_impact = 5,
       mem_mb = 48000
@@ -199,6 +202,7 @@ rule starsolo_R2:
       out_dir = "{results}/{sample}/{sample}_R2_", 
       job_name = "star_R2"
     log: "{results}/logs/starsolo_{sample}_R2.txt"
+    benchmark: "{results}/benchmarks/starsolo_{sample}_R2.tsv"
     resources:
       total_impact = 5,
       mem_mb = 48000
@@ -240,6 +244,7 @@ rule starsolo_paired:
       out_dir = "{results}/{sample}/{sample}_paired_", 
       job_name = "star_paired"
     log: "{results}/logs/starsolo_{sample}_paired.txt"
+    benchmark: "{results}/benchmarks/starsolo_{sample}_paired.tsv"
     resources:
       total_impact = 5,
       mem_mb = 48000

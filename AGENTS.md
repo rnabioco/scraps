@@ -277,6 +277,8 @@ rule rulename:
         # Additional parameters
     log:
         "{results}/logs/rulename_{sample}_{read}.txt"
+    benchmark:
+        "{results}/benchmarks/rulename_{sample}_{read}.tsv"
     threads:
         12
     resources:
@@ -307,6 +309,12 @@ rule rulename:
   cutadapt's `"no trimming"` — into the per-rule log instead of leaking into the
   Snakemake console/master log where they are hard to attribute. Every
   shell-bearing rule, including the discovery rules, does this.
+- **Benchmark every rule**: give each rule a `benchmark:` path that mirrors its log path
+  under `{results}/benchmarks/` with `.tsv` (`starsolo_{sample}_R2.tsv`,
+  `kde_peaks_{unit}.tsv`). Snakemake writes the job's wall time (`s`, measured where the
+  job runs, so SLURM queue wait is excluded), peak memory (`max_rss`) and CPU time;
+  `inst/scripts/benchmark_summary.py` relies on the naming to group by sample. The
+  aggregate `qc_check` and `check` rules have none.
 - Mark intermediate files with `temp()`
 - Use wildcards in paths: `{sample}`, `{results}`, `{read}`
 - Resource specifications: `threads`, `mem_mb`
@@ -558,6 +566,9 @@ snakemake -np --verbose
 
 # Print shell commands without execution
 snakemake -np --printshellcmds
+
+# Per-sample wall time and peak memory by rule, from the benchmark files
+python3 inst/scripts/benchmark_summary.py results/benchmarks [--tsv summary.tsv]
 
 # Force re-run specific rule
 snakemake -j 8 --forcerun rulename   # preview first with -n

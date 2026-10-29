@@ -107,6 +107,8 @@ rule stranded_bed:
     sort_tmp = "{results}/temp"
   log:
     "{results}/logs/stranded_bed_{sample}_{read}.txt"
+  benchmark:
+    "{results}/benchmarks/stranded_bed_{sample}_{read}.tsv"
   threads:
     8
   resources:
@@ -149,6 +151,8 @@ rule pool_beds:
     sort_tmp = "{results}/temp"
   log:
     "{results}/logs/pool_beds_{unit}.txt"
+  benchmark:
+    "{results}/benchmarks/pool_beds_{unit}.tsv"
   threads:
     4
   resources:
@@ -194,6 +198,8 @@ rule kde_peaks:
     summit_frac = DISC_SUMMIT_FRAC
   log:
     "{results}/logs/kde_peaks_{unit}.txt"
+  benchmark:
+    "{results}/benchmarks/kde_peaks_{unit}.tsv"
   threads:
     4
   resources:
@@ -238,6 +244,8 @@ rule annotate_sites:
     a_max = DISC_A_MAX
   log:
     "{results}/logs/annotate_sites_{unit}.txt"
+  benchmark:
+    "{results}/benchmarks/annotate_sites_{unit}.tsv"
   threads:
     2
   resources:

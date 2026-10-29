@@ -215,6 +215,8 @@ ADRM1;11047;ENSG00000130706;chr20;62308862;+;3'UTR(M)   CAGCGACTCTGCCCTA        
 ```
 3. (Discovery only) Strand-aware single-base priming pileups `{RESULTS}/discovery/beds/{sample}_{mode}.stranded.bed.gz` (chrom, start, end, UMI count, transcript strand) and the annotated site tables described under [De novo priming site discovery](#de-novo-priming-site-discovery).
 
+4. Benchmarks: `{RESULTS}/benchmarks/<rule>_<sample>_<mode>.tsv` (discovery: `<rule>_<unit>.tsv`), Snakemake's per-job wall time, peak memory and CPU time for every rule. Summarize them per sample with `python3 inst/scripts/benchmark_summary.py {RESULTS}/benchmarks`.
+
 A MultiQC report is not produced by default (the `qc_check` rule in `rules/qc.snake` is disabled in `rule all`); an [example report](https://raw.githack.com/rnabioco/scraps/master/inst/test_output/report/multiqc_report.html) from an earlier version is kept under `inst/test_output/`.
 
 [R functions](https://github.com/rnabioco/scraps/tree/master/inst/scripts/R) available for importing results into Seurat object, and finding differential PA site usage; `source()` `inst/scripts/R/geneid.R` first (it provides the delimiter-aware GeneID parser the other files use; they also source it automatically when loaded with `source()`). These copies are authoritative: the separate [`scrapR`](https://github.com/rnabioco/scrapR) package (`remotes::install_github("rnabioco/scrapR")`, also in the Docker image) still carries the older `_`-only GeneID parsing and does not work with the `;`-delimited hg38 output.
