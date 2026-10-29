@@ -32,7 +32,11 @@
 #                  the 5 bp adjacent to the poly(A) homopolymer, so there is no
 #                  soft-clipped A tail (R2_polyA_filter: false) and the priming
 #                  site is 5 bp downstream of the R2 alignment end
-#                  (R2_priming_offset: 5).
+#                  (R2_priming_offset: 5). No poly(A) is required anywhere for
+#                  these reads: filter_R2 keeps every CB/UB-tagged alignment, and
+#                  STAR's --clipAdapterType CellRanger4 in starsolo_R2 leaves
+#                  Ultima read ends untouched (it only clips reads whose last
+#                  ~30 bases are A's, which Ultima's homopolymer trimming removes).
 #
 # generic platform (valid_modes: [bam]): pre-aligned, CB/UB-tagged BAM input
 # (ONT / PacBio long reads, or any compatible single- or paired-end BAM); no

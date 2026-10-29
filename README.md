@@ -170,7 +170,7 @@ This allows platform-specific customization (e.g., Illumina vs Ultima Genomics) 
 
 Custom chemistry supported, by editing [chemistry.yaml](https://github.com/rnabioco/scraps/tree/master/chemistry.yaml). Also see synthetic FASTQ [tool](https://github.com/raysinensis/bc_umi_gen).
 
-**Ultima Genomics notes.** Reads converted from Ultima CRAM files are one long read (adapter + CB + UMI + cDNA) and use `platform: ultima_cram` with `alignments: [R1]` (no cutadapt step). FASTQs delivered by Ultima for 10x libraries are instead pseudo-paired (R1 = cell barcode + UMI, R2 = cDNA) and use `platform: ultima_fastq` with `alignments: [R2]`. Because Ultima trims the 5 bp adjacent to the poly(A) homopolymer, `ultima_fastq` disables the soft-clipped poly(A) filter and shifts the priming site 5 bp downstream of the R2 alignment end (`R2_polyA_filter: false`, `R2_priming_offset: 5`). The FASTQ file names must follow the usual `*_R1*` / `*_R2*` pattern.
+**Ultima Genomics notes.** Reads converted from Ultima CRAM files are one long read (adapter + CB + UMI + cDNA) and use `platform: ultima_cram` with `alignments: [R1]` (no cutadapt step). FASTQs delivered by Ultima for 10x libraries are instead pseudo-paired (R1 = cell barcode + UMI, R2 = cDNA) and use `platform: ultima_fastq` with `alignments: [R2]`. Because Ultima trims the 5 bp adjacent to the poly(A) homopolymer, `ultima_fastq` disables the soft-clipped poly(A) filter and shifts the priming site 5 bp downstream of the R2 alignment end (`R2_polyA_filter: false`, `R2_priming_offset: 5`). No detectable poly(A) is required for these reads at any step. The FASTQ file names must follow the usual `*_R1*` / `*_R2*` pattern.
 
 ### Pre-aligned BAM input
 
