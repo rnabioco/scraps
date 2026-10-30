@@ -9,6 +9,7 @@ latency-wait: 60             # seconds to wait for outputs on shared filesystems
 keep-going: true
 printshellcmds: true
 rerun-incomplete: true
+retries: 1                   # resubmit a failed job once; STAR jobs get 2x mem_mb
 
 default-resources:
   - slurm_account="CHANGE_ME"
@@ -25,6 +26,7 @@ resources:
 set-resources:
   starsolo_R1:
     runtime: 1440
+    # mem_mb: 96000          # overrides STAR_mem_mb; --limitBAMsortRAM follows
   starsolo_R2:
     runtime: 1440
   starsolo_paired:

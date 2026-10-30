@@ -73,6 +73,8 @@ See [profiles/slurm/README.md](profiles/slurm/README.md) and the [SLURM executor
 
 Notes: each STAR alignment job (one per sample × alignment mode) uses `total_impact=5`; `--resources total_impact=5*N` allows N concurrent STAR jobs.
 
+STAR memory: each STARsolo job requests the genome index size (read from `STAR_INDEX`) plus a 16 GB BAM-sort buffer and 4 GB headroom, and `--limitBAMsortRAM` is derived from that request, so sorting stays inside the allocation. For large libraries set `STAR_mem_mb` (MB) in `DEFAULTS`, a platform block, or a sample block, or override `mem_mb` with `set-resources`/`--set-resources`; the sort buffer follows either way. The SLURM profile retries a failed job once, and STAR jobs get twice the memory on the retry.
+
 ---
 
 ## Configuration

@@ -337,7 +337,8 @@ build the strings with `str.format()` for consistency (Snakemake 7's tokenizer r
 f-string contents; fixed in 8+), and emit each message once via `_diag`
 (params lambdas run once per job). `_get_config` stays silent for keys that are
 legitimately optional (`_OPTIONAL_KEYS` / `_OPTIONAL_SUFFIXES`: `cutadapt_*`, `bc_cut`,
-`bc_length1`, `*_extra_args`, `*_polyA_filter`, `*_priming_offset`, `bam_*`); any other
+`bc_length1`, `*_extra_args`, `*_polyA_filter`, `*_priming_offset`, `bam_*`,
+`STAR_mem_mb`); any other
 missing key is a real misconfiguration and is reported once.
 
 ---
@@ -355,7 +356,8 @@ missing key is a real misconfiguration and is reported once.
 - `DISCOVERY`: Optional de novo RT priming site discovery block (see `docs/discovery.md`)
 - `DEFAULTS`: Lowest-priority values for any per-sample key: `platform`, `chemistry`,
   `alignments`, and the mode switches `R2_polyA_filter`, `R2_priming_offset`,
-  `bam_mate`, `bam_strand`, `bam_polyA_filter`, `bam_priming_offset`
+  `bam_mate`, `bam_strand`, `bam_polyA_filter`, `bam_priming_offset`, and the optional
+  `STAR_mem_mb`
 - `SAMPLES`: Per-sample configuration (`basename` or `bam`, `platform`, `chemistry`,
   `alignments`, `discovery_read`, the `bam_*`/`R2_*` switches, and any
   chemistry/platform key such as `STAR_R2` or `STAR_R2_extra_args` as an override)
@@ -562,7 +564,13 @@ above).
 - Missing conda dependencies → check `scraps_conda.yml`
 - YAML syntax errors → validate with `snakemake -np`
 - Missing input files → check `DATA` path in config.yaml
-- Resource exhaustion → adjust `mem_mb` or `threads` in rules
+- Resource exhaustion → adjust `mem_mb` or `threads` in rules. STARsolo is the
+  exception: its `mem_mb` comes from `_star_mem_mb` (Snakefile). That is `STAR_mem_mb`
+  from the usual lookup, or by default the index size on disk (`STAR_INDEX_MB`) + 16 GB
+  sort buffer + 4 GB headroom, times the attempt number. `--limitBAMsortRAM` is derived
+  from the job's final `mem_mb` (`_star_sort_ram`), so never hardcode it: STAR holds the
+  index in RAM in addition to the sort buffer, and a hardcoded buffer equal to `mem_mb`
+  is what got starsolo jobs OOM-killed. The SLURM profile sets `retries: 1`.
 
 **Debugging Snakemake**:
 ```bash
