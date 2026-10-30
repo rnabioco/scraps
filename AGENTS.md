@@ -571,7 +571,8 @@ above).
   (index + buffers) and, after `genomeMain.freeMemory()` drops the index (default
   `--genomeLoad NoSharedMemory`), STARsolo's per-read structures plus the BAM sort, which
   loads bins up to `--limitBAMsortRAM`. That limit is derived from the job's final
-  `mem_mb` (`_star_sort_ram`: `mem_mb` minus max(8 GB, a quarter) for STARsolo), so never
+  `mem_mb` (`_star_sort_ram`: half of it, the other half for STARsolo, which held 12.5 GB
+  through the sort of a 585M-read library), so never
   hardcode it: a sort limit equal to `mem_mb` leaves nothing for STARsolo and can get
   starsolo jobs OOM-killed. The SLURM profile sets `retries: 1`.
 

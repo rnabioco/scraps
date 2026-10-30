@@ -21,9 +21,9 @@ Each rule's `threads` becomes `--cpus-per-task` and its `mem_mb` becomes
 
 STARsolo memory defaults to the genome index size (read from `STAR_INDEX`) plus
 8 GB, at least 48 GB: STAR needs the index while mapping, frees it before the
-STARsolo counting and BAM sort, and `--limitBAMsortRAM` is set to the job's
-`mem_mb` minus a quarter (at least 8 GB) kept for STARsolo's per-read data, so
-the sort stays inside the allocation. For large libraries
+STARsolo counting and BAM sort, and `--limitBAMsortRAM` is set to half the
+job's `mem_mb`, the other half kept for STARsolo's per-read data, so the sort
+stays inside the allocation. For large libraries
 raise it with `STAR_mem_mb` in `config.yaml` (DEFAULTS, a platform, or one
 sample) or with `mem_mb` under `set-resources` here. `retries: 1` resubmits a
 failed job once, and STAR jobs get twice the memory on the retry. On clusters
