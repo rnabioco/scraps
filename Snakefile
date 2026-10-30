@@ -146,16 +146,24 @@ def _get_config(sample, item):
   return ""
 
 # --- STARsolo memory ----------------------------------------------------------
-# STAR holds the whole genome index in RAM and sorts the BAM in a buffer on top
-# of it, so a job needs index + sort buffer + headroom. STAR_INDEX_MB is the
-# index size on disk (32000, a human index, when STAR_INDEX is absent, e.g. a
-# CI dry-run). STAR_mem_mb (sample/platform/chemistry/DEFAULTS) sets the job
-# memory; unset, it is index + 16 GB sort buffer + headroom. The starsolo rules
-# multiply it by the attempt number (profile `retries`) and derive
-# --limitBAMsortRAM from the job's final mem_mb (_star_sort_ram), so a
-# set-resources override keeps the two in sync.
-_STAR_HEADROOM_MB = 4000
-
+# STAR's peak RAM is the larger of two phases (STAR source: STAR.cpp,
+# bamSortByCoordinate.cpp; --genomeLoad NoSharedMemory, STAR's default):
+#   1. mapping: genome index + per-thread I/O and BAM-bin buffers (a few GB);
+#   2. after mapping the index is freed (genomeMain.freeMemory()), then STARsolo
+#      builds its per-read structures (scale with read count; kept through the
+#      sort for the CB/UB tags) and the BAM sort loads bins up to
+#      --limitBAMsortRAM (a cap on in-flight bins, not an allocation).
+# STAR_INDEX_MB is the index size on disk (32000, a human index, when STAR_INDEX
+# is absent, e.g. a CI dry-run). STAR_mem_mb (sample/platform/chemistry/
+# DEFAULTS) sets the job memory; unset, it covers phase 1 with 8 GB of buffers,
+# floored at 48 GB. The starsolo rules multiply it by the attempt number
+# (profile `retries`) and derive --limitBAMsortRAM from the job's final mem_mb
+# (_star_sort_ram) as half of it, the other half kept for STARsolo and process
+# overhead, so a set-resources override keeps the two in sync. Measured on a
+# 585M-read paired library (cr2020A_star, 13.5 GB sparse index): mapping peak
+# 16.5 GB, STARsolo 15.8 GB peak and 12.5 GB held through the sort, largest
+# sort bin 21.5 GB. A bin larger than the limit makes STAR exit with an error
+# (not an OOM kill), which the profile's retry reruns with twice the memory.
 def _dir_size_mb(path):
   try:
     files = [os.path.join(path, f) for f in os.listdir(path)]
@@ -168,18 +176,17 @@ STAR_INDEX_MB = _dir_size_mb(STAR_INDEX) or 32000
 def _star_mem_mb(wildcards, attempt):
   mem = _get_config(wildcards.sample, "STAR_mem_mb")
   if mem in ("", None):
-    mem = STAR_INDEX_MB + 16000 + _STAR_HEADROOM_MB
+    mem = max(STAR_INDEX_MB + 8000, 48000)
   return int(mem) * attempt
 
 def _star_sort_ram(wildcards, resources):
-  """--limitBAMsortRAM in bytes: job memory minus index and headroom."""
-  sort_mb = resources.mem_mb - STAR_INDEX_MB - _STAR_HEADROOM_MB
-  if sort_mb < 2000:
+  """--limitBAMsortRAM in bytes: half the job memory (the rest for STARsolo)."""
+  if resources.mem_mb < STAR_INDEX_MB + 4000:
     _diag(("star_mem", wildcards.sample),
-          "Warning: sample '{}': STARsolo mem_mb {} leaves less than 2 GB for "
-          "BAM sorting after the {} MB index; raise STAR_mem_mb.".format(
+          "Warning: sample '{}': STARsolo mem_mb {} is under the {} MB genome "
+          "index + 4 GB needed for mapping; raise STAR_mem_mb.".format(
             wildcards.sample, resources.mem_mb, STAR_INDEX_MB))
-  return max(sort_mb, 2000) * 1000000
+  return max(resources.mem_mb // 2, 2000) * 1000000
 
 # --- per-mode behaviour switches ----------------------------------------------
 # Per-mode keys ({mode} = R2 or bam), settable per sample / platform / chemistry

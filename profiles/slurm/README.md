@@ -19,14 +19,16 @@ Edit `config.v8+.yaml`:
 Each rule's `threads` becomes `--cpus-per-task` and its `mem_mb` becomes
 `--mem`, so no per-rule CPU/memory settings are needed here.
 
-STARsolo memory is the genome index size (read from `STAR_INDEX`) plus a 16 GB
-BAM-sort buffer and 4 GB headroom, and `--limitBAMsortRAM` is derived from the
-job's `mem_mb`, so STAR never sorts past its allocation. For large libraries
+STARsolo memory defaults to the genome index size (read from `STAR_INDEX`) plus
+8 GB, at least 48 GB: STAR needs the index while mapping, frees it before the
+STARsolo counting and BAM sort, and `--limitBAMsortRAM` is set to half the
+job's `mem_mb`, the other half kept for STARsolo's per-read data, so the sort
+stays inside the allocation. For large libraries
 raise it with `STAR_mem_mb` in `config.yaml` (DEFAULTS, a platform, or one
 sample) or with `mem_mb` under `set-resources` here. `retries: 1` resubmits a
 failed job once, and STAR jobs get twice the memory on the retry. On clusters
-that cap memory per core (Alpine `acpu`: about 3.8 GB/core) a large `mem_mb`
-needs a matching partition (e.g. `amem`) or more CPUs.
+that cap memory per core, a large `mem_mb` needs a high-memory partition or
+more CPUs (both settable per rule under `set-resources`).
 
 ## Run
 

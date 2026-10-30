@@ -566,11 +566,15 @@ above).
 - Missing input files → check `DATA` path in config.yaml
 - Resource exhaustion → adjust `mem_mb` or `threads` in rules. STARsolo is the
   exception: its `mem_mb` comes from `_star_mem_mb` (Snakefile). That is `STAR_mem_mb`
-  from the usual lookup, or by default the index size on disk (`STAR_INDEX_MB`) + 16 GB
-  sort buffer + 4 GB headroom, times the attempt number. `--limitBAMsortRAM` is derived
-  from the job's final `mem_mb` (`_star_sort_ram`), so never hardcode it: STAR holds the
-  index in RAM in addition to the sort buffer, and a hardcoded buffer equal to `mem_mb`
-  is what got starsolo jobs OOM-killed. The SLURM profile sets `retries: 1`.
+  from the usual lookup, or by default `max(STAR_INDEX_MB + 8000, 48000)` (index size on
+  disk), times the attempt number. STAR's peak is the larger of two phases: mapping
+  (index + buffers) and, after `genomeMain.freeMemory()` drops the index (default
+  `--genomeLoad NoSharedMemory`), STARsolo's per-read structures plus the BAM sort, which
+  loads bins up to `--limitBAMsortRAM`. That limit is derived from the job's final
+  `mem_mb` (`_star_sort_ram`: half of it, the other half for STARsolo, which held 12.5 GB
+  through the sort of a 585M-read library), so never
+  hardcode it: a sort limit equal to `mem_mb` leaves nothing for STARsolo and can get
+  starsolo jobs OOM-killed. The SLURM profile sets `retries: 1`.
 
 **Debugging Snakemake**:
 ```bash
