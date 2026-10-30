@@ -18,6 +18,7 @@ READS = ["R1", "R2", "paired"]
 GENOME_FASTA = config.get("GENOME_FASTA")
 DISCOVERY = config.get("DISCOVERY", {}) or {}
 
+import os
 import sys
 import yaml
 from snakemake.logging import logger
@@ -106,7 +107,7 @@ _validate_modes()
 
 # keys that are legitimately absent (rules treat "" as "off"); no diagnostic
 _OPTIONAL_KEYS = {"cutadapt_R1", "cutadapt_paired", "bc_cut", "bc_length1",
-                  "bam_strand", "bam_mate"}
+                  "bam_strand", "bam_mate", "STAR_mem_mb"}
 _OPTIONAL_SUFFIXES = ("_extra_args", "_polyA_filter", "_priming_offset")
 
 def _get_config(sample, item):
@@ -143,6 +144,42 @@ def _get_config(sample, item):
           "'{}' (chemistry '{}', platform '{}'); using an empty "
           "string.".format(item, sample, chemistry, platform))
   return ""
+
+# --- STARsolo memory ----------------------------------------------------------
+# STAR holds the whole genome index in RAM and sorts the BAM in a buffer on top
+# of it, so a job needs index + sort buffer + headroom. STAR_INDEX_MB is the
+# index size on disk (32000, a human index, when STAR_INDEX is absent, e.g. a
+# CI dry-run). STAR_mem_mb (sample/platform/chemistry/DEFAULTS) sets the job
+# memory; unset, it is index + 16 GB sort buffer + headroom. The starsolo rules
+# multiply it by the attempt number (profile `retries`) and derive
+# --limitBAMsortRAM from the job's final mem_mb (_star_sort_ram), so a
+# set-resources override keeps the two in sync.
+_STAR_HEADROOM_MB = 4000
+
+def _dir_size_mb(path):
+  try:
+    files = [os.path.join(path, f) for f in os.listdir(path)]
+  except OSError:
+    return None
+  return sum(os.path.getsize(f) for f in files if os.path.isfile(f)) // 1000000
+
+STAR_INDEX_MB = _dir_size_mb(STAR_INDEX) or 32000
+
+def _star_mem_mb(wildcards, attempt):
+  mem = _get_config(wildcards.sample, "STAR_mem_mb")
+  if mem in ("", None):
+    mem = STAR_INDEX_MB + 16000 + _STAR_HEADROOM_MB
+  return int(mem) * attempt
+
+def _star_sort_ram(wildcards, resources):
+  """--limitBAMsortRAM in bytes: job memory minus index and headroom."""
+  sort_mb = resources.mem_mb - STAR_INDEX_MB - _STAR_HEADROOM_MB
+  if sort_mb < 2000:
+    _diag(("star_mem", wildcards.sample),
+          "Warning: sample '{}': STARsolo mem_mb {} leaves less than 2 GB for "
+          "BAM sorting after the {} MB index; raise STAR_mem_mb.".format(
+            wildcards.sample, resources.mem_mb, STAR_INDEX_MB))
+  return max(sort_mb, 2000) * 1000000
 
 # --- per-mode behaviour switches ----------------------------------------------
 # Per-mode keys ({mode} = R2 or bam), settable per sample / platform / chemistry

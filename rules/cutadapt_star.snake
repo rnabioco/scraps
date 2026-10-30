@@ -158,12 +158,13 @@ rule starsolo_R1:
     params:
       chemistry = _get_chem_version_R1,
       out_dir = "{results}/{sample}/{sample}_R1_",
-      job_name = "star_R1"
+      job_name = "star_R1",
+      sort_ram = _star_sort_ram
     log: "{results}/logs/starsolo_{sample}_R1.txt"
     benchmark: "{results}/benchmarks/starsolo_{sample}_R1.tsv"
     resources:
       total_impact = 5,
-      mem_mb = 48000
+      mem_mb = _star_mem_mb
     threads: 14
     shell:
       """
@@ -173,7 +174,7 @@ rule starsolo_R1:
       --soloUMIfiltering MultiGeneUMI \
       --soloUMIdedup 1MM_Directional \
       --readFilesCommand gunzip -c \
-      --runThreadN 12 \
+      --runThreadN {threads} \
       --soloCBwhitelist {params.chemistry} \
       --soloBarcodeMate 1 \
       --soloStrand Reverse \
@@ -184,7 +185,7 @@ rule starsolo_R1:
       --soloCellFilter None \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 48000000000 \
+      --limitBAMsortRAM {params.sort_ram} \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn {input.R1}
 
@@ -200,12 +201,13 @@ rule starsolo_R2:
     params:
       chemistry = _get_chem_version_R2,
       out_dir = "{results}/{sample}/{sample}_R2_", 
-      job_name = "star_R2"
+      job_name = "star_R2",
+      sort_ram = _star_sort_ram
     log: "{results}/logs/starsolo_{sample}_R2.txt"
     benchmark: "{results}/benchmarks/starsolo_{sample}_R2.tsv"
     resources:
       total_impact = 5,
-      mem_mb = 48000
+      mem_mb = _star_mem_mb
     threads: 14
     shell:
       """
@@ -215,7 +217,7 @@ rule starsolo_R2:
       --soloUMIfiltering MultiGeneUMI \
       --soloUMIdedup 1MM_Directional \
       --readFilesCommand gunzip -c \
-      --runThreadN 12 \
+      --runThreadN {threads} \
       --outFilterMultimapNmax 1 \
       --soloBarcodeReadLength 0 \
       --soloCBwhitelist {params.chemistry} \
@@ -225,7 +227,7 @@ rule starsolo_R2:
       --soloCellFilter None \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 48000000000 \
+      --limitBAMsortRAM {params.sort_ram} \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn $(echo {input.R1} | sed 's/ /,/g;s/R1/R2/g') $(echo {input.R1} | sed 's/ /,/g')
 
@@ -242,12 +244,13 @@ rule starsolo_paired:
     params:
       chemistry = _get_chem_version_paired,
       out_dir = "{results}/{sample}/{sample}_paired_", 
-      job_name = "star_paired"
+      job_name = "star_paired",
+      sort_ram = _star_sort_ram
     log: "{results}/logs/starsolo_{sample}_paired.txt"
     benchmark: "{results}/benchmarks/starsolo_{sample}_paired.tsv"
     resources:
       total_impact = 5,
-      mem_mb = 48000
+      mem_mb = _star_mem_mb
     threads: 14
     shell:
       """
@@ -257,7 +260,7 @@ rule starsolo_paired:
       --soloUMIfiltering MultiGeneUMI \
       --soloUMIdedup 1MM_Directional \
       --readFilesCommand gunzip -c \
-      --runThreadN 12 \
+      --runThreadN {threads} \
       --soloCBwhitelist {params.chemistry} \
       --soloBarcodeMate 1 \
       --soloStrand Reverse \
@@ -268,7 +271,7 @@ rule starsolo_paired:
       --soloCellFilter None \
       --outFileNamePrefix {params.out_dir} \
       --outSAMtype BAM SortedByCoordinate \
-      --limitBAMsortRAM 48000000000 \
+      --limitBAMsortRAM {params.sort_ram} \
       --outSAMattributes NH HI nM AS CR UR CB UB GX GN sS sQ sM \
       --readFilesIn {input.R1} {input.R2}
       
