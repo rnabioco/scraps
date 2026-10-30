@@ -159,8 +159,8 @@ DEFAULTS:
   # proper pairs only, the other mate is dropped, positions are per fragment).
   # bam_priming_offset: bp the priming site lies beyond the counted read end.
   # ASSUMED, not enforced: full-length molecules, CB/UB tags, accurate strand.
-  # STAR_mem_mb: STARsolo job memory (MB). Unset = genome index size + 16 GB
-  # BAM-sort buffer + 4 GB headroom; --limitBAMsortRAM is derived from it.
+  # STAR_mem_mb: STARsolo job memory (MB). Unset = genome index size + 8 GB,
+  # at least 48000; --limitBAMsortRAM = mem minus max(8 GB, 1/4) for STARsolo.
   # Set here, per sample, or per platform for large libraries, e.g.
   # STAR_mem_mb: 96000
   bam_mate: 0
