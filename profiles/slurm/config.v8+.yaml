@@ -35,5 +35,13 @@ set-resources:
     runtime: 720
   cutadapt_paired:
     runtime: 720
+  assign_sites_R1:
+    runtime: 1440
+  assign_sites_R2:
+    runtime: 1440
+  assign_sites_paired:
+    runtime: 1440
   assign_sites_bam:
-    runtime: 720
+    runtime: 1440
+  count:
+    runtime: 1440

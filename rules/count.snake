@@ -329,9 +329,9 @@ rule count:
   benchmark:
     "{results}/benchmarks/count_{sample}_{read}.tsv"
   threads:
-    4
+    12
   resources:
-    mem_mb = 8000
+    mem_mb = 16000
   shell:
     r"""
     exec > {log} 2>&1

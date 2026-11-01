@@ -72,12 +72,16 @@ def _count_contig(args):
 
 def count_sites(bam_path, out_path, threads):
     with pysam.AlignmentFile(bam_path, "rb") as bam:
-        contigs = list(bam.references)
+        contigs = list(zip(bam.references, bam.lengths))
 
-    work = [(bam_path, c) for c in contigs]
+    # largest contigs first, handed out one at a time: pool.map's default
+    # chunking gave one worker a run of ~13 contigs in header order (chr1,
+    # chr10..chr19, chr2, chr20 in GRCh38), about half the reads
+    contigs.sort(key=lambda c: c[1], reverse=True)
+    work = [(bam_path, c) for c, _ in contigs]
     if threads > 1 and len(work) > 1:
         with Pool(min(threads, len(work))) as pool:
-            results = pool.map(_count_contig, work)
+            results = list(pool.imap_unordered(_count_contig, work, chunksize=1))
     else:
         results = [_count_contig(w) for w in work]
 

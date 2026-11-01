@@ -11,7 +11,9 @@ Edit `config.v8+.yaml`:
 
 - `slurm_account`, `slurm_partition`: your allocation and partition.
 - `runtime` (minutes): the default and the per-rule overrides under
-  `set-resources` (STAR and cutadapt get longer walltimes).
+  `set-resources` (STAR, cutadapt, assign_sites and count get longer
+  walltimes). A job that ends in SLURM `TIMEOUT` needs a larger `runtime`
+  here: the `retries` resubmission reuses the same walltime.
 - `resources: total_impact`: each STAR job claims 5, so 50 allows 10 concurrent
   STAR alignments. Lower it if your filesystem struggles.
 - `jobs`: maximum number of SLURM jobs queued or running at once.
